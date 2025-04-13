@@ -9,9 +9,7 @@
     android:orientation="vertical"
     android:gravity="center"
     android:background="@drawable/lightbg"
-    tools:context=".LoginActivity">
-
-
+    tools:context=".RegisterActivity">
 
     <androidx.cardview.widget.CardView
         android:layout_width="match_parent"
@@ -31,7 +29,7 @@
             <TextView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sign In"
+                android:text="Sign Up"
                 android:id="@+id/loginText"
                 android:textSize="24sp"
                 android:textAlignment="center"
@@ -46,11 +44,39 @@
                 android:background="@drawable/custom_edittext"
                 android:drawableLeft="@drawable/user"
                 android:drawablePadding="8dp"
-                android:hint="Username/Mobile no."
+                android:hint="Username"
                 android:padding="8dp"
                 android:textColor="@color/black"
                 android:textColorHighlight="@color/cardview_dark_background"
-                android:layout_marginTop="40dp"/>
+                android:layout_marginTop="20dp"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:id="@+id/phone"
+                android:textSize="14dp"
+                android:background="@drawable/custom_edittext"
+                android:drawableLeft="@drawable/phone"
+                android:drawablePadding="8dp"
+                android:hint="Phone number"
+                android:padding="8dp"
+                android:textColor="@color/black"
+                android:textColorHighlight="@color/cardview_dark_background"
+                android:layout_marginTop="20dp"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:id="@+id/email"
+                android:textSize="14dp"
+                android:background="@drawable/custom_edittext"
+                android:drawableLeft="@drawable/email"
+                android:drawablePadding="8dp"
+                android:hint="Email"
+                android:padding="8dp"
+                android:textColor="@color/black"
+                android:textColorHighlight="@color/cardview_dark_background"
+                android:layout_marginTop="20dp"/>
 
             <EditText
                 android:layout_width="match_parent"
@@ -68,41 +94,28 @@
                 android:textColorHighlight="@color/cardview_dark_background"
                 android:layout_marginTop="20dp"/>
 
-            <LinearLayout
+            <EditText
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:layout_marginTop="10dp">
-
-                <CheckBox
-                    android:id="@+id/rememberMe"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Remember Me"
-                    android:textColor="@color/black"
-                    android:textSize="14sp" />
-
-                <TextView
-                    android:id="@+id/forgotPassword"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:textStyle="bold"
-                    android:text="Forgot Password?"
-                    android:textSize="14sp"
-                    android:textColor="@color/blue"
-                    android:textAlignment="textEnd"
-                    android:clickable="true"
-                    android:focusable="true" />
-            </LinearLayout>
+                android:layout_height="50dp"
+                android:id="@+id/confirmpassword"
+                android:textSize="14dp"
+                android:background="@drawable/custom_edittext"
+                android:drawableLeft="@drawable/privacy"
+                android:drawablePadding="8dp"
+                android:hint="Confirm password"
+                android:padding="8dp"
+                android:inputType="textPassword"
+                android:textColor="@color/black"
+                android:textColorHighlight="@color/cardview_dark_background"
+                android:layout_marginTop="20dp"/>
 
             <Button
-                android:id="@+id/loginButton"
+                android:id="@+id/registerButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
                 android:backgroundTint="@color/blue"
-                android:text="Login"
+                android:text="Create New Account"
                 android:textSize="20sp"
                 android:textStyle="bold"
                 app:cornerRadius="20dp" />
@@ -118,32 +131,22 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Don't have account? "
-                    android:id="@+id/SignUpText"
+                    android:text="Already have an account? "
+                    android:id="@+id/SignInText"
                     android:textSize="15sp"
                     android:textColor="@color/black"/>
 
                 <TextView
-                    android:id="@+id/SignUp"
+                    android:id="@+id/SignIn"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Sign Up"
+                    android:text="Sign In"
                     android:textStyle="bold"
                     android:textSize="15sp"
                     android:textColor="@color/blue"
                     android:clickable="true"
                     android:focusable="true"/>
             </LinearLayout>
-
-            <Button
-                android:id="@+id/Google"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/custom_button"
-                android:drawableLeft="@drawable/google"
-                android:text="Continue with Google"
-                android:textColor="@color/black"
-                android:textSize="18dp" />
 
         </LinearLayout>
     </androidx.cardview.widget.CardView>
