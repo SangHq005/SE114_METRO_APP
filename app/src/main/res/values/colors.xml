@@ -5,4 +5,9 @@
     <color name="blue">#1B62DD</color>
     <color name="gray_stroke">#edf1f3</color>
     <color name="bold_blue">#000FDE</color>
+    <color name="darkBlue">#253f66</color>
+    <color name="darkGrey">#707070</color>
+    <color name="lightGray">#efefef</color>
+    <color name="lavender">#8692f7</color>
+    <color name="brown">#F0D9C1</color>
 </resources>

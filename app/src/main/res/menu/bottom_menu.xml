@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item android:id="@+id/metro"
+        android:title="Hành trình"
+        android:icon="@drawable/train"/>
+
+    <item android:id="@+id/ticket"
+        android:title="Vé Metro"
+        android:icon="@drawable/ticket"/>
+
+    <item android:id="@+id/home"
+        android:title=""
+        android:enabled="false"
+       />
+    <item android:id="@+id/history"
+        android:title="Lịch sử"
+        android:icon="@drawable/history"/>
+
+    <item android:id="@+id/user"
+        android:title="Tài khoản"
+        android:icon="@drawable/user"/>
+</menu>

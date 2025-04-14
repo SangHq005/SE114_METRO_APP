@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "222833132940",
+    "project_id": "metro-app-3e121",
+    "storage_bucket": "metro-app-3e121.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:222833132940:android:2e585cbb72e858e55782a9",
+        "android_client_info": {
+          "package_name": "com.example.metro_app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD2qdsVHd49RQE15ya3rq7cmHGNmAyZbJk"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
