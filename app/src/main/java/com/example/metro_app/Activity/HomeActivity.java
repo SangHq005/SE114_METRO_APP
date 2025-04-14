@@ -7,10 +7,18 @@ import android.view.ViewGroup;
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.metro_app.Adapter.CategoryAdapter;
+import com.example.metro_app.Adapter.NewsAdapter;
+import com.example.metro_app.Adapter.PopularAdapter;
+import com.example.metro_app.Domain.NewsModel;
+import com.example.metro_app.Domain.PopularModel;
 import com.example.metro_app.ViewModel.MainViewModel;
 import com.example.metro_app.databinding.ActivityHomeBinding;
+
+import java.util.ArrayList;
 
 public class HomeActivity extends AppCompatActivity {
     ActivityHomeBinding binding;
@@ -23,38 +31,46 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         viewModel = new MainViewModel();
         initCategory();
-        //initNews();
+        initNews();
+        initPopular();
 
     }
+    private void initPopular() {
+        binding.progressBarPopular.setVisibility(View.VISIBLE);
 
-//    private void initNews() {
-//        DatabaseReference databaseReference = database.getReference("Popular");
-//        binding.progressBarNews.setVisibility(View.VISIBLE);
-//
-//        ArrayList<NewsModel> newsModels = new ArrayList<>();
-//
-//        databaseReference.addValueEventListener(new ValueEventListener() {
-//            @Override
-//            public void onDataChange(@NonNull DataSnapshot snapshot) {
-//                if(snapshot.exists())
-//                {
-//                    for (DataSnapshot issue:snapshot.getChildren()){
-//                        newsModels.add(issue.getValue(NewsModel.class));
-//                    }
-//                }
-//                if(!newsModels.isEmpty()){
-//                    binding.recyclerViewNews.setLayoutManager(new LinearLayoutManager(HomeActivity.this,LinearLayoutManager.HORIZONTAL,false));
-//                    RecyclerView.Adapter<NewsAdapter.Viewholder> adapter = new NewsAdapter(newsModels);
-//                    binding.recyclerViewNews.setAdapter(adapter);
-//                }
-//            }
-//
-//            @Override
-//            public void onCancelled(@NonNull DatabaseError error) {
-//
-//            }
-//        });
-//    }
+        // Thiết lập LayoutManager
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
+        binding.recyclerViewPopular.setLayoutManager(layoutManager);
+
+        // Quan sát dữ liệu từ ViewModel
+        viewModel.loadPopular().observe(this, popularModels -> {
+            if (popularModels != null && !popularModels.isEmpty()) {
+                PopularAdapter adapter = new PopularAdapter((ArrayList<PopularModel>) popularModels);
+                binding.recyclerViewPopular.setAdapter(adapter);
+            } else {
+                System.out.println("Danh sách tin tức trống");
+            }
+            binding.progressBarPopular.setVisibility(View.GONE);
+        });
+    }
+private void initNews() {
+    binding.progressBarNews.setVisibility(View.VISIBLE);
+
+    // Thiết lập LayoutManager
+    LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
+    binding.recyclerViewNews.setLayoutManager(layoutManager);
+
+    // Quan sát dữ liệu từ ViewModel
+    viewModel.loadNews().observe(this, newsModels -> {
+        if (newsModels != null && !newsModels.isEmpty()) {
+            NewsAdapter adapter = new NewsAdapter((ArrayList<NewsModel>) newsModels);
+            binding.recyclerViewNews.setAdapter(adapter);
+        } else {
+            System.out.println("Danh sách tin tức trống");
+        }
+        binding.progressBarNews.setVisibility(View.GONE);
+    });
+}
 
     private void initCategory() {
         binding.progressBarCategory.setVisibility(View.VISIBLE);
