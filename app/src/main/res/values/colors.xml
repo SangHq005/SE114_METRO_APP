@@ -10,4 +10,5 @@
     <color name="lightGray">#efefef</color>
     <color name="lavender">#8692f7</color>
     <color name="brown">#F0D9C1</color>
+    <color name="grey_text">#ADB8CC</color>
 </resources>

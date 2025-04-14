@@ -1,4 +1,7 @@
 package com.example.metro_app;
 
-public class AdHomeActivity {
+import androidx.appcompat.app.AppCompatActivity;
+
+public class AdHomeActivity extends AppCompatActivity {
+
 }
