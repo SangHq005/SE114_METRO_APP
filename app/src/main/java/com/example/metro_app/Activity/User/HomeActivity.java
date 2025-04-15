@@ -1,4 +1,4 @@
-package com.example.metro_app.Activity;
+package com.example.metro_app.Activity.User;
 
 import android.os.Bundle;
 import android.view.View;
@@ -8,7 +8,6 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.metro_app.Adapter.CategoryAdapter;
 import com.example.metro_app.Adapter.NewsAdapter;
