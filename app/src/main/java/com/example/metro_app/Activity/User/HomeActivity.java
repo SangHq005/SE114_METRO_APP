@@ -82,15 +82,14 @@ public class HomeActivity extends AppCompatActivity {
     private void initCategory() {
         binding.progressBarCategory.setVisibility(View.VISIBLE);
 
-        // Giảm số cột xuống 2 để hiển thị rõ hơn
         GridLayoutManager layoutManager = new GridLayoutManager(HomeActivity.this, 4);
         binding.recyclerViewCategory.setLayoutManager(layoutManager);
 
         viewModel.loadCategory().observe(this, categoryModels -> {
-            // In ra số lượng item để kiểm tra
+
             System.out.println("Số lượng category từ Firebase: " + categoryModels.size());
 
-            // Đảm bảo RecyclerView có đủ không gian hiển thị
+
             ViewGroup.LayoutParams params = binding.recyclerViewCategory.getLayoutParams();
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
             binding.recyclerViewCategory.setLayoutParams(params);
