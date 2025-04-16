@@ -1,5 +1,6 @@
 package com.example.metro_app.Activity.User;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.metro_app.Adapter.CategoryAdapter;
 import com.example.metro_app.Adapter.NewsAdapter;
+import com.example.metro_app.Adapter.AllNewsAdapter;
 import com.example.metro_app.Adapter.PopularAdapter;
 import com.example.metro_app.Domain.NewsModel;
 import com.example.metro_app.Domain.PopularModel;
@@ -32,8 +34,8 @@ public class HomeActivity extends AppCompatActivity {
         initCategory();
         initNews();
         initPopular();
-
     }
+
     private void initPopular() {
         binding.progressBarPopular.setVisibility(View.VISIBLE);
 
@@ -52,7 +54,7 @@ public class HomeActivity extends AppCompatActivity {
             binding.progressBarPopular.setVisibility(View.GONE);
         });
     }
-private void initNews() {
+    private void initNews() {
     binding.progressBarNews.setVisibility(View.VISIBLE);
 
     // Thiết lập LayoutManager
@@ -68,9 +70,15 @@ private void initNews() {
             System.out.println("Danh sách tin tức trống");
         }
         binding.progressBarNews.setVisibility(View.GONE);
+        binding.newsList.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(HomeActivity.this,AllNewsActivity.class));
+            }
+        });
     });
-}
 
+}
     private void initCategory() {
         binding.progressBarCategory.setVisibility(View.VISIBLE);
 
@@ -98,4 +106,6 @@ private void initNews() {
         });
 
     }
+
+
 }

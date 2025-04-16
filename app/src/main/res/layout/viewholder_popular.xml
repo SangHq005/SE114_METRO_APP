@@ -46,7 +46,7 @@
             tools:layout_editor_absoluteX="0dp" />
 
         <TextView
-            android:id="@+id/textView5"
+            android:id="@+id/newsList"
             android:textStyle="italic"
             android:textSize="10sp"
             android:layout_width="match_parent"

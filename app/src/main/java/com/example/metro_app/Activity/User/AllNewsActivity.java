@@ -1,26 +1,57 @@
 package com.example.metro_app.Activity.User;
 
 import android.os.Bundle;
+import android.view.View;
 
-import androidx.activity.EdgeToEdge;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
+import androidx.recyclerview.widget.LinearLayoutManager;
 
-import com.example.metro_app.R;
+import com.example.metro_app.Adapter.AllNewsAdapter;
+import com.example.metro_app.Domain.NewsModel;
+import com.example.metro_app.ViewModel.MainViewModel;
+import com.example.metro_app.databinding.ActivityAllNewsBinding;
+
+import java.util.ArrayList;
 
 public class AllNewsActivity extends AppCompatActivity {
-
+    ActivityAllNewsBinding binding;
+    MainViewModel viewModel;
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(@Nullable Bundle savedInstanceState) {
+        binding = ActivityAllNewsBinding.inflate(getLayoutInflater());
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_all_news);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
+        setContentView(binding.getRoot());
+        viewModel = new MainViewModel();
+        initAllNews();
+
+    }
+    private void initAllNews() {
+        binding.progressbarAllNews.setVisibility(View.VISIBLE);
+
+        // Thiết lập LayoutManager
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.VERTICAL,false);
+        binding.recyclerViewAllNews.setLayoutManager(layoutManager);
+
+        // Quan sát dữ liệu từ ViewModel
+        viewModel.loadNews().observe(this, newsModels -> {
+            if (newsModels != null && !newsModels.isEmpty()) {
+                AllNewsAdapter adapter = new AllNewsAdapter((ArrayList<NewsModel>) newsModels);
+                binding.recyclerViewAllNews.setAdapter(adapter);
+            } else {
+                System.out.println("Danh sách tin tức trống");
+            }
+            binding.progressbarAllNews.setVisibility(View.GONE);
         });
     }
 }
+
+
+
+
+
+
+
+
+

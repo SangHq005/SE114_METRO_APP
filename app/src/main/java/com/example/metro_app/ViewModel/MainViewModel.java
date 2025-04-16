@@ -27,4 +27,5 @@ public class MainViewModel {
 
         return repository.loadPopular();
     }
+
 }

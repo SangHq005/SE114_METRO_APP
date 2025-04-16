@@ -16,7 +16,7 @@
             android:name=".Activity.User.AllNewsActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.User.InfoAcitivity"
+            android:name=".Activity.User.HomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -24,9 +24,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".Activity.User.HomeActivity"
-            android:exported="true"></activity>
     </application>
 
 </manifest>
