@@ -5,6 +5,7 @@ import androidx.lifecycle.LiveData;
 import com.example.metro_app.Domain.CategoryModel;
 import com.example.metro_app.Domain.NewsModel;
 import com.example.metro_app.Domain.PopularModel;
+import com.example.metro_app.Domain.RouteModel;
 import com.example.metro_app.Repository.MainRepository;
 
 import java.util.List;

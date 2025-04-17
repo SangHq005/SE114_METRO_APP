@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/darkbg"
+    tools:context=".Activity.Admin.AdRouteActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginTop="10dp"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <!-- Search Bar -->
+        <EditText
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Search"
+            android:background="@drawable/custom_button"
+            android:padding="6dp"
+            android:textColor="@color/lightGray"
+            android:drawableStart="@drawable/search"
+            android:drawablePadding="8dp" />
+
+        <!-- Settings and Notification Icons -->
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:id="@+id/add_button"
+            android:background="@drawable/circle_button"
+            android:src="@drawable/setting"
+            android:scaleType="centerInside"
+            android:contentDescription="Setting"
+            android:padding="12dp"
+            android:backgroundTint="#F1F1F1"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginLeft="5dp"/>
+
+        <ImageButton
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="@drawable/circle_button"
+            android:src="@drawable/noti"
+            android:scaleType="centerInside"
+            android:contentDescription="Notifications"
+            android:padding="10dp"
+            android:backgroundTint="#F1F1F1"
+            android:clickable="true"
+            android:focusable="true"
+            android:layout_marginLeft="5dp"/>
+
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp">
+
+        <!-- Header -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Journey"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/white" />
+
+        <Space
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+
+        <!-- Add button -->
+        <ImageButton
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_marginEnd="16dp"
+            android:background="@drawable/custom_button"
+            android:backgroundTint="@color/blue"
+            android:clickable="true"
+            android:contentDescription="Add Button"
+            android:focusable="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/baseline_add_24" />
+    </LinearLayout>
+
+    <!-- Scrollable Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="20dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/recycler_view_routes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content" />
+
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:menu="@menu/menu_admin"
+        app:itemIconTint="@android:color/white"
+        app:itemTextColor="@android:color/white" />
+</LinearLayout>

@@ -16,7 +16,7 @@
             android:name=".Activity.User.HomeActivity"
             android:exported="false" />
         <activity
-            android:name=".Activity.Admin.AdHomeActivity"
+            android:name=".Activity.Admin.AdRouteActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
