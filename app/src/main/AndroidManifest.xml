@@ -16,7 +16,11 @@
             android:name=".Activity.User.HomeActivity"
             android:exported="false" />
         <activity
+<<<<<<< HEAD
             android:name=".Activity.Admin.AdRouteActivity"
+=======
+            android:name=".Activity.LoginActivity"
+>>>>>>> 749d5db9eb5ce99af43fabc57490cac2ecac0e0c
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
