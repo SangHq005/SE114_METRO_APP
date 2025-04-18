@@ -40,15 +40,22 @@ public class DetailNewsActivity extends AppCompatActivity {
                 finish();
             }
         });
+        binding.getRoot().setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                binding.header.setText(item.getHeader());
+                binding.title.setText(item.getTitle());
+                binding.date.setText(item.getDate());
+                binding.description.setText(item.getDescription());
+                binding.content.setText(item.getContent());
 
-        Glide.with(DetailNewsActivity.this)
-                .load(item.getPic())
-                .into(binding.image);
+                Glide.with(DetailNewsActivity.this)
+                        .load(item.getPic())
+                        .into(binding.image);
+            }
+        });
 
-        binding.header.setText(item.getHeader());
-        binding.title.setText(item.getTitle());
-        binding.date.setText(item.getDate());
-        binding.description.setText(item.getDescription());
-        binding.content.setText(item.getContent());
+
+
     }
 }

@@ -13,6 +13,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.metro_app.Activity.User.HomeActivity;
 import com.example.metro_app.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -126,8 +127,8 @@ public class LoginActivity extends AppCompatActivity {
                         if (task.isSuccessful()) {
                             // Đăng nhập thành công
                             Toast.makeText(LoginActivity.this, "Google Sign-In successful!", Toast.LENGTH_SHORT).show();
-                            // Điều hướng đến activity tiếp theo (ví dụ: MainActivity)
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            // Điều hướng đến activity tiếp theo
+                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                             startActivity(intent);
                             finish();
                         } else {

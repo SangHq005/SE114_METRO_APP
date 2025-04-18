@@ -128,15 +128,17 @@
                     android:focusable="true" />
             </LinearLayout>
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/loginButton"
+                style="@style/Widget.AppCompat.Button"
+                android:background="@drawable/blue_btn_bg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
-                android:backgroundTint="@color/blue"
                 android:text="Login"
+                android:elevation="3dp"
+                android:textColor="@color/white"
                 android:textSize="20sp"
-                android:textStyle="bold"
                 app:cornerRadius="20dp" />
 
             <LinearLayout
@@ -167,14 +169,17 @@
                     android:focusable="true"/>
             </LinearLayout>
 
-            <Button
+            <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/Google"
+                style="@style/Widget.AppCompat.Button"
+                android:background="@drawable/blue_btn_bg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:backgroundTint="#F1F1F1"
                 android:drawableLeft="@drawable/google"
                 android:text="Continue with Google"
-                android:textColor="@color/black"
+                android:textColor="@color/white"
+                android:paddingHorizontal="16dp"
+                android:elevation="3dp"
                 android:textSize="18dp" />
 
         </LinearLayout>
