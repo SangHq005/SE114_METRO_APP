@@ -55,13 +55,14 @@ public class AdHomeActivity extends AppCompatActivity {
             } else if (id == R.id.nav_ad_home) {
                 Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
                 return true;
-            } else if (id == R.id.nav_ad_history) {
-                Toast.makeText(this, "History", Toast.LENGTH_SHORT).show();
-                return true;
-            } else if (id == R.id.nav_ad_profile) {
-                Toast.makeText(this, "Profile", Toast.LENGTH_SHORT).show();
-                return true;
             }
+//            else if (id == R.id.nav_ad_history) {
+//                Toast.makeText(this, "History", Toast.LENGTH_SHORT).show();
+//                return true;
+//            } else if (id == R.id.nav_ad_profile) {
+//                Toast.makeText(this, "Profile", Toast.LENGTH_SHORT).show();
+//                return true;
+//            }
 
             return false;
         });

@@ -6,4 +6,123 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_gravity="center_vertical"
-    android:background="#E0E0E0"/>
+    android:background="#C32A2929">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="150dp"
+        android:orientation="vertical"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/typeTicketTxt"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Vé lượt đi Bến Thành - Suối Tiên"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:layout_width="match_parent"
+            android:layout_height="700dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/base">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <ImageView
+                        android:id="@+id/imageView9"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="44dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHorizontal_bias="0.494"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:srcCompat="@drawable/logomain" />
+
+                    <TextView
+                        android:id="@+id/loaiVeTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="24dp"
+                        android:layout_marginTop="16dp"
+                        android:text="Loại vé: Vé 1 ngày"
+                        android:textColor="@color/black"
+                        app:layout_constraintStart_toStartOf="@+id/imageView9"
+                        app:layout_constraintTop_toBottomOf="@+id/imageView9" />
+
+                    <TextView
+                        android:id="@+id/hsdTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:textColor="@color/black"
+                        android:text="HSD: 24h kể từ thời điểm kích hoạt"
+                        app:layout_constraintEnd_toEndOf="@+id/loaiVeTxt"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="@+id/loaiVeTxt"
+                        app:layout_constraintTop_toBottomOf="@+id/loaiVeTxt" />
+
+                    <TextView
+                        android:id="@+id/luuYTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:textColor="@color/black"
+                        android:text="Lưu ý: Vé sử dụng một lần       "
+                        app:layout_constraintStart_toStartOf="@+id/hsdTxt"
+                        app:layout_constraintTop_toBottomOf="@+id/hsdTxt" />
+
+                    <TextView
+                        android:id="@+id/moTaTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:textColor="@color/black"
+                        android:text="Mô tả: Vé lượt: Bến Thành - Suối Tiên"
+                        app:layout_constraintEnd_toEndOf="@+id/luuYTxt"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="@+id/luuYTxt"
+                        app:layout_constraintTop_toBottomOf="@+id/luuYTxt" />
+
+                    <ImageView
+                        android:id="@+id/dashline"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="188dp"
+                        app:layout_constraintEnd_toEndOf="@+id/moTaTxt"
+                        app:layout_constraintHorizontal_bias="0.186"
+                        app:layout_constraintStart_toStartOf="@+id/moTaTxt"
+                        app:layout_constraintTop_toBottomOf="@+id/moTaTxt"
+                        app:srcCompat="@drawable/dash_line" />
+
+                    <Button
+                        android:id="@+id/muaBtn"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Mua ngay"
+                        android:elevation="3dp"
+                        app:layout_constraintEnd_toEndOf="@+id/dashline"
+                        app:layout_constraintHorizontal_bias="0.0"
+                        app:layout_constraintStart_toStartOf="@+id/dashline"
+                        app:layout_constraintTop_toBottomOf="@+id/dashline" />
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </LinearLayout>
+        </androidx.constraintlayout.widget.ConstraintLayout>
+    </LinearLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>
