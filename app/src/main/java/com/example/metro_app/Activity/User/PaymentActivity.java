@@ -10,12 +10,13 @@ import androidx.core.view.WindowInsetsCompat;
 
 import com.example.metro_app.R;
 
-public class ChooseTicketActivity extends AppCompatActivity {
+public class PaymentActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_choose_ticket);
+        setContentView(R.layout.activity_payment);
+
     }
 }
