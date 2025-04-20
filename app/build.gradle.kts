@@ -51,11 +51,12 @@ dependencies {
     androidTestImplementation(libs.espresso.core)
 
     //library
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-
-    implementation ("com.github.ismaeldivita:chip-navigation-bar:1.4.0")
-
-    implementation("androidx.viewpager:viewpager:1.1.0")
+    implementation ("com.google.android.material:material:1.11.0")
+    implementation(libs.glide)
+    implementation ("com.wdullaer:materialdatetimepicker:4.2.3")
+    implementation (libs.chip.navigation.bar)
+    implementation ("de.hdodenhof:circleimageview:3.1.0")
+    implementation(libs.viewpager)
 
     // Import the BoM for the Firebase platform
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))

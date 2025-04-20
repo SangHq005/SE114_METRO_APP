@@ -1,5 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!--    màu nền-->
+    <color name="success_bg">#E6F7EA</color>
+    <color name="pending_bg">#FFF8E6</color>
+    <color name="failed_bg">#FFEBEB</color>
+    <color name="unpaid_bg">#F0F0F0</color>
+    <!-- Màu chữ -->
+    <color name="success_text">#34C759</color>
+    <color name="pending_text">#FF9500</color>
+    <color name="failed_text">#FF3B30</color>
+    <color name="unpaid_text">#8E8E93</color>
+
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#1B62DD</color>
@@ -11,4 +22,12 @@
     <color name="lavender">#8692f7</color>
     <color name="brown">#F0D9C1</color>
     <color name="grey_text">#ADB8CC</color>
+
+    <color name="primary_color">#3F51B5</color>
+    <color name="accent_color">#FF4081</color>
+    <color name="background_color">#F5F5F5</color>
+    <color name="text_primary">#212121</color>
+    <color name="text_secondary">#757575</color>
+    <color name="stroke_color">#E0E0E0</color>
+    <color name="error_color">#F44336</color>
 </resources>

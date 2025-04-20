@@ -8,7 +8,7 @@
     android:layout_marginHorizontal="16dp">
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/routeTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Đi từ ga Bến Thành"
@@ -19,7 +19,7 @@
         app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
-        android:id="@+id/textView13"
+        android:id="@+id/detailTxt"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Xem chi tiết"
