@@ -9,18 +9,13 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.example.metro_app.R;
-import com.example.metro_app.databinding.ActivityInfoAcitivityBinding;
 
-public class InfoAcitivity extends AppCompatActivity {
-    ActivityInfoAcitivityBinding binding;
+public class ChooseTicketActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        binding = ActivityInfoAcitivityBinding.inflate(getLayoutInflater());
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(binding.getRoot());
-
-
+        setContentView(R.layout.activity_choose_ticket);
     }
 }
