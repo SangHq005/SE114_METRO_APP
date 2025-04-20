@@ -69,7 +69,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Journey"
+            android:text="Route"
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/white" />
@@ -118,7 +118,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        app:menu="@menu/menu_admin"
         app:itemIconTint="@android:color/white"
-        app:itemTextColor="@android:color/white" />
+        app:itemTextColor="@android:color/white"
+        app:menu="@menu/menu_admin" />
 </LinearLayout>

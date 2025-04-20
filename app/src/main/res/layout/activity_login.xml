@@ -172,7 +172,7 @@
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/Google"
                 style="@style/Widget.AppCompat.Button"
-                android:background="@drawable/blue_btn_bg"
+                android:background="@drawable/grey_btn_bg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:drawableLeft="@drawable/google"
