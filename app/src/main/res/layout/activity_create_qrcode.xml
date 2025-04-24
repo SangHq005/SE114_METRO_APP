@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#C32A2929"
+    android:fillViewport="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+        <!-- Tiêu đề vé -->
+        <TextView
+            android:id="@+id/typeTicketTxt"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="150dp"
+            android:layout_marginBottom="16dp"
+            android:layout_gravity="center"
+            android:text="Vé lượt đi Bến Thành - Suối Tiên"
+            android:textAlignment="center"
+            android:textColor="@color/white"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/constraintLayout"
+            android:layout_width="match_parent"
+            android:layout_height="700dp"
+            android:layout_marginTop="2dp"
+            android:background="@drawable/base">
+            <!-- Tab chuyển đổi -->
+
+            <com.google.android.material.button.MaterialButtonToggleGroup
+                android:id="@+id/toggleButtonGroup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="60dp"
+                android:layout_marginTop="32dp"
+                android:layout_marginEnd="60dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
+                app:selectionRequired="true"
+                app:singleSelection="true">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/qrBtn"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="MÃ QR" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/infoBtn"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="THÔNG TIN" />
+
+            </com.google.android.material.button.MaterialButtonToggleGroup>
+
+            <LinearLayout
+                android:id="@+id/qrCodeContainer"
+                android:layout_width="307dp"
+                android:layout_height="319dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="16dp"
+                app:layout_constraintEnd_toEndOf="@+id/toggleButtonGroup"
+                app:layout_constraintStart_toStartOf="@+id/toggleButtonGroup"
+                app:layout_constraintTop_toBottomOf="@+id/toggleButtonGroup">
+
+                <ImageView
+                    android:id="@+id/qrImg"
+                    android:layout_width="250dp"
+                    android:layout_height="250dp"
+                    android:contentDescription="Mã QR vé"
+                    app:srcCompat="@drawable/qrcode" />
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="31dp"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="4dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Tự động làm mới mã sau:"
+                        android:textSize="14sp" />
+
+                    <TextView
+                        android:id="@+id/tvRefreshTimer"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginTop="10dp"
+                        android:text="30s"
+                        android:layout_marginStart="4dp"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/infoContainer"
+                android:layout_width="307dp"
+                android:layout_height="319dp"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:visibility="gone"
+                app:layout_constraintEnd_toEndOf="@+id/toggleButtonGroup"
+                app:layout_constraintStart_toStartOf="@+id/toggleButtonGroup"
+                app:layout_constraintTop_toBottomOf="@+id/toggleButtonGroup">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Loại vé: "
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/loaiVeTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Vé 1 ngày"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="HSD: "
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/hanSuDungTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Sẽ tự động kích hoạt vao 21g00, 12/05/2025"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Ngày phát hành: "
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/ngayPhatHanhTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="06/09/2023"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Tên: "
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/tenTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="8dp"
+                        android:text="Quốc Sang"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Mã vé: "
+                        android:textStyle="bold"
+                        android:textSize="16sp" />
+                    <TextView
+                        android:id="@+id/maVeTxt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0123456789"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <View
+                android:id="@+id/view"
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginStart="60dp"
+                android:layout_marginEnd="60dp"
+                android:layout_marginBottom="270dp"
+                android:background="#E0E0E0"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent" />
+            <!-- Nút thêm vào trang chủ -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/trangChuBtn"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="305dp"
+                android:layout_height="48dp"
+                android:layout_marginTop="20dp"
+                android:text="THÊM VÀO TRANG CHỦ"
+                app:iconGravity="textStart"
+                app:iconPadding="8dp"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintHorizontal_bias="0.49"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/view" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+        <!-- Đường kẻ ngang -->
+    </LinearLayout>
+</ScrollView>

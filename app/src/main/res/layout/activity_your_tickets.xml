@@ -76,7 +76,7 @@
             app:singleSelection="true">
 
             <Button
-                android:id="@+id/suDungBtn"
+                android:id="@+id/qrBtn"
                 style="@style/Widget.MaterialComponents.Button.OutlinedButton"
                 android:layout_width="150dp"
                 android:layout_height="wrap_content"
