@@ -58,6 +58,13 @@ dependencies {
     implementation ("de.hdodenhof:circleimageview:3.1.0")
     implementation(libs.viewpager)
 
+    //Mapview
+    implementation ("org.osmdroid:osmdroid-android:6.1.16")
+    implementation ("org.osmdroid:osmdroid-wms:6.1.16")
+
+    // Thêm các dependencies cần thiết khác
+    implementation ("androidx.preference:preference:1.2.1")
+
     // Import the BoM for the Firebase platform
     implementation(platform("com.google.firebase:firebase-bom:33.12.0"))
 
@@ -73,4 +80,9 @@ dependencies {
     implementation ("com.google.firebase:firebase-firestore:24.10.0")
 
 
+}
+configurations.all {
+    resolutionStrategy {
+        force ("org.osmdroid:osmdroid-android:6.1.16")
+    }
 }
