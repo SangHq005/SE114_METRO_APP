@@ -4,38 +4,47 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/background_color"
-    tools:background="@drawable/lightbg">
+    android:background="@drawable/lightbg">
 
     <!-- Toolbar -->
-    <com.google.android.material.appbar.MaterialToolbar
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/Toolbar"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:layout_marginTop="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <ImageView
+        <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/backBtn"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             app:srcCompat="@drawable/back_black" />
 
         <TextView
-            android:id="@+id/textView2"
+            android:id="@+id/hetHanTv"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:layout_marginTop="24dp"
             android:text="@string/th_ng_tin_t_i_kho_n"
             android:textColor="@color/black"
             android:textSize="26sp"
-            android:textStyle="bold" />
-    </com.google.android.material.appbar.MaterialToolbar>
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.318"
+            app:layout_constraintStart_toEndOf="@+id/backBtn"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.517" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.cardview.widget.CardView
         android:id="@+id/profileCard"
@@ -133,13 +142,6 @@
                         android:layout_weight="1"
                         android:text="Họ tên: Huỳnh Quốc Sang"
                         android:textColor="@color/text_primary" />
-
-                    <ImageView
-                        android:id="@+id/nameEdit"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/mdtp_ic_chevron_right_black_24dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -176,13 +178,6 @@
                         android:layout_weight="1"
                         android:text="Email: quocsangt05.uit@gmail.com"
                         android:textColor="@color/text_primary" />
-
-                    <ImageView
-                        android:id="@+id/emailEdit"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center_vertical"
-                        android:src="@drawable/mdtp_ic_chevron_right_black_24dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
             <!-- ID Field -->
@@ -321,7 +316,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
         android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/formCard">
@@ -331,7 +326,7 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+
             android:padding="12dp"
             android:text="Xóa tài khoản"
             android:textColor="@color/error_color"

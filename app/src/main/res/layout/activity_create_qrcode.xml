@@ -119,17 +119,21 @@
                 app:layout_constraintEnd_toEndOf="@+id/toggleButtonGroup"
                 app:layout_constraintStart_toStartOf="@+id/toggleButtonGroup"
                 app:layout_constraintTop_toBottomOf="@+id/toggleButtonGroup">
+
                 <LinearLayout
+                    android:id="@+id/loaiVeLinearLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:text="Loại vé: "
-                        android:textStyle="bold"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/loaiVeTxt"
                         android:layout_width="wrap_content"
@@ -140,16 +144,19 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/HSDLinearLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:text="HSD: "
-                        android:textStyle="bold"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/hanSuDungTxt"
                         android:layout_width="wrap_content"
@@ -160,16 +167,19 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/ngayPhatHanhLinearLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:text="Ngày phát hành: "
-                        android:textStyle="bold"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/ngayPhatHanhTxt"
                         android:layout_width="wrap_content"
@@ -180,16 +190,19 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/hoTenLinearLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="8dp"
                         android:text="Tên: "
-                        android:textStyle="bold"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/tenTxt"
                         android:layout_width="wrap_content"
@@ -200,15 +213,18 @@
                 </LinearLayout>
 
                 <LinearLayout
+                    android:id="@+id/maVeLinearLayout"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
+
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Mã vé: "
-                        android:textStyle="bold"
-                        android:textSize="16sp" />
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
                     <TextView
                         android:id="@+id/maVeTxt"
                         android:layout_width="wrap_content"

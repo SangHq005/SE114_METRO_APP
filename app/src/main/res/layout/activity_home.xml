@@ -24,13 +24,14 @@
 
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/TopBackgroundConstraintLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@color/white"
                 android:paddingBottom="16dp">
 
                 <ImageView
-                    android:id="@+id/imageView2"
+                    android:id="@+id/backgroudImg"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     app:layout_constraintEnd_toEndOf="parent"
@@ -40,17 +41,17 @@
                     app:srcCompat="@drawable/image" />
 
                 <ImageView
-                    android:id="@+id/imageView3"
+                    android:id="@+id/gradientBgImg"
                     android:layout_width="0dp"
                     android:layout_height="60dp"
                     android:background="@drawable/gradient_bg"
-                    app:layout_constraintBottom_toBottomOf="@id/imageView2"
+                    app:layout_constraintBottom_toBottomOf="@id/backgroudImg"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:srcCompat="@drawable/gradient_bg" />
 
                 <androidx.constraintlayout.widget.ConstraintLayout
-                    android:id="@+id/constraintLayout2"
+                    android:id="@+id/CategoryconstraintLayout"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:layout_marginVertical="16dp"
@@ -62,10 +63,10 @@
                     android:elevation="3dp"
                     android:minHeight="200dp"
                     android:paddingBottom="8dp"
-                    app:layout_constraintBottom_toBottomOf="@id/imageView2"
+                    app:layout_constraintBottom_toBottomOf="@id/backgroudImg"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintTop_toBottomOf="@+id/imageView2">
+                    app:layout_constraintTop_toBottomOf="@+id/backgroudImg">
                     <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/recyclerViewCategory"
                             android:layout_width="match_parent"
@@ -76,7 +77,6 @@
                             app:layout_constraintEnd_toEndOf="parent"
                             app:layout_constraintStart_toStartOf="parent"
                             app:layout_constraintTop_toTopOf="parent">
-
                     </androidx.recyclerview.widget.RecyclerView>
                     <ProgressBar
                         android:id="@+id/progressBarCategory"
@@ -124,6 +124,7 @@
                 android:orientation="horizontal">
 
                 <TextView
+                    android:id="@+id/tinTucTv"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -142,6 +143,7 @@
             </LinearLayout>
 
             <androidx.constraintlayout.widget.ConstraintLayout
+                android:id="@+id/NewsConstraintLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content">
 
