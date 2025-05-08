@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="@drawable/darkbg"
-    tools:context=".Activity.Admin.AdRouteDetails">
+    tools:context=".Activity.Admin.AdRouteActivity">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -20,7 +20,7 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="CHI TIẾT TUYẾN ĐƯỜNG"
+            android:text="THÊM TUYẾN ĐƯỜNG"
             android:textSize="22sp"
             android:textStyle="bold"
             android:textColor="@color/white"
@@ -151,16 +151,18 @@
                 android:layout_marginTop="5dp"
                 android:inputType="time" />
 
+
             <!-- Button -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center"
-                android:paddingVertical="30dp">
+                android:paddingVertical="30dp"
+                android:layout_centerHorizontal="true">
 
                 <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/button_cancel"
+                    android:id="@+id/cancel_button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -173,7 +175,7 @@
                     android:layout_marginEnd="8dp" />
 
                 <androidx.appcompat.widget.AppCompatButton
-                    android:id="@+id/button_save"
+                    android:id="@+id/save_button"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"

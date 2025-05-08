@@ -3,14 +3,14 @@ package com.example.metro_app.Domain;
 public class RouteModel {
     private String fromStation;
     private String toStation;
-    private String departureTime;
-    private String arrivalTime;
+    private String fromTime;
+    private String toTime;
 
-    public RouteModel(String fromStation, String toStation, String departureTime, String arrivalTime) {
+    public RouteModel(String fromStation, String toStation, String fromTime, String toTime) {
         this.fromStation = fromStation;
         this.toStation = toStation;
-        this.departureTime = departureTime;
-        this.arrivalTime = arrivalTime;
+        this.fromTime = fromTime;
+        this.toTime = toTime;
     }
 
     // Getters and Setters
@@ -30,19 +30,19 @@ public class RouteModel {
         this.toStation = toStation;
     }
 
-    public String getDepartureTime() {
-        return departureTime;
+    public String getFromTime() {
+        return fromTime;
     }
 
-    public void setDepartureTime(String departureTime) {
-        this.departureTime = departureTime;
+    public void setFromTime(String fromTime) {
+        this.fromTime = fromTime;
     }
 
-    public String getArrivalTime() {
-        return arrivalTime;
+    public String getToTime() {
+        return toTime;
     }
 
-    public void setArrivalTime(String arrivalTime) {
-        this.arrivalTime = arrivalTime;
+    public void setToTime(String toTime) {
+        this.toTime = toTime;
     }
 }

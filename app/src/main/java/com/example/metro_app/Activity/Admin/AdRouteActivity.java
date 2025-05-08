@@ -11,12 +11,11 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.metro_app.R;
 import com.example.metro_app.Domain.RouteModel;
+import com.example.metro_app.R;
 
 import java.util.ArrayList;
 import java.util.List;
-
 
 // Adapter for RecyclerView
 class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHolder> {
@@ -71,18 +70,16 @@ public class AdRouteActivity extends AppCompatActivity {
 
         // Sample data
         routeList = new ArrayList<>();
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
-        routeList.add(new RouteModel("Ga Bến Thành", "Ga Suối Tiên", "9:00", "10:00"));
+        routeList.add(new RouteModel("Ga Bến Thành", "Ga Thảo Điền", "08:00", "08:30"));
+        routeList.add(new RouteModel("Ga Công viên Văn Thánh", "Ga Rạch Chiếc", "10:00", "10:25"));
+        routeList.add(new RouteModel("Ga Phước Long", "Ga Bình Thái", "11:00", "11:15"));
+        routeList.add(new RouteModel("Ga Khu Công nghệ cao", "Ga Đại học Quốc gia", "12:00", "12:20"));
+        routeList.add(new RouteModel("Ga Bến xe Suối Tiên", "Ga Nhà hát Thành phố", "13:00", "13:45"));
+        routeList.add(new RouteModel("Ga Nhà hát Thành phố", "Ga Bến Thành", "14:00", "14:10"));
+        routeList.add(new RouteModel("Ga Tân Cảng", "Ga Thảo Điền", "15:00", "15:15"));
+        routeList.add(new RouteModel("Ga An Phú", "Ga Phước Long", "16:00", "16:25"));
+        routeList.add(new RouteModel("Ga Bình Thái", "Ga Thủ Đức", "17:00", "17:15"));
+        routeList.add(new RouteModel("Ga Đại học Quốc gia", "Ga Bến xe Suối Tiên", "18:00", "18:20"));
 
         // Set up adapter
         routeAdapter = new RouteAdapter(routeList);

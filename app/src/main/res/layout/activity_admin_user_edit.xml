@@ -50,24 +50,6 @@
                 android:contentDescription="User Avatar"
                 android:scaleType="centerCrop"/>
 
-            <!-- ID Field -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="ID"
-                android:textStyle="bold"
-                android:textColor="@color/grey_text"
-                android:textSize="16sp"
-                android:layout_marginTop="10dp"/>
-
-            <EditText
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:id="@+id/editTextId"
-                android:background="@drawable/custome_edittext2"
-                android:padding="10dp"
-                android:layout_marginTop="5dp"/>
-
             <!-- Name Field -->
             <TextView
                 android:layout_width="wrap_content"
@@ -151,6 +133,7 @@
                 android:layout_centerHorizontal="true">
 
                 <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/button_cancel"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
@@ -163,6 +146,7 @@
                     android:layout_marginEnd="8dp" />
 
                 <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/button_save"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"

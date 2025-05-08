@@ -22,7 +22,6 @@ public class AdTicketDetails extends AppCompatActivity {
         setContentView(R.layout.activity_admin_ticket_edit);
 
         // 1. Ánh xạ các EditText
-        editTextId = findViewById(R.id.editTextId);
         editTextTicketType = findViewById(R.id.editTextTicketType);
         editTextPrice = findViewById(R.id.editTextPrice);
         editTextExpireDate = findViewById(R.id.editTextExpireDate);

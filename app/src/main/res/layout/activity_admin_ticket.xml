@@ -45,19 +45,6 @@
             android:focusable="true"
             android:layout_marginLeft="5dp"/>
 
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/circle_button"
-            android:src="@drawable/noti"
-            android:scaleType="centerInside"
-            android:contentDescription="Notifications"
-            android:padding="10dp"
-            android:backgroundTint="#F1F1F1"
-            android:clickable="true"
-            android:focusable="true"
-            android:layout_marginLeft="5dp"/>
-
     </LinearLayout>
     <LinearLayout
         android:layout_width="match_parent"
