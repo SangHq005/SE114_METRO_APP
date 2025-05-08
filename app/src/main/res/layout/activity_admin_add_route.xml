@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -131,7 +130,9 @@
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
                 android:layout_marginTop="5dp"
-                android:inputType="time" />
+                android:inputType="time"
+                android:singleLine="true"
+                android:hint="00:00"/>
 
             <!-- To Time Field -->
             <TextView
@@ -149,7 +150,9 @@
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
                 android:layout_marginTop="5dp"
-                android:inputType="time" />
+                android:inputType="time"
+                android:singleLine="true"
+                android:hint="00:00"/>
 
 
             <!-- Button -->
@@ -190,14 +193,4 @@
 
         </LinearLayout>
     </ScrollView>
-
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:itemIconTint="@android:color/white"
-        app:itemTextColor="@android:color/white"
-        app:menu="@menu/menu_admin" />
 </LinearLayout>

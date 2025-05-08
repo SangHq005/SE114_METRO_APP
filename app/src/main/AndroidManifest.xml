@@ -47,7 +47,7 @@
         <activity android:name=".Activity.LoginActivity"
             android:exported="true" />
         <activity
-            android:name=".Activity.MainActivity"
+            android:name=".Activity.Admin.AdHomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -55,6 +55,22 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activity.Admin.AdUserActivity"
+            android:exported="true" />
+        <activity android:name=".Activity.Admin.AdUserDetails"
+            android:exported="true" />
+        <activity android:name=".Activity.Admin.AdTicketActivity"
+            android:exported="true" />
+        <activity android:name=".Activity.Admin.AdTicketDetails"
+            android:exported="true" />
+        <activity android:name=".Activity.Admin.AddTicketActivity"
+            android:exported="true" />
+        <activity android:name=".Activity.Admin.AdRouteActivity"
+            android:exported="true" />
+        <activity android:name=".Activity.Admin.AdRouteDetails"
+            android:exported="true" />
+        <activity android:name=".Activity.Admin.AddRouteActivity"
+            android:exported="true" />
         <activity
             android:name=".Activity.RegisterActivity"
             android:exported="false" />

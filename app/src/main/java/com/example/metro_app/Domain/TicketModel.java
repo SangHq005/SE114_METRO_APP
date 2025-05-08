@@ -1,17 +1,27 @@
 package com.example.metro_app.Domain;
 
-public class TicketModel {
-    private String Price;
+import java.io.Serializable;
 
-    public TicketModel(String Price) {
-        this.Price = Price;
+public class TicketModel implements Serializable {
+    private String ticketType;
+    private String price;
+    private String expireDate;
+
+    public TicketModel(String ticketType, String price, String expireDate) {
+        this.ticketType = ticketType;
+        this.price = price;
+        this.expireDate = expireDate;
+    }
+
+    public String getTicketType() {
+        return ticketType;
     }
 
     public String getPrice() {
-        return Price;
+        return price;
     }
 
-    public void setPrice(String Price) {
-        this.Price = Price;
+    public String getExpireDate() {
+        return expireDate;
     }
 }

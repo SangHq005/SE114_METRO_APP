@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="route_name_format">%1$s - %2$s</string>
+    <string name="ticket_name_format">%1$s - %2$s</string>
+    <string name="user_name_format">%1$s</string>
+</resources>

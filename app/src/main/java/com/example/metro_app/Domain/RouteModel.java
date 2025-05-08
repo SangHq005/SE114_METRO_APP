@@ -1,6 +1,7 @@
 package com.example.metro_app.Domain;
 
-public class RouteModel {
+import java.io.Serializable;
+public class RouteModel implements Serializable {
     private String fromStation;
     private String toStation;
     private String fromTime;

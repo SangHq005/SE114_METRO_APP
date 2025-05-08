@@ -5,7 +5,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
+import android.content.Intent;
 
 import androidx.appcompat.app.AppCompatActivity;
 
@@ -22,7 +22,6 @@ public class AdHomeActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_home);
 
-        // Spinner chọn thời gian
         spinnerTime = findViewById(R.id.spinner_time);
         ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(this,
                 R.array.time_filters, R.layout.spinner_items);
@@ -30,42 +29,32 @@ public class AdHomeActivity extends AppCompatActivity {
         spinnerTime.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selected = parent.getItemAtPosition(position).toString();
-                Toast.makeText(AdHomeActivity.this, "Đã chọn: " + selected, Toast.LENGTH_SHORT).show();
-                // TODO: Gọi API hoặc xử lý theo thời gian được chọn
             }
 
             @Override
             public void onNothingSelected(AdapterView<?> parent) {
-                // Không chọn gì
             }
         });
 
-        // Bottom Navigation xử lý sự kiện click
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
-            if (id == R.id.nav_ad_route) {
-                Toast.makeText(this, "Route", Toast.LENGTH_SHORT).show();
+            if (id == R.id.nav_ad_home) {
+                return true;
+            } else if (id == R.id.nav_ad_route) {
+                startActivity(new Intent(AdHomeActivity.this, AdRouteActivity.class));
+                overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_ad_wallet) {
-                Toast.makeText(this, "Wallet", Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(AdHomeActivity.this, AdTicketActivity.class));
+                overridePendingTransition(0, 0);
                 return true;
-            } else if (id == R.id.nav_ad_home) {
-                Toast.makeText(this, "Home", Toast.LENGTH_SHORT).show();
+            } else if (id == R.id.nav_ad_userlist) {
+                startActivity(new Intent(AdHomeActivity.this, AdUserActivity.class));
+                overridePendingTransition(0, 0);
                 return true;
             }
-//            else if (id == R.id.nav_ad_history) {
-//                Toast.makeText(this, "History", Toast.LENGTH_SHORT).show();
-//                return true;
-//            } else if (id == R.id.nav_ad_profile) {
-//                Toast.makeText(this, "Profile", Toast.LENGTH_SHORT).show();
-//                return true;
-//            }
-
             return false;
         });
-
     }
 }

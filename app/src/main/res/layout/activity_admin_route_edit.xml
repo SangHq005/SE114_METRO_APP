@@ -131,6 +131,8 @@
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
                 android:layout_marginTop="5dp"
+                android:singleLine="true"
+                android:hint="00:00"
                 android:inputType="time" />
 
             <!-- To Time Field -->
@@ -149,6 +151,8 @@
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
                 android:layout_marginTop="5dp"
+                android:singleLine="true"
+                android:hint="00:00"
                 android:inputType="time" />
 
             <!-- Button -->
@@ -188,14 +192,4 @@
 
         </LinearLayout>
     </ScrollView>
-
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:itemIconTint="@android:color/white"
-        app:itemTextColor="@android:color/white"
-        app:menu="@menu/menu_admin" />
 </LinearLayout>

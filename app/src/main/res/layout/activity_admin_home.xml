@@ -30,21 +30,6 @@
             android:drawableStart="@drawable/search"
             android:drawablePadding="8dp" />
 
-        <!-- Settings and Notification Icons -->
-
-        <ImageButton
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="@drawable/circle_button"
-            android:src="@drawable/setting"
-            android:scaleType="centerInside"
-            android:contentDescription="Setting"
-            android:padding="12dp"
-            android:backgroundTint="#F1F1F1"
-            android:clickable="true"
-            android:focusable="true"
-            android:layout_marginLeft="5dp"/>
-
     </LinearLayout>
 
     <!-- Scrollable Content -->
@@ -127,7 +112,7 @@
                             android:text="Revenue"
                             android:gravity="center_vertical"
                             android:textColor="@android:color/white"
-                            android:textSize="20dp"
+                            android:textSize="18dp"
                             android:textStyle="bold"
                             android:drawablePadding="8dp" />
 
@@ -172,7 +157,7 @@
                             android:text="Ticket"
                             android:gravity="center_vertical"
                             android:textColor="@android:color/white"
-                            android:textSize="20dp"
+                            android:textSize="18dp"
                             android:textStyle="bold"
                             android:drawablePadding="8dp" />
 
@@ -215,7 +200,7 @@
                             android:text="User"
                             android:gravity="center_vertical"
                             android:textColor="@android:color/white"
-                            android:textSize="20dp"
+                            android:textSize="18dp"
                             android:textStyle="bold"
                             android:drawablePadding="8dp" />
 
@@ -260,7 +245,7 @@
                             android:text="Visitor"
                             android:gravity="center_vertical"
                             android:textColor="@android:color/white"
-                            android:textSize="20dp"
+                            android:textSize="18dp"
                             android:textStyle="bold"
                             android:drawablePadding="8dp" />
 
