@@ -3,26 +3,48 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="16dp"
-    android:gravity="center_vertical">
+    android:orientation="vertical"
+    android:padding="16dp">
 
-    <!-- Icon -->
-    <ImageView
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:src="@drawable/ticket"
-        android:contentDescription="Ticket Icon" />
-
-    <!-- Ticket Name -->
-    <TextView
-        android:id="@+id/tv_ticket_name"
-        android:layout_width="0dp"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:layout_marginStart="20dp"
-        android:text="Ticket Name"
-        android:textColor="@color/white"
-        android:textSize="16sp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
 
+        <!-- Icon -->
+        <ImageView
+            android:id="@+id/iv_ticket_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ticket"
+            android:contentDescription="Ticket Icon" />
+
+        <!-- Ticket Name and Price -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="20dp"
+            android:orientation="vertical">
+
+            <!-- Ticket Name -->
+            <TextView
+                android:id="@+id/tv_ticket_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ticket Name"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <!-- Ticket Price -->
+            <TextView
+                android:id="@+id/tv_ticket_price"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0đ"
+                android:textColor="#000000"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </LinearLayout>
 </LinearLayout>
