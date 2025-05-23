@@ -3,12 +3,8 @@ package com.example.metro_app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import android.text.InputType;
 import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -16,7 +12,6 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.metro_app.Activity.Admin.AdHomeActivity;
 import com.example.metro_app.Activity.User.HomeActivity;
-import com.example.metro_app.Activity.User.InfoAcitivity;
 import com.example.metro_app.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -31,7 +26,6 @@ import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.firebase.firestore.auth.User;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -59,8 +53,6 @@ public class LoginActivity extends AppCompatActivity {
 
         Button googleSignInButton = findViewById(R.id.Google);
 
-
-
         googleSignInButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -75,7 +67,6 @@ public class LoginActivity extends AppCompatActivity {
             startActivityForResult(signInIntent, RC_SIGN_IN);
         });
     }
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -114,20 +105,24 @@ public class LoginActivity extends AppCompatActivity {
                                                     startActivity(new Intent(LoginActivity.this, AdHomeActivity.class));
                                                 } else {
                                                     saveUserInfo(user);
-                                                    startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                                                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                                    intent.putExtra("UUID", uid); // Truyền UUID sang HomeActivity
+                                                    startActivity(intent);
                                                 }
                                                 Toast.makeText(LoginActivity.this, "Google Sign-In successful!", Toast.LENGTH_SHORT).show();
                                                 finish();
                                             } else {
                                                 // Nếu lần đầu đăng nhập, tạo user mặc định
                                                 Map<String, Object> data = new HashMap<>();
-                                                data.put("Name",user.getDisplayName());
+                                                data.put("Name", user.getDisplayName());
                                                 data.put("Email", user.getEmail());
                                                 data.put("Role", "User"); // mặc định là user
                                                 db.collection("Account").document(uid).set(data)
                                                         .addOnSuccessListener(aVoid -> {
                                                             saveUserInfo(user);
-                                                            startActivity(new Intent(LoginActivity.this, HomeActivity.class));
+                                                            Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                                            intent.putExtra("UUID", uid); // Truyền UUID sang HomeActivity
+                                                            startActivity(intent);
                                                             finish();
                                                         });
                                             }
@@ -144,7 +139,7 @@ public class LoginActivity extends AppCompatActivity {
         if (user != null) {
             SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("phoneNumber",user.getPhoneNumber());
+            editor.putString("phoneNumber", user.getPhoneNumber());
             editor.putString("name", user.getDisplayName());
             editor.putString("email", user.getEmail());
             editor.putString("photo", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
@@ -152,25 +147,3 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 }
-
-//package com.example.metro_app.Activity;
-//
-//import android.content.Intent;
-//import android.os.Bundle;
-//import android.text.InputType;
-//import android.widget.Button;
-//import android.widget.Toast;
-//import androidx.appcompat.app.AppCompatActivity;
-//
-//import com.example.metro_app.R;
-//
-//public class LoginActivity extends AppCompatActivity {
-//
-//    private Button googleLoginBtn;
-//
-//    @Override
-//    protected void onCreate(Bundle savedInstanceState) {
-//        super.onCreate(savedInstanceState);
-//        setContentView(R.layout.activity_login);
-//    }
-//}

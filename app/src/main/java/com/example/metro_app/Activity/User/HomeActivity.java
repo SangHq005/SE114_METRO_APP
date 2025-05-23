@@ -24,13 +24,23 @@ import java.util.ArrayList;
 public class HomeActivity extends AppCompatActivity {
     ActivityHomeBinding binding;
     MainViewModel viewModel;
+    private String userUUID; // Biến để lưu UUID
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        binding=ActivityHomeBinding.inflate(getLayoutInflater());
+        binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         viewModel = new MainViewModel();
+
+        // Lấy UUID từ Intent
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("UUID")) {
+            userUUID = intent.getStringExtra("UUID");
+            System.out.println("Received UUID: " + userUUID);
+        }
+
         initCategory();
         initNews();
         initPopular();
@@ -40,7 +50,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.progressBarPopular.setVisibility(View.VISIBLE);
 
         // Thiết lập LayoutManager
-        LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.recyclerViewPopular.setLayoutManager(layoutManager);
 
         // Quan sát dữ liệu từ ViewModel
@@ -54,31 +64,32 @@ public class HomeActivity extends AppCompatActivity {
             binding.progressBarPopular.setVisibility(View.GONE);
         });
     }
+
     private void initNews() {
-    binding.progressBarNews.setVisibility(View.VISIBLE);
+        binding.progressBarNews.setVisibility(View.VISIBLE);
 
-    // Thiết lập LayoutManager
-    LinearLayoutManager layoutManager = new LinearLayoutManager(this,LinearLayoutManager.HORIZONTAL,false);
-    binding.recyclerViewNews.setLayoutManager(layoutManager);
+        // Thiết lập LayoutManager
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
+        binding.recyclerViewNews.setLayoutManager(layoutManager);
 
-    // Quan sát dữ liệu từ ViewModel
-    viewModel.loadNews().observe(this, newsModels -> {
-        if (newsModels != null && !newsModels.isEmpty()) {
-            NewsAdapter adapter = new NewsAdapter((ArrayList<NewsModel>) newsModels);
-            binding.recyclerViewNews.setAdapter(adapter);
-        } else {
-            System.out.println("Danh sách tin tức trống");
-        }
-        binding.progressBarNews.setVisibility(View.GONE);
-        binding.newsList.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this,AllNewsActivity.class));
+        // Quan sát dữ liệu từ ViewModel
+        viewModel.loadNews().observe(this, newsModels -> {
+            if (newsModels != null && !newsModels.isEmpty()) {
+                NewsAdapter adapter = new NewsAdapter((ArrayList<NewsModel>) newsModels);
+                binding.recyclerViewNews.setAdapter(adapter);
+            } else {
+                System.out.println("Danh sách tin tức trống");
             }
+            binding.progressBarNews.setVisibility(View.GONE);
+            binding.newsList.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    startActivity(new Intent(HomeActivity.this, AllNewsActivity.class));
+                }
+            });
         });
-    });
+    }
 
-}
     private void initCategory() {
         binding.progressBarCategory.setVisibility(View.VISIBLE);
 
@@ -86,9 +97,7 @@ public class HomeActivity extends AppCompatActivity {
         binding.recyclerViewCategory.setLayoutManager(layoutManager);
 
         viewModel.loadCategory().observe(this, categoryModels -> {
-
             System.out.println("Số lượng category từ Firebase: " + categoryModels.size());
-
 
             ViewGroup.LayoutParams params = binding.recyclerViewCategory.getLayoutParams();
             params.height = ViewGroup.LayoutParams.WRAP_CONTENT;
@@ -98,13 +107,16 @@ public class HomeActivity extends AppCompatActivity {
             binding.recyclerViewCategory.setHasFixedSize(false);
             binding.recyclerViewCategory.setNestedScrollingEnabled(true);
 
-            // Tạo adapter và gán vào RecyclerView
-            CategoryAdapter adapter = new CategoryAdapter(categoryModels);
+            // Tạo adapter với sự kiện click
+            CategoryAdapter adapter = new CategoryAdapter(categoryModels, category -> {
+                if (category.getId() == 0) {
+                    Intent intent = new Intent(HomeActivity.this, MyTicketsActivity.class);
+                    intent.putExtra("UUID", userUUID); // Truyền UUID sang MyTicketsActivity
+                    startActivity(intent);
+                }
+            });
             binding.recyclerViewCategory.setAdapter(adapter);
             binding.progressBarCategory.setVisibility(View.GONE);
         });
-
     }
-
-
 }

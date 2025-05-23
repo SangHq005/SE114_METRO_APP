@@ -10,7 +10,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.metro_app.R;
-import com.example.metro_app.Activity.User.MyTicketsActivity;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.vnpay.authentication.VNP_AuthenticationActivity;
 import com.vnpay.authentication.VNP_SdkCompletedCallback;
@@ -34,8 +34,9 @@ public class OrderInfoActivity extends AppCompatActivity {
     private Button thanhToanBtn;
     private long ticketPrice;
     private String lastOrderId;
-    private String lastTicketName;
-    private boolean isPaymentProcessed = false; // Cờ để ngăn xử lý Intent lặp lại
+    private String lastTicketTypeId; // Thay lastTicketName bằng lastTicketTypeId
+    private String userUUID;
+    private boolean isPaymentProcessed = false;
     private static final String VNPAY_TMN_CODE = "Y5NZW2G4";
     private static final String VNPAY_HASH_SECRET = "0JJIFBP7MHJSFP2FM7GFSHHANH8Q7FUN";
     private static final String VNPAY_SCHEME = "metroapp";
@@ -49,7 +50,20 @@ public class OrderInfoActivity extends AppCompatActivity {
         decimalFormat = new DecimalFormat("#,###");
         decimalFormat.setGroupingSize(3);
 
-        String ticketName = getIntent().getStringExtra("ticket_name");
+        // Lấy UUID và ticket_type_id từ Intent
+        Intent intent = getIntent();
+        if (intent != null) {
+            if (intent.hasExtra("UUID")) {
+                userUUID = intent.getStringExtra("UUID");
+                Log.d("OrderInfo", "Received UUID in OrderInfoActivity: " + userUUID);
+            }
+            if (intent.hasExtra("ticket_type_id")) {
+                lastTicketTypeId = intent.getStringExtra("ticket_type_id");
+                Log.d("OrderInfo", "Received ticket_type_id in OrderInfoActivity: " + lastTicketTypeId);
+            }
+        }
+
+        String ticketName = getIntent().getStringExtra("ticket_name"); // Dùng để hiển thị
         String ticketPriceStr = getIntent().getStringExtra("ticket_price");
         String ticketExpiration = getIntent().getStringExtra("ticket_expiration");
         String ticketNote = getIntent().getStringExtra("ticket_note");
@@ -97,7 +111,7 @@ public class OrderInfoActivity extends AppCompatActivity {
             String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
             this.lastOrderId = orderId;
-            this.lastTicketName = ticketName;
+            // Không cần lưu ticketName vào biến instance nữa, chỉ dùng để hiển thị
             this.isPaymentProcessed = false; // Reset cờ khi bắt đầu thanh toán
 
             Map<String, String> vnpParams = new HashMap<>();
@@ -151,7 +165,7 @@ public class OrderInfoActivity extends AppCompatActivity {
                 @Override
                 public void sdkAction(String action) {
                     Log.d("VNPay", "Callback action received: " + action);
-                    handleVNPayResult(action, lastOrderId, lastTicketName);
+                    handleVNPayResult(action, lastOrderId);
                 }
             });
 
@@ -163,7 +177,7 @@ public class OrderInfoActivity extends AppCompatActivity {
         }
     }
 
-    private void handleVNPayResult(String action, String orderId, String ticketName) {
+    private void handleVNPayResult(String action, String orderId) {
         Log.d("VNPay", "Handling action: " + action);
         if (isPaymentProcessed) {
             Log.d("VNPay", "Payment already processed, ignoring callback");
@@ -172,12 +186,13 @@ public class OrderInfoActivity extends AppCompatActivity {
         if (action.equals("SuccessBackAction")) {
             isPaymentProcessed = true;
             String transactionNo = UUID.randomUUID().toString().substring(0, 10);
-            saveTransactionToFirestore(orderId, transactionNo, ticketName, ticketPrice);
             Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
+            saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
             Intent successIntent = new Intent(this, HomeActivity.class);
-            successIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+            successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(successIntent);
             finish();
+            Log.d("OrderInfo", "Navigated to HomeActivity after payment success");
         } else if (action.equals("FaildBackAction")) {
             Toast.makeText(this, "Thanh toán thất bại", Toast.LENGTH_LONG).show();
             finish();
@@ -191,42 +206,54 @@ public class OrderInfoActivity extends AppCompatActivity {
         }
     }
 
-    private void saveTransactionToFirestore(String orderId, String transactionNo, String ticketName, long amount) {
+    private void saveTransactionToFirestore(String orderId, String transactionNo, String ticketTypeId, long amount) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        Map<String, Object> transaction = new HashMap<>();
-        transaction.put("orderId", orderId);
-        transaction.put("transactionNo", transactionNo);
-        transaction.put("ticketName", ticketName);
-        transaction.put("amount", amount);
-        transaction.put("status", "SUCCESS");
-        transaction.put("timestamp", new Date());
+        // Lấy và tăng ticketCode
+        DocumentReference counterRef = db.collection("Metadata").document("ticketCounter");
+        db.runTransaction(transaction -> {
+            // Lấy giá trị ticketCode hiện tại
+            Long currentCode = transaction.get(counterRef).getLong("lastTicketCode");
+            if (currentCode == null) {
+                currentCode = 100000L;
+                Map<String, Object> initialCounter = new HashMap<>();
+                initialCounter.put("lastTicketCode", currentCode);
+                transaction.set(counterRef, initialCounter);
+            }
 
-        db.collection("Transactions")
-                .document(orderId)
-                .set(transaction)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("Firestore", "Lưu giao dịch thành công: " + orderId);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Lỗi lưu giao dịch: ", e);
-                    Toast.makeText(this, "Lỗi lưu giao dịch: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+            String ticketCode = String.valueOf(currentCode + 1);
 
-        Map<String, Object> ticket = new HashMap<>();
-        ticket.put("ticketName", ticketName != null ? ticketName : "Không có thông tin");
-        ticket.put("timestamp", new Date());
+            Map<String, Object> counterUpdate = new HashMap<>();
+            counterUpdate.put("lastTicketCode", currentCode + 1);
+            transaction.set(counterRef, counterUpdate);
 
-        db.collection("Ticket")
-                .document(orderId)
-                .set(ticket)
-                .addOnSuccessListener(aVoid -> {
-                    Log.d("Firestore", "Lưu vé thành công: " + orderId);
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("Firestore", "Lỗi lưu vé: ", e);
-                    Toast.makeText(this, "Lỗi lưu vé: " + e.getMessage(), Toast.LENGTH_LONG).show();
-                });
+            // Lưu giao dịch
+            Map<String, Object> transactionData = new HashMap<>();
+            transactionData.put("orderId", orderId);
+            transactionData.put("transactionNo", transactionNo);
+            transactionData.put("ticketTypeId", ticketTypeId); // Lưu ID của ticketType
+            transactionData.put("amount", amount);
+            transactionData.put("status", "SUCCESS");
+            transactionData.put("timestamp", new Date());
+
+            // Lưu vé
+            Map<String, Object> ticket = new HashMap<>();
+            ticket.put("ticketTypeId", ticketTypeId != null ? ticketTypeId : "unknown"); // Lưu ID của ticketType
+            ticket.put("ticketCode", ticketCode);
+            ticket.put("timestamp", new Date());
+            ticket.put("userId", userUUID != null ? userUUID : "unknown");
+
+            // Thực hiện ghi dữ liệu
+            transaction.set(db.collection("Transactions").document(orderId), transactionData);
+            transaction.set(db.collection("Ticket").document(orderId), ticket);
+
+            return ticketCode;
+        }).addOnSuccessListener(ticketCode -> {
+            Log.d("Firestore", "Lưu giao dịch và vé thành công: " + orderId + ", ticketCode: " + ticketCode);
+        }).addOnFailureListener(e -> {
+            Log.e("Firestore", "Lỗi lưu giao dịch/vé: ", e);
+            Toast.makeText(this, "Lỗi lưu dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
+        });
     }
 
     private String HmacSHA512(String data, String key) throws Exception {
@@ -264,12 +291,13 @@ public class OrderInfoActivity extends AppCompatActivity {
                 if (responseCode != null && transactionNo != null && orderId != null) {
                     isPaymentProcessed = true;
                     if ("00".equals(responseCode)) {
-                        saveTransactionToFirestore(orderId, transactionNo, lastTicketName, ticketPrice);
                         Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
-                        Intent successIntent = new Intent(this, MyTicketsActivity.class);
-                        successIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                        saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
+                        Intent successIntent = new Intent(this, HomeActivity.class);
+                        successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(successIntent);
                         finish();
+                        Log.d("OrderInfo", "Navigated to MyTicketsActivity after payment success");
                     } else {
                         Toast.makeText(this, "Thanh toán thất bại, mã lỗi: " + responseCode, Toast.LENGTH_LONG).show();
                         Log.e("VNPay", "Payment failed with response code: " + responseCode);
@@ -288,6 +316,16 @@ public class OrderInfoActivity extends AppCompatActivity {
         } else {
             Log.e("VNPay", "Intent is null");
             Toast.makeText(this, "Không nhận được kết quả thanh toán", Toast.LENGTH_LONG).show();
+            finish();
+        }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("OrderInfo", "onResume called");
+        if (isPaymentProcessed) {
+            Log.d("OrderInfo", "Payment processed, finishing OrderInfoActivity");
             finish();
         }
     }

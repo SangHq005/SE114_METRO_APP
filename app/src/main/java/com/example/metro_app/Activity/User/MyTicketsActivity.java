@@ -32,6 +32,7 @@ public class MyTicketsActivity extends AppCompatActivity {
     private List<TicketType> noiBatTickets, hssvTickets;
     private FirebaseFirestore db;
     private DecimalFormat decimalFormat;
+    private String userUUID; // Biến để lưu UUID
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,6 +42,13 @@ public class MyTicketsActivity extends AppCompatActivity {
 
         // Kiểm tra Google Play Services
         checkGooglePlayServices();
+
+        // Lấy UUID từ Intent
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("UUID")) {
+            userUUID = intent.getStringExtra("UUID");
+            System.out.println("Received UUID in MyTicketsActivity: " + userUUID);
+        }
 
         // Khởi tạo Firestore
         db = FirebaseFirestore.getInstance();
@@ -128,10 +136,12 @@ public class MyTicketsActivity extends AppCompatActivity {
                 }
 
                 Intent intent = new Intent(MyTicketsActivity.this, ChooseTicketActivity.class);
-                intent.putExtra("ticket_name", name != null ? name : "Không có thông tin");
+                intent.putExtra("ticket_type_id", ticketId); // Truyền ID của ticketType
+                intent.putExtra("ticket_name", name != null ? name : "Không có thông tin"); // Truyền thêm name để hiển thị
                 intent.putExtra("ticket_expiration", expiration != null ? expiration : "Không có thông tin");
                 intent.putExtra("ticket_note", note != null ? note : "Không có thông tin");
                 intent.putExtra("ticket_price", price);
+                intent.putExtra("UUID", userUUID);
                 startActivity(intent);
             } else {
                 Toast.makeText(this, "Lỗi tải dữ liệu vé: " + (task.getException() != null ? task.getException().getMessage() : "Không xác định"), Toast.LENGTH_LONG).show();
