@@ -2,6 +2,7 @@ package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -32,7 +33,7 @@ public class MyTicketsActivity extends AppCompatActivity {
     private List<TicketType> noiBatTickets, hssvTickets;
     private FirebaseFirestore db;
     private DecimalFormat decimalFormat;
-    private String userUUID; // Biến để lưu UUID
+    private String userUUID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -40,24 +41,19 @@ public class MyTicketsActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_my_tickets);
 
-        // Kiểm tra Google Play Services
         checkGooglePlayServices();
 
-        // Lấy UUID từ Intent
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("UUID")) {
             userUUID = intent.getStringExtra("UUID");
             System.out.println("Received UUID in MyTicketsActivity: " + userUUID);
         }
 
-        // Khởi tạo Firestore
         db = FirebaseFirestore.getInstance();
 
-        // Khởi tạo DecimalFormat để định dạng VND
         decimalFormat = new DecimalFormat("#,###");
         decimalFormat.setGroupingSize(3);
 
-        // Khởi tạo views
         try {
             recyclerViewTickets = findViewById(R.id.recyclerViewTickets);
             recyclerViewHSSV = findViewById(R.id.recyclerViewHSSV);
@@ -68,15 +64,12 @@ public class MyTicketsActivity extends AppCompatActivity {
             return;
         }
 
-        // Thiết lập RecyclerView
         recyclerViewTickets.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewHSSV.setLayoutManager(new LinearLayoutManager(this));
 
-        // Khởi tạo danh sách vé
         noiBatTickets = new ArrayList<>();
         hssvTickets = new ArrayList<>();
 
-        // Khởi tạo adapter với sự kiện click
         noiBatAdapter = new TicketTypeAdapter(noiBatTickets, ticket -> {
             fetchTicketDetailsAndStartActivity(ticket.getId());
         });
@@ -87,16 +80,13 @@ public class MyTicketsActivity extends AppCompatActivity {
         recyclerViewTickets.setAdapter(noiBatAdapter);
         recyclerViewHSSV.setAdapter(hssvAdapter);
 
-        // Xử lý nút Back
         ImageView backBtn = findViewById(R.id.backBtn);
         if (backBtn != null) {
             backBtn.setOnClickListener(v -> finish());
         }
 
-        // Tải dữ liệu từ Firestore
         loadTickets();
 
-        // Thiết lập BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         if (bottomNavigationView != null) {
             bottomNavigationView.setOnNavigationItemSelectedListener(item -> true);
@@ -112,10 +102,30 @@ public class MyTicketsActivity extends AppCompatActivity {
         db.collection("TicketType").document(ticketId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 String name = task.getResult().getString("Name");
-                String expiration = task.getResult().getString("Expiration");
-                String note = task.getResult().getString("Note");
+                Object expirationObj = task.getResult().get("Expiration");
+                Object autoActiveObj = task.getResult().get("AutoActive");
 
-                // Truy xuất Price (có thể là kiểu Long/Integer)
+                long expiration = 0;
+                long autoActive = 0;
+
+                if (expirationObj instanceof Number) {
+                    expiration = ((Number) expirationObj).longValue();
+                } else {
+                    Log.e("Firestore", "Expiration không phải kiểu Number cho ticketId: " + ticketId);
+                    Toast.makeText(this, "Lỗi: Expiration không hợp lệ trong TicketType (ID: " + ticketId + ")", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                if (autoActiveObj instanceof Number) {
+                    autoActive = ((Number) autoActiveObj).longValue();
+                } else {
+                    Log.e("Firestore", "AutoActive không phải kiểu Number cho ticketId: " + ticketId);
+                    Toast.makeText(this, "Lỗi: AutoActive không hợp lệ trong TicketType (ID: " + ticketId + ")", Toast.LENGTH_LONG).show();
+                    return;
+                }
+
+                Log.d("Firestore", "Fetched Expiration: " + expiration + ", AutoActive: " + autoActive + " for ticketId: " + ticketId);
+
                 String price = "0 VND";
                 Object priceObj = task.getResult().get("Price");
                 if (priceObj != null) {
@@ -126,7 +136,6 @@ public class MyTicketsActivity extends AppCompatActivity {
                                 long priceValue = Long.parseLong(price);
                                 price = decimalFormat.format(priceValue) + " VND";
                             } catch (NumberFormatException e) {
-                                // Giá không phải số, giữ nguyên
                             }
                         }
                     } else if (priceObj instanceof Long || priceObj instanceof Integer) {
@@ -136,10 +145,10 @@ public class MyTicketsActivity extends AppCompatActivity {
                 }
 
                 Intent intent = new Intent(MyTicketsActivity.this, ChooseTicketActivity.class);
-                intent.putExtra("ticket_type_id", ticketId); // Truyền ID của ticketType
-                intent.putExtra("ticket_name", name != null ? name : "Không có thông tin"); // Truyền thêm name để hiển thị
-                intent.putExtra("ticket_expiration", expiration != null ? expiration : "Không có thông tin");
-                intent.putExtra("ticket_note", note != null ? note : "Không có thông tin");
+                intent.putExtra("ticket_type_id", ticketId);
+                intent.putExtra("ticket_name", name != null ? name : "Không có thông tin");
+                intent.putExtra("ticket_expiration", String.valueOf(expiration));
+                intent.putExtra("ticket_auto_active", String.valueOf(autoActive));
                 intent.putExtra("ticket_price", price);
                 intent.putExtra("UUID", userUUID);
                 startActivity(intent);
@@ -186,7 +195,6 @@ public class MyTicketsActivity extends AppCompatActivity {
                                             long priceValue = Long.parseLong(price);
                                             price = decimalFormat.format(priceValue) + " VND";
                                         } catch (NumberFormatException e) {
-                                            // Giá không phải số, giữ nguyên
                                         }
                                     }
                                 } else if (priceObj instanceof Long || priceObj instanceof Integer) {

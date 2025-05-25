@@ -20,6 +20,7 @@ import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
@@ -34,8 +35,10 @@ public class OrderInfoActivity extends AppCompatActivity {
     private Button thanhToanBtn;
     private long ticketPrice;
     private String lastOrderId;
-    private String lastTicketTypeId; // Thay lastTicketName bằng lastTicketTypeId
+    private String lastTicketTypeId;
     private String userUUID;
+    private String ticketExpiration; // Lưu trữ giá trị ticket_expiration
+    private String ticketAutoActive; // Lưu trữ giá trị ticket_auto_active
     private boolean isPaymentProcessed = false;
     private static final String VNPAY_TMN_CODE = "Y5NZW2G4";
     private static final String VNPAY_HASH_SECRET = "0JJIFBP7MHJSFP2FM7GFSHHANH8Q7FUN";
@@ -50,7 +53,6 @@ public class OrderInfoActivity extends AppCompatActivity {
         decimalFormat = new DecimalFormat("#,###");
         decimalFormat.setGroupingSize(3);
 
-        // Lấy UUID và ticket_type_id từ Intent
         Intent intent = getIntent();
         if (intent != null) {
             if (intent.hasExtra("UUID")) {
@@ -63,10 +65,14 @@ public class OrderInfoActivity extends AppCompatActivity {
             }
         }
 
-        String ticketName = getIntent().getStringExtra("ticket_name"); // Dùng để hiển thị
+        String ticketName = getIntent().getStringExtra("ticket_name");
         String ticketPriceStr = getIntent().getStringExtra("ticket_price");
-        String ticketExpiration = getIntent().getStringExtra("ticket_expiration");
-        String ticketNote = getIntent().getStringExtra("ticket_note");
+        ticketExpiration = getIntent().getStringExtra("ticket_expiration");
+        ticketAutoActive = getIntent().getStringExtra("ticket_auto_active");
+
+        // Log giá trị nhận được
+        Log.d("OrderInfo", "Received ticket_expiration in onCreate: " + ticketExpiration);
+        Log.d("OrderInfo", "Received ticket_auto_active in onCreate: " + ticketAutoActive);
 
         ticketPrice = 0;
         if (ticketPriceStr != null) {
@@ -99,8 +105,8 @@ public class OrderInfoActivity extends AppCompatActivity {
         tongThanhTienTxt.setText(totalFormatted);
 
         loaiVeTxt.setText(ticketName != null ? ticketName : "Không có thông tin");
-        hsdTxt.setText(ticketExpiration != null ? ticketExpiration : "Không có thông tin");
-        luuYTxt.setText(ticketNote != null ? ticketNote : "Không có thông tin");
+        hsdTxt.setText("HSD: " + (ticketExpiration != null ? ticketExpiration : "0") + " ngày kể từ ngày kích hoạt");
+        luuYTxt.setText("Tự động kích hoạt sau " + (ticketAutoActive != null ? ticketAutoActive : "0") + " ngày kể từ ngày mua");
 
         thanhToanBtn.setOnClickListener(v -> initiateVNPayPayment(ticketPrice, ticketName));
     }
@@ -111,8 +117,7 @@ public class OrderInfoActivity extends AppCompatActivity {
             String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
             this.lastOrderId = orderId;
-            // Không cần lưu ticketName vào biến instance nữa, chỉ dùng để hiển thị
-            this.isPaymentProcessed = false; // Reset cờ khi bắt đầu thanh toán
+            this.isPaymentProcessed = false;
 
             Map<String, String> vnpParams = new HashMap<>();
             vnpParams.put("vnp_Version", "2.1.0");
@@ -209,10 +214,49 @@ public class OrderInfoActivity extends AppCompatActivity {
     private void saveTransactionToFirestore(String orderId, String transactionNo, String ticketTypeId, long amount) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Lấy và tăng ticketCode
+        // Sử dụng biến instance thay vì getIntent()
+        int expirationDays = 0;
+        int autoActiveDays = 0;
+        try {
+            if (ticketExpiration == null || ticketExpiration.equals("null")) {
+                throw new IllegalArgumentException("Expiration không được null (ticket_type_id: " + ticketTypeId + ")");
+            }
+            if (ticketAutoActive == null || ticketAutoActive.equals("null")) {
+                throw new IllegalArgumentException("AutoActive không được null (ticket_type_id: " + ticketTypeId + ")");
+            }
+            expirationDays = Integer.parseInt(ticketExpiration);
+            autoActiveDays = Integer.parseInt(ticketAutoActive);
+            Log.d("Firestore", "expirationDays: " + expirationDays + ", autoActiveDays: " + autoActiveDays);
+
+            if (expirationDays <= 0 || autoActiveDays < 0) {
+                throw new IllegalArgumentException("ExpirationDays phải lớn hơn 0 và AutoActiveDays không được âm (ticket_type_id: " + ticketTypeId + ")");
+            }
+        } catch (NumberFormatException e) {
+            Log.e("Firestore", "Lỗi định dạng expiration hoặc autoActive: ticket_expiration=" + ticketExpiration + ", ticket_auto_active=" + ticketAutoActive, e);
+            Toast.makeText(this, "Lỗi: Dữ liệu Expiration hoặc AutoActive không hợp lệ", Toast.LENGTH_LONG).show();
+            return;
+        } catch (IllegalArgumentException e) {
+            Log.e("Firestore", "Lỗi giá trị: " + e.getMessage());
+            Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Date currentTimestamp = new Date();
+        Log.d("Firestore", "Current Timestamp: " + currentTimestamp);
+
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(currentTimestamp);
+        calendar.add(Calendar.DAY_OF_MONTH, autoActiveDays);
+        Date autoActiveDate = calendar.getTime();
+        Log.d("Firestore", "AutoActiveDate: " + autoActiveDate);
+
+        calendar.setTime(autoActiveDate);
+        calendar.add(Calendar.DAY_OF_MONTH, expirationDays);
+        Date expirationDate = calendar.getTime();
+        Log.d("Firestore", "ExpirationDate: " + expirationDate);
+
         DocumentReference counterRef = db.collection("Metadata").document("ticketCounter");
         db.runTransaction(transaction -> {
-            // Lấy giá trị ticketCode hiện tại
             Long currentCode = transaction.get(counterRef).getLong("lastTicketCode");
             if (currentCode == null) {
                 currentCode = 100000L;
@@ -227,23 +271,23 @@ public class OrderInfoActivity extends AppCompatActivity {
             counterUpdate.put("lastTicketCode", currentCode + 1);
             transaction.set(counterRef, counterUpdate);
 
-            // Lưu giao dịch
             Map<String, Object> transactionData = new HashMap<>();
             transactionData.put("orderId", orderId);
             transactionData.put("transactionNo", transactionNo);
-            transactionData.put("ticketTypeId", ticketTypeId); // Lưu ID của ticketType
+            transactionData.put("ticketTypeId", ticketTypeId);
             transactionData.put("amount", amount);
             transactionData.put("status", "SUCCESS");
-            transactionData.put("timestamp", new Date());
+            transactionData.put("timestamp", currentTimestamp);
 
-            // Lưu vé
             Map<String, Object> ticket = new HashMap<>();
-            ticket.put("ticketTypeId", ticketTypeId != null ? ticketTypeId : "unknown"); // Lưu ID của ticketType
+            ticket.put("ticketTypeId", ticketTypeId != null ? ticketTypeId : "unknown");
             ticket.put("ticketCode", ticketCode);
-            ticket.put("timestamp", new Date());
+            ticket.put("timestamp", currentTimestamp);
             ticket.put("userId", userUUID != null ? userUUID : "unknown");
+            ticket.put("Status", "Chưa kích hoạt");
+            ticket.put("AutoActiveDate", autoActiveDate);
+            ticket.put("ExpirationDate", expirationDate);
 
-            // Thực hiện ghi dữ liệu
             transaction.set(db.collection("Transactions").document(orderId), transactionData);
             transaction.set(db.collection("Ticket").document(orderId), ticket);
 
