@@ -158,10 +158,10 @@ public class AdTicketActivity extends AppCompatActivity {
 
         // Sample data
         ticketList = new ArrayList<>();
-        ticketList.add(new TicketModel("Vé lượt đi", "6,000 VND", "05/05/2025"));
-        ticketList.add(new TicketModel("Vé 1 ngày", "15,000 VND", "06/05/2025"));
-        ticketList.add(new TicketModel("Vé 3 ngày", "40,000 VND", "07/05/2025"));
-        ticketList.add(new TicketModel("Vé 30 ngày", "100,000 VND", "08/05/2025"));
+        ticketList.add(new TicketModel("Vé lượt đi", "6,000 VND", "05/05/2025", "Chưa kích hoạt"));
+        ticketList.add(new TicketModel("Vé 1 ngày", "15,000 VND", "06/05/2025","Chưa kích hoạt"));
+        ticketList.add(new TicketModel("Vé 3 ngày", "40,000 VND", "07/05/2025","Chưa kích hoạt"));
+        ticketList.add(new TicketModel("Vé 30 ngày", "100,000 VND", "08/05/2025","Chưa kích hoạt"));
 
         // Initialize filtered list
         filteredTicketList = new ArrayList<>(ticketList);

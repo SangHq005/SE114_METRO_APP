@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <!-- Icon -->
+        <ImageView
+            android:id="@+id/iv_ticket_icon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:src="@drawable/ticket"
+            android:contentDescription="Ticket Icon" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="20dp"
+            android:orientation="vertical">
+
+            <!-- Ticket Name -->
+            <TextView
+                android:id="@+id/tv_ticket_name"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Ticket Name"
+                android:textColor="@color/black"
+                android:textSize="16sp" />
+
+            <!-- Ticket AutoActiveDate -->
+            <TextView
+                android:id="@+id/tv_ticket_auto_active_date"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Tự động kích hoạt vào: "
+                android:textColor="#000000"
+                android:textSize="14sp" />
+
+            <FrameLayout
+                android:id="@+id/statusContainer"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp">
+
+                <TextView
+                    android:id="@+id/tvStatus"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_transaction_success"
+                    android:text="Thành công"
+                    android:textAlignment="center"
+                    android:textColor="@color/success_text"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+            </FrameLayout>
+        </LinearLayout>
+    </LinearLayout>
+</LinearLayout>

@@ -92,7 +92,7 @@ public class AddTicketActivity extends AppCompatActivity {
                 }
 
                 // All checks passed, save the ticket
-                TicketModel newTicket = new TicketModel(ticketType, price, expireDate);
+                TicketModel newTicket = new TicketModel(ticketType, price, expireDate, "Chưa kích hoạt");
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("ticket", newTicket);
                 setResult(RESULT_OK, resultIntent);

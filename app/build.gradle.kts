@@ -82,6 +82,10 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation(files("libs/merchant-1.0.25.aar"))
 
+    //QR
+    implementation ("com.google.zxing:core:3.5.2")
+    implementation ("com.google.zxing:android-integration:3.3.0")
+
     implementation(libs.appcompat) // androidx.appcompat
     implementation(libs.activity) // androidx.activity
     implementation(libs.constraintlayout) // androidx.constraintlayout

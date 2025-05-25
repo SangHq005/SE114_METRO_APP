@@ -95,6 +95,18 @@
             android:name=".Activity.User.InfoAcitivity"
             android:exported="false">
         </activity>
+        <activity
+            android:name=".Activity.User.CreateQRActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".Activity.User.ExpireActivity"
+            android:exported="true">
+        </activity>
+        <activity
+            android:name=".Activity.User.ChangeQRActivity"
+            android:exported="true">
+        </activity>
         <uses-library android:name="org.osmdroid" android:required="false"/>
     </application>
 

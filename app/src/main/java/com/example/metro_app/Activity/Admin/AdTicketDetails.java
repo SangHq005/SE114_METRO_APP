@@ -102,7 +102,7 @@ public class AdTicketDetails extends AppCompatActivity {
                 }
 
                 // All checks passed, save the ticket
-                TicketModel updatedTicket = new TicketModel(ticketType, price, expireDate);
+                TicketModel updatedTicket = new TicketModel(ticketType, price, expireDate, "chưa kích hoạt");
                 Intent resultIntent = new Intent();
                 resultIntent.putExtra("ticket", updatedTicket);
                 resultIntent.putExtra("position", position);

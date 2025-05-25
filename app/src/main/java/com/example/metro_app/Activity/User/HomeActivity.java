@@ -12,7 +12,6 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 
 import com.example.metro_app.Adapter.CategoryAdapter;
 import com.example.metro_app.Adapter.NewsAdapter;
-import com.example.metro_app.Adapter.AllNewsAdapter;
 import com.example.metro_app.Adapter.PopularAdapter;
 import com.example.metro_app.Domain.NewsModel;
 import com.example.metro_app.Domain.PopularModel;
@@ -109,9 +108,19 @@ public class HomeActivity extends AppCompatActivity {
 
             // Tạo adapter với sự kiện click
             CategoryAdapter adapter = new CategoryAdapter(categoryModels, category -> {
-                if (category.getId() == 0) {
+                if ("Mua vé".equals(category.getName())) {
                     Intent intent = new Intent(HomeActivity.this, MyTicketsActivity.class);
-                    intent.putExtra("UUID", userUUID); // Truyền UUID sang MyTicketsActivity
+                    intent.putExtra("UUID", userUUID);
+                    startActivity(intent);
+                }
+                if ("Vé của tôi".equals(category.getName())) {
+                    Intent intent = new Intent(HomeActivity.this, YourTicketsActivity.class);
+                    intent.putExtra("UUID", userUUID);
+                    startActivity(intent);
+                }
+                if ("Đổi mã lấy vé".equals(category.getName())) {
+                    Intent intent = new Intent(HomeActivity.this, ChangeQRActivity.class);
+                    intent.putExtra("userId", userUUID); // Truyền userId
                     startActivity(intent);
                 }
             });
