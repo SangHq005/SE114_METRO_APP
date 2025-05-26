@@ -2,7 +2,9 @@ package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -32,6 +34,7 @@ public class ExpireActivity extends AppCompatActivity {
     private List<TicketModel> ticketList;
     private FirebaseFirestore db;
     private String userUUID;
+    private ImageView homeImgBtn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +64,7 @@ public class ExpireActivity extends AppCompatActivity {
 
         ticketAdapter = new TicketAdapter(ticketList, item -> {}, userUUID);
         recyclerViewTickets.setAdapter(ticketAdapter);
+        homeImgBtn = findViewById(R.id.homeImgBtn);
 
         // Ẩn các nút không cần thiết
         findViewById(R.id.buttonToggleGroup).setVisibility(View.GONE);
@@ -71,6 +75,12 @@ public class ExpireActivity extends AppCompatActivity {
         hetHanTv.setText("Vé Hết Hạn");
 
         loadExpiredTickets();
+        homeImgBtn.setOnClickListener(v -> {
+            Intent homeIntent = new Intent(ExpireActivity.this, HomeActivity.class);
+            homeIntent.putExtra("UUID", userUUID);
+            startActivity(homeIntent);
+            finish();
+            });
     }
 
     private void loadExpiredTickets() {

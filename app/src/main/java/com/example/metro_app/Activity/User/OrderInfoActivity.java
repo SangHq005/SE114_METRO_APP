@@ -5,10 +5,13 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.metro_app.Domain.PaymentMethodDialog;
 import com.example.metro_app.R;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -33,13 +36,17 @@ public class OrderInfoActivity extends AppCompatActivity {
 
     private DecimalFormat decimalFormat;
     private Button thanhToanBtn;
+    private LinearLayout paymentMethodCard;
+    private TextView paymentMethodTxt;
+    private ImageView backBtn;
     private long ticketPrice;
     private String lastOrderId;
     private String lastTicketTypeId;
     private String userUUID;
-    private String ticketExpiration; // Lưu trữ giá trị ticket_expiration
-    private String ticketAutoActive; // Lưu trữ giá trị ticket_auto_active
+    private String ticketExpiration;
+    private String ticketAutoActive;
     private boolean isPaymentProcessed = false;
+    private String selectedPaymentMethod = null;
     private static final String VNPAY_TMN_CODE = "Y5NZW2G4";
     private static final String VNPAY_HASH_SECRET = "0JJIFBP7MHJSFP2FM7GFSHHANH8Q7FUN";
     private static final String VNPAY_SCHEME = "metroapp";
@@ -70,7 +77,6 @@ public class OrderInfoActivity extends AppCompatActivity {
         ticketExpiration = getIntent().getStringExtra("ticket_expiration");
         ticketAutoActive = getIntent().getStringExtra("ticket_auto_active");
 
-        // Log giá trị nhận được
         Log.d("OrderInfo", "Received ticket_expiration in onCreate: " + ticketExpiration);
         Log.d("OrderInfo", "Received ticket_auto_active in onCreate: " + ticketAutoActive);
 
@@ -83,6 +89,7 @@ public class OrderInfoActivity extends AppCompatActivity {
             }
         }
 
+        // Ánh xạ view
         TextView sanphamTxt = findViewById(R.id.sanphamTxt);
         TextView donGiaTxt = findViewById(R.id.donGiaTxt);
         TextView soLuongTxt = findViewById(R.id.soLuongTxt);
@@ -93,7 +100,11 @@ public class OrderInfoActivity extends AppCompatActivity {
         TextView hsdTxt = findViewById(R.id.hsdTxt);
         TextView luuYTxt = findViewById(R.id.luuYTxt);
         thanhToanBtn = findViewById(R.id.thanhToanBtn);
+        paymentMethodCard = findViewById(R.id.paymentMethodCard);
+        paymentMethodTxt = findViewById(R.id.paymentMethodTxt);
+        backBtn = findViewById(R.id.backBtn);
 
+        // Cập nhật giao diện
         sanphamTxt.setText(ticketName != null ? ticketName : "Không có thông tin");
         donGiaTxt.setText(ticketPriceStr != null ? ticketPriceStr : "0 VND");
         int quantity = 1;
@@ -108,7 +119,33 @@ public class OrderInfoActivity extends AppCompatActivity {
         hsdTxt.setText("HSD: " + (ticketExpiration != null ? ticketExpiration : "0") + " ngày kể từ ngày kích hoạt");
         luuYTxt.setText("Tự động kích hoạt sau " + (ticketAutoActive != null ? ticketAutoActive : "0") + " ngày kể từ ngày mua");
 
-        thanhToanBtn.setOnClickListener(v -> initiateVNPayPayment(ticketPrice, ticketName));
+        // Sự kiện nhấn vào paymentMethodCard để mở PaymentMethodDialog
+        paymentMethodCard.setOnClickListener(v -> {
+            PaymentMethodDialog dialog = new PaymentMethodDialog(OrderInfoActivity.this);
+            dialog.setPaymentMethodListener(method -> {
+                selectedPaymentMethod = method;
+                paymentMethodTxt.setText(method);
+                Toast.makeText(OrderInfoActivity.this, "Đã chọn phương thức: " + method, Toast.LENGTH_SHORT).show();
+            });
+            dialog.show(getSupportFragmentManager(), "PaymentMethodDialog");
+        });
+
+        // Sự kiện nhấn nút Thanh toán
+        thanhToanBtn.setOnClickListener(v -> {
+            if (selectedPaymentMethod == null || !selectedPaymentMethod.equals("VN PAY")) {
+                Toast.makeText(OrderInfoActivity.this, "Vui lòng chọn phương thức thanh toán VN PAY", Toast.LENGTH_SHORT).show();
+                return;
+            }
+            initiateVNPayPayment(ticketPrice, ticketName);
+        });
+
+        // Sự kiện nhấn nút Back
+        backBtn.setOnClickListener(v -> {
+            Intent backIntent = new Intent(OrderInfoActivity.this, MyTicketsActivity.class);
+            backIntent.putExtra("UUID", userUUID);
+            startActivity(backIntent);
+            finish();
+        });
     }
 
     private void initiateVNPayPayment(long amount, String ticketName) {
@@ -193,11 +230,12 @@ public class OrderInfoActivity extends AppCompatActivity {
             String transactionNo = UUID.randomUUID().toString().substring(0, 10);
             Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
             saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
-            Intent successIntent = new Intent(this, HomeActivity.class);
+            Intent successIntent = new Intent(this, YourTicketsActivity.class); // Chuyển đến YourTicketsActivity
+            successIntent.putExtra("UUID", userUUID);
             successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(successIntent);
             finish();
-            Log.d("OrderInfo", "Navigated to HomeActivity after payment success");
+            Log.d("OrderInfo", "Navigated to YourTicketsActivity after payment success");
         } else if (action.equals("FaildBackAction")) {
             Toast.makeText(this, "Thanh toán thất bại", Toast.LENGTH_LONG).show();
             finish();
@@ -214,7 +252,6 @@ public class OrderInfoActivity extends AppCompatActivity {
     private void saveTransactionToFirestore(String orderId, String transactionNo, String ticketTypeId, long amount) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        // Sử dụng biến instance thay vì getIntent()
         int expirationDays = 0;
         int autoActiveDays = 0;
         try {
@@ -294,6 +331,11 @@ public class OrderInfoActivity extends AppCompatActivity {
             return ticketCode;
         }).addOnSuccessListener(ticketCode -> {
             Log.d("Firestore", "Lưu giao dịch và vé thành công: " + orderId + ", ticketCode: " + ticketCode);
+            Intent successIntent = new Intent(this, YourTicketsActivity.class);
+            successIntent.putExtra("UUID", userUUID);
+            successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(successIntent);
+            finish();
         }).addOnFailureListener(e -> {
             Log.e("Firestore", "Lỗi lưu giao dịch/vé: ", e);
             Toast.makeText(this, "Lỗi lưu dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -337,11 +379,12 @@ public class OrderInfoActivity extends AppCompatActivity {
                     if ("00".equals(responseCode)) {
                         Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
                         saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
-                        Intent successIntent = new Intent(this, HomeActivity.class);
+                        Intent successIntent = new Intent(this, YourTicketsActivity.class);
+                        successIntent.putExtra("UUID", userUUID);
                         successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(successIntent);
                         finish();
-                        Log.d("OrderInfo", "Navigated to MyTicketsActivity after payment success");
+                        Log.d("OrderInfo", "Navigated to YourTicketsActivity after payment success");
                     } else {
                         Toast.makeText(this, "Thanh toán thất bại, mã lỗi: " + responseCode, Toast.LENGTH_LONG).show();
                         Log.e("VNPay", "Payment failed with response code: " + responseCode);

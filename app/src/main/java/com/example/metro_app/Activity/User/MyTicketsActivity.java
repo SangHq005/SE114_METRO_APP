@@ -18,7 +18,7 @@ import com.example.metro_app.Adapter.TicketTypeAdapter;
 import com.example.metro_app.Model.TicketType;
 import com.example.metro_app.R;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import java.text.DecimalFormat;
@@ -28,7 +28,7 @@ import java.util.List;
 public class MyTicketsActivity extends AppCompatActivity {
 
     private RecyclerView recyclerViewTickets, recyclerViewHSSV;
-    private TextView tvNoTicketsNoiBat, tvNoTicketsHSSV;
+    private TextView tvNoTicketsNoiBat, tvNoTicketsHSSV, nameTxt;
     private TicketTypeAdapter noiBatAdapter, hssvAdapter;
     private List<TicketType> noiBatTickets, hssvTickets;
     private FirebaseFirestore db;
@@ -46,7 +46,9 @@ public class MyTicketsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("UUID")) {
             userUUID = intent.getStringExtra("UUID");
-            System.out.println("Received UUID in MyTicketsActivity: " + userUUID);
+            Log.d("MyTicketsActivity", "Received UUID in MyTicketsActivity: " + userUUID);
+        } else {
+            Log.e("MyTicketsActivity", "No UUID received in Intent");
         }
 
         db = FirebaseFirestore.getInstance();
@@ -59,8 +61,10 @@ public class MyTicketsActivity extends AppCompatActivity {
             recyclerViewHSSV = findViewById(R.id.recyclerViewHSSV);
             tvNoTicketsNoiBat = findViewById(R.id.tv_no_tickets_noi_bat);
             tvNoTicketsHSSV = findViewById(R.id.tv_no_tickets_hssv);
+            nameTxt = findViewById(R.id.nameTxt);
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi khởi tạo giao diện: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            Log.e("MyTicketsActivity", "Error initializing UI: " + e.getMessage());
             return;
         }
 
@@ -82,20 +86,73 @@ public class MyTicketsActivity extends AppCompatActivity {
 
         ImageView backBtn = findViewById(R.id.backBtn);
         if (backBtn != null) {
-            backBtn.setOnClickListener(v -> finish());
+            backBtn.setClickable(true);
+            backBtn.setFocusable(true);
+            backBtn.bringToFront();
+            backBtn.setOnClickListener(v -> {
+                Log.d("MyTicketsActivity", "backBtn clicked");
+                Intent backIntent = new Intent(MyTicketsActivity.this, HomeActivity.class);
+                backIntent.putExtra("UUID", userUUID);
+                startActivity(backIntent);
+                finish();
+            });
+        } else {
+            Log.e("MyTicketsActivity", "backBtn is null");
+            Toast.makeText(this, "Không tìm thấy nút quay lại", Toast.LENGTH_LONG).show();
         }
 
+        // Kiểm tra ToolbarconstraintLayout để debug
+        View toolbar = findViewById(R.id.ToolbarconstraintLayout);
+        if (toolbar != null) {
+            toolbar.setOnClickListener(v -> Log.d("MyTicketsActivity", "ToolbarconstraintLayout clicked"));
+        }
+
+        fetchUserName();
         loadTickets();
+    }
 
-        BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
-        if (bottomNavigationView != null) {
-            bottomNavigationView.setOnNavigationItemSelectedListener(item -> true);
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d("MyTicketsActivity", "onResume called");
+        fetchUserName();
     }
 
     private void checkGooglePlayServices() {
         GoogleApiAvailability googleApi = GoogleApiAvailability.getInstance();
         int resultCode = googleApi.isGooglePlayServicesAvailable(this);
+    }
+
+    private void fetchUserName() {
+        if (userUUID == null) {
+            nameTxt.setText("Không có thông tin");
+            Log.e("MyTicketsActivity", "userUUID is null");
+            return;
+        }
+
+        Log.d("MyTicketsActivity", "Fetching username for userUUID: " + userUUID);
+        db.collection("Account").document(userUUID).get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DocumentSnapshot document = task.getResult();
+                        if (document != null && document.exists()) {
+                            String userName = document.getString("Name");
+                            if (userName != null) {
+                                nameTxt.setText(userName);
+                                Log.d("MyTicketsActivity", "Fetched userName: " + userName);
+                            } else {
+                                nameTxt.setText("Không có thông tin");
+                                Log.e("MyTicketsActivity", "Field 'Name' not found for userId: " + userUUID);
+                            }
+                        } else {
+                            nameTxt.setText("Không có thông tin");
+                            Log.e("MyTicketsActivity", "Document does not exist for userId: " + userUUID);
+                        }
+                    } else {
+                        nameTxt.setText("Không có thông tin");
+                        Log.e("MyTicketsActivity", "Failed to fetch user name: " + (task.getException() != null ? task.getException().getMessage() : "Unknown error"));
+                    }
+                });
     }
 
     private void fetchTicketDetailsAndStartActivity(String ticketId) {

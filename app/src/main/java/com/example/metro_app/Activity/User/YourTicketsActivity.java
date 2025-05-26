@@ -5,6 +5,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -33,6 +34,7 @@ public class YourTicketsActivity extends AppCompatActivity {
     private RecyclerView recyclerViewTickets;
     private TextView tvNoTickets, hethanTxt;
     private Button btnDangSuDung, btnChuaSuDung;
+    private ImageView homeImgBtn;
     private TicketAdapter ticketAdapter;
     private List<TicketModel> ticketList;
     private FirebaseFirestore db;
@@ -54,7 +56,7 @@ public class YourTicketsActivity extends AppCompatActivity {
         Intent intent = getIntent();
         if (intent != null && intent.hasExtra("UUID")) {
             userUUID = intent.getStringExtra("UUID");
-            System.out.println("Received UUID in YourTicketsActivity: " + userUUID);
+            Log.d("YourTicketsActivity", "Received UUID in YourTicketsActivity: " + userUUID);
         }
 
         db = FirebaseFirestore.getInstance();
@@ -64,11 +66,11 @@ public class YourTicketsActivity extends AppCompatActivity {
         btnDangSuDung = findViewById(R.id.btn_dang_su_dung);
         btnChuaSuDung = findViewById(R.id.btn_chua_su_dung);
         hethanTxt = findViewById(R.id.hethanTxt);
+        homeImgBtn = findViewById(R.id.homeImgBtn);
 
         recyclerViewTickets.setLayoutManager(new LinearLayoutManager(this));
         ticketList = new ArrayList<>();
 
-        // Truyền userUUID vào TicketAdapter
         ticketAdapter = new TicketAdapter(ticketList, item -> {}, userUUID);
         recyclerViewTickets.setAdapter(ticketAdapter);
 
@@ -80,6 +82,15 @@ public class YourTicketsActivity extends AppCompatActivity {
             expireIntent.putExtra("UUID", userUUID);
             startActivity(expireIntent);
         });
+
+        // Sự kiện nhấn homeImgBtn
+        homeImgBtn.setOnClickListener(v -> {
+            Log.d("YourTicketsActivity", "homeImgBtn clicked");
+            Intent homeIntent = new Intent(YourTicketsActivity.this, HomeActivity.class);
+            homeIntent.putExtra("UUID", userUUID);
+            startActivity(homeIntent);
+            finish();
+            });
 
         loadTicketsByStatus("Đang kích hoạt");
     }
@@ -111,7 +122,6 @@ public class YourTicketsActivity extends AppCompatActivity {
                             String userId = document.getString("userId");
                             String ticketCode = document.getString("ticketCode");
 
-                            // Kiểm tra ExpirationDate và cập nhật Status thành "Hết hạn" nếu cần
                             if (!"Hết hạn".equals(ticketStatus) && expirationDate != null && !expirationDate.after(currentDate)) {
                                 db.collection("Ticket").document(ticketId)
                                         .update("Status", "Hết hạn")
@@ -124,7 +134,6 @@ public class YourTicketsActivity extends AppCompatActivity {
                                 continue;
                             }
 
-                            // Kiểm tra AutoActiveDate và cập nhật Status nếu cần
                             if ("Chưa kích hoạt".equals(ticketStatus) && autoActiveDate != null && !autoActiveDate.after(currentDate)) {
                                 db.collection("Ticket").document(ticketId)
                                         .update("Status", "Đang kích hoạt")
@@ -147,14 +156,12 @@ public class YourTicketsActivity extends AppCompatActivity {
                                             String formattedAutoActiveDate = autoActiveDate != null ? "Tự động kích hoạt vào: " + dateFormat.format(autoActiveDate) : "Tự động kích hoạt vào: N/A";
                                             String formattedExpirationDate = expirationDate != null ? dateFormat.format(expirationDate) : "N/A";
 
-                                            // Sử dụng collection "Account" và lấy field "Name"
                                             db.collection("Account").document(userId).get()
                                                     .addOnCompleteListener(userTask -> {
                                                         String userName = "Không có thông tin";
                                                         if (userTask.isSuccessful()) {
                                                             DocumentSnapshot userDoc = userTask.getResult();
                                                             if (userDoc != null && userDoc.exists()) {
-                                                                // Kiểm tra field "Name"
                                                                 if (userDoc.contains("Name")) {
                                                                     userName = userDoc.getString("Name");
                                                                 } else if (userDoc.contains("name")) {
@@ -180,7 +187,7 @@ public class YourTicketsActivity extends AppCompatActivity {
                                                                 userName,
                                                                 ticketCode,
                                                                 formattedExpirationDate,
-                                                                userId // Truyền userId vào TicketModel
+                                                                userId
                                                         );
                                                         ticketList.add(ticket);
 
