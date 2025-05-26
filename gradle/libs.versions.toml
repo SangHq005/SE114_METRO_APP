@@ -19,6 +19,7 @@ materialdatetimepicker = "4.2.3"
 sublimepicker = "2.1.2"
 sublimepickerlibrary = "2.1.2"
 viewpager = "1.1.0"
+playServicesLocation = "21.3.0"
 
 [libraries]
 chip-navigation-bar = { module = "com.github.ismaeldivita:chip-navigation-bar", version.ref = "chipNavigationBar" }
@@ -39,6 +40,7 @@ materialdatetimepicker = { module = "com.wdullaer:materialdatetimepicker", versi
 sublimepicker = { module = "com.github.vikramkakkar:SublimePicker", version.ref = "sublimepicker" }
 sublimepickerlibrary = { module = "com.appeaser.sublimepickerlibrary:sublimepickerlibrary", version.ref = "sublimepickerlibrary" }
 viewpager = { module = "androidx.viewpager:viewpager", version.ref = "viewpager" }
+play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

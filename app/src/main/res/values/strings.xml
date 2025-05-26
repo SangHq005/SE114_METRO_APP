@@ -1,4 +1,8 @@
 <resources>
     <string name="app_name">Metro_App</string>
     <string name="th_ng_tin_t_i_kho_n">Thông tin tài khoản</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="mapbox_access_token">sk.eyJ1IjoidGhpZW5uZ3V5ZW4yNTA0IiwiYSI6ImNtYWRsZ2RzdTA1OGcybnM4bnZkOXo2emsifQ.XJU0gRz1_tU_lc6ZsTAY7g</string>
+
 </resources>
