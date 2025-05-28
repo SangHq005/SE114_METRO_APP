@@ -39,15 +39,14 @@
             app:layout_constraintStart_toStartOf="parent" />
     </LinearLayout>
 
-    <ImageView
+    <!-- FAB: Định vị vị trí của tôi -->
+    <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnMyLocation"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_gravity="bottom|end"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_margin="16dp"
-    android:padding="8dp"
-    android:src="@drawable/ic_my_location"
-    android:contentDescription="@string/my_location"
-    android:elevation="8dp" />
+        android:src="@drawable/ic_my_location"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </FrameLayout>

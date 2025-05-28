@@ -123,6 +123,18 @@ public class HomeActivity extends AppCompatActivity {
                     intent.putExtra("userId", userUUID); // Truyền userId
                     startActivity(intent);
                 }
+                if ("Bản đồ".equals(category.getName())) {
+                    Intent intent = new Intent(HomeActivity.this, FindPathActivity.class);
+                    startActivity(intent);
+                }
+                if ("Hành trình".equals(category.getName())) {
+                    Intent intent = new Intent(HomeActivity.this, JourneyActivity.class);
+                    startActivity(intent);
+                }
+                if ("Tài khoản".equals(category.getName())) {
+                    Intent intent = new Intent(HomeActivity.this, InfoAcitivity.class);
+                    startActivity(intent);
+                }
             });
             binding.recyclerViewCategory.setAdapter(adapter);
             binding.progressBarCategory.setVisibility(View.GONE);

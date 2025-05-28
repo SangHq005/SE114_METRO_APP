@@ -38,6 +38,7 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.mapbox.geojson.Point;
 import com.mapbox.maps.CoordinateBounds;
 import com.mapbox.maps.MapboxMap;
@@ -54,7 +55,7 @@ public class FindPathActivity extends AppCompatActivity {
 
     private TextView tvSearchFrom, tvSearchTo;
     private Point pointFrom, pointTo;
-    private ImageView imgMyLocation;
+    private FloatingActionButton imgMyLocation;
     private MapBoxFragment mapFragment;
     private Point currentLocation;
     private FusedLocationProviderClient fusedLocationClient;

@@ -7,10 +7,14 @@
     tools:context=".Activity.User.JourneyActivity">
 
     <!-- Bản đồ toàn màn hình -->
-    <org.osmdroid.views.MapView
-        android:id="@+id/map"
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
      <!-- Thông tin hành trình (CardView nổi) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardRouteInfo"

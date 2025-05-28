@@ -17,9 +17,12 @@ import com.example.metro_app.databinding.ActivityInfoAcitivityBinding;
 
 public class InfoAcitivity extends AppCompatActivity {
     ActivityInfoAcitivityBinding binding;
+
     ImageView backbtn;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+
         binding = ActivityInfoAcitivityBinding.inflate(getLayoutInflater());
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
@@ -32,4 +35,5 @@ public class InfoAcitivity extends AppCompatActivity {
             }
         });
     }
+
 }

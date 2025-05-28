@@ -1,100 +1,119 @@
 package com.example.metro_app.Activity.User;
 
 import android.os.Bundle;
+import android.util.Log;
+import android.widget.ImageView;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.fragment.app.FragmentManager;
 
+import com.example.metro_app.Activity.MapBoxFragment;
+import com.example.metro_app.Model.BusDataHelper;
+import com.example.metro_app.Model.Station;
 import com.example.metro_app.R;
+import com.google.android.gms.maps.MapFragment;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
+import com.mapbox.geojson.Point;
 
-import org.osmdroid.api.IMapController;
-import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Marker;
-import org.osmdroid.views.overlay.Polyline;
-
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
 public class JourneyActivity extends AppCompatActivity{
-    private MapView mapView;
+    private MapBoxFragment mapFragment;
+    private ImageView btnSwap;
+    private Boolean Luotdi = true;
+    private final FirebaseFirestore database = FirebaseFirestore.getInstance();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // OSMDroid Configuration
-        Configuration.getInstance().setUserAgentValue(getPackageName());
-
         setContentView(R.layout.activity_journey);
-        mapView = findViewById(R.id.map);
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
-        mapView.setMultiTouchControls(true);
+        btnSwap = findViewById(R.id.btnSwap);
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mapFragment = new MapBoxFragment();
 
-        // Center map
-        IMapController mapController = mapView.getController();
-        mapController.setZoom(14.5);
-        GeoPoint startPoint = new GeoPoint(10.7769, 106.7009); // Vị trí trung tâm Sài Gòn
-        mapController.setCenter(startPoint);
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, mapFragment)
+                .commit();
 
-        showMetroRoute();
+        Point startPoint =  Point.fromLngLat(106.7009,10.7769 ); // Vị trí trung tâm Sài Gòn
+        mapFragment.setOnMapReadyCallback(mapboxMap -> {
+            mapFragment.zoomToLocation(startPoint);
+            fetchAndDrawRoute("MetroWay","LuotDi");
+//            BusDataHelper busDataHelper = new BusDataHelper();
+//            busDataHelper.uploadStationsToFirestore(this);
+//            busDataHelper.uploadGeoPointListToFirestore(this);
+        });
+        btnSwap.setOnClickListener(v -> {
+            Luotdi = !Luotdi;
+            if(Luotdi){
+                fetchAndDrawRoute("MetroWay","LuotDi");
+            }
+            else{
+                fetchAndDrawRoute("MetroWay","LuotVe");
+            }
+        });
+
+
     }
 
-    private void showMetroRoute() {
-        List<GeoPoint> metroPoints = Arrays.asList(
-                new GeoPoint(10.773224, 106.698461), // Bến Thành
-                new GeoPoint(10.776957, 106.703053), // Nhà hát TP
-                new GeoPoint(10.782016, 106.705992), // Ba Son
-                new GeoPoint(10.794029, 106.718309), // Văn Thánh
-                new GeoPoint(10.802974, 106.730279), // Thảo Điền
-                new GeoPoint(10.803607, 106.737500), // An Phú
-                new GeoPoint(10.804055, 106.745833), // Rạch Chiếc
-                new GeoPoint(10.804335, 106.752222), // Phước Long
-                new GeoPoint(10.803959, 106.761111), // Bình Thái
-                new GeoPoint(10.852763, 106.766279), // Thủ Đức
-                new GeoPoint(10.860142, 106.775071), // Khu CN Cao (ĐH Quốc Gia)
-                new GeoPoint(10.870026, 106.787864), // Suối Tiên
-                new GeoPoint(10.878842, 106.800229)  // Bến xe Miền Đông mới
-        );
+    public void fetchAndDrawRoute(String collectionName, String documentId) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
 
-        List<String> stationNames = Arrays.asList(
-                "Bến Thành", "Nhà hát TP", "Ba Son", "Văn Thánh",
-                "Thảo Điền", "An Phú", "Rạch Chiếc", "Phước Long",
-                "Bình Thái", "Thủ Đức", "Khu CNC", "Suối Tiên", "BX Miền Đông"
-        );
-
-        // Vẽ tuyến metro
-        Polyline line = new Polyline();
-        line.setPoints(metroPoints);
-        line.setColor(0xFF0066CC); // Màu xanh dương
-        line.setWidth(8f);
-        mapView.getOverlayManager().add(line);
-
-        // Thêm các marker
-        for (int i = 0; i < metroPoints.size(); i++) {
-            Marker marker = new Marker(mapView);
-            marker.setPosition(metroPoints.get(i));
-            marker.setTitle(stationNames.get(i));
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
-            mapView.getOverlays().add(marker);
-        }
-
-        mapView.invalidate();
+        db.collection(collectionName)
+                .document(documentId)
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        List<GeoPoint> geoPoints = (List<GeoPoint>) documentSnapshot.get("points");
+                        if (geoPoints != null && geoPoints.size() >= 2) {
+                            List<Point> pointList = new ArrayList<>();
+                            for (GeoPoint gp : geoPoints) {
+                                Point point = Point.fromLngLat(gp.getLongitude(), gp.getLatitude());
+                                pointList.add(point);
+                            }
+                            mapFragment.drawRouteFromPoints(pointList);
+                        } else {
+                            Log.e("FIREBASE_ROUTE", "Không có đủ điểm để vẽ tuyến");
+                        }
+                    } else {
+                        Log.e("FIREBASE_ROUTE", "Document không tồn tại");
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FIREBASE_ROUTE", "Lỗi khi lấy dữ liệu Firestore", e);
+                });
+        // 2. Lấy các trạm dừng và hiển thị marker
+        database.collection("stations")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        Station station = doc.toObject(Station.class);
+                        if (station != null) {
+                               Point p = Point.fromLngLat(station.Lng, station.Lat);
+                             mapFragment.addMarkerAt(p, R.drawable.metro_station);
+                        }
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lỗi khi tải trạm dừng", Toast.LENGTH_SHORT).show();
+                });
     }
-
-
 
     @Override
     public void onResume() {
         super.onResume();
-        mapView.onResume();
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        mapView.onPause();
     }
 }

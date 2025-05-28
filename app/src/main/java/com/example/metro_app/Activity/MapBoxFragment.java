@@ -222,6 +222,33 @@ private final LocationObserver locationObserver= new LocationObserver() {
             mapboxMap.setCamera(cameraOptions);
         }
     }
+    public void zoomToFit(List<Point> points) {
+        if (points.isEmpty()) return;
+
+        double minLat = Double.MAX_VALUE, minLng = Double.MAX_VALUE;
+        double maxLat = -Double.MAX_VALUE, maxLng = -Double.MAX_VALUE;
+
+        for (Point p : points) {
+            double lat = p.latitude();
+            double lng = p.longitude();
+            minLat = Math.min(minLat, lat);
+            maxLat = Math.max(maxLat, lat);
+            minLng = Math.min(minLng, lng);
+            maxLng = Math.max(maxLng, lng);
+        }
+
+        // Tính trung tâm và zoom phù hợp
+        Point center = Point.fromLngLat((minLng + maxLng) / 2, (minLat + maxLat) / 2);
+        double padding = 50.0;
+
+        CameraOptions cameraOptions = new CameraOptions.Builder()
+                .center(center)
+                .zoom(12.0)
+                .build();
+
+        mapboxMap.setCamera(cameraOptions);
+    }
+
 
     public void addMarkerAt(Point point, int drawableResId) {
         if (pointAnnotationManager == null) return;
