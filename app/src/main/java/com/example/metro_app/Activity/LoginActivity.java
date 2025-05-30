@@ -3,6 +3,7 @@ package com.example.metro_app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -34,6 +35,7 @@ public class LoginActivity extends AppCompatActivity {
 
     private GoogleSignInClient mGoogleSignInClient;
     private FirebaseAuth mAuth;
+    private String CCCD;
     FirebaseFirestore db = FirebaseFirestore.getInstance();
     private static final int RC_SIGN_IN = 9001;
 
@@ -138,12 +140,20 @@ public class LoginActivity extends AppCompatActivity {
     private void saveUserInfo(FirebaseUser user) {
         if (user != null) {
             SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
-            SharedPreferences.Editor editor = prefs.edit();
-            editor.putString("phoneNumber", user.getPhoneNumber());
-            editor.putString("name", user.getDisplayName());
-            editor.putString("email", user.getEmail());
-            editor.putString("photo", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
-            editor.apply();
+            db.collection("Account").document(user.getUid().toString()).get().addOnSuccessListener(documentSnapshot -> {
+                if(documentSnapshot.exists()){
+                    CCCD =documentSnapshot.getString("CCCD");
+                    SharedPreferences.Editor editor = prefs.edit();
+                    editor.putString("UserID",user.getUid());
+                    editor.putString("phoneNumber", user.getPhoneNumber());
+                    editor.putString("name", user.getDisplayName());
+                    editor.putString("email", user.getEmail());
+                    editor.putString("photo", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+                    editor.putString("CCCD",CCCD);
+                    editor.apply();
+                }
+            });
+
         }
     }
 }
