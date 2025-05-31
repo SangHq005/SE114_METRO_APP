@@ -1,28 +1,41 @@
 package com.example.metro_app.Activity.User;
 
+import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
+import com.bumptech.glide.Glide;
 import com.example.metro_app.R;
 import com.example.metro_app.databinding.ActivityInfoAcitivityBinding;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
+
+import java.util.HashMap;
+import java.util.Map;
 
 public class InfoAcitivity extends AppCompatActivity {
     ActivityInfoAcitivityBinding binding;
 
     ImageView backbtn;
+    LinearLayout CCCDButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-
-
         binding = ActivityInfoAcitivityBinding.inflate(getLayoutInflater());
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
@@ -34,6 +47,84 @@ public class InfoAcitivity extends AppCompatActivity {
                 Toast.makeText(InfoAcitivity.this, "Success!", Toast.LENGTH_SHORT).show();
             }
         });
+
+        CCCDButton=findViewById(R.id.CCCDButton);
+        CCCDButton.setOnClickListener(v -> showEditCCCDDialog());
+        loadUserInfo();
+
     }
+    private void loadUserInfo() {
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        String name = prefs.getString("name", "");
+        String email = prefs.getString("email", "");
+        String CCCD = prefs.getString("CCCD", "");
+        String photoUrl = prefs.getString("photo", "");
+
+        TextView tvName = findViewById(R.id.nameTxt);
+        TextView tvName2 = findViewById(R.id.userName);
+        TextView tvEmail = findViewById(R.id.tvEmail);
+        TextView tvCCCD = findViewById(R.id.nationalIdTxt);
+        ImageView imgPhoto = findViewById(R.id.profileImage);
+
+        tvName.setText(name);
+        tvName2.setText(name);
+        tvEmail.setText(email);
+        tvCCCD.setText(CCCD);
+
+        if (!photoUrl.isEmpty()) {
+            Glide.with(this).load(photoUrl).into(imgPhoto);
+        }
+    }
+    private void showEditCCCDDialog() {
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        String currentCCCD = prefs.getString("CCCD", "");
+
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+        input.setText(currentCCCD);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Nhập CCCD mới")
+                .setView(input)
+                .setPositiveButton("Xác nhận", (dialog, which) -> {
+                    String newCCCD = input.getText().toString().trim();
+                    if (newCCCD.isEmpty()) {
+                        Toast.makeText(this, "CCCD không được để trống", Toast.LENGTH_SHORT).show();
+                    } else {
+                        saveCCCDToFirestoreAndPrefs(newCCCD);
+                    }
+                })
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+    private void saveCCCDToFirestoreAndPrefs(String CCCD) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
+
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
+        editor.putString("UserID", user.getUid());
+        editor.putString("phoneNumber", user.getPhoneNumber());
+        editor.putString("name", user.getDisplayName());
+        editor.putString("email", user.getEmail());
+        editor.putString("photo", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+        editor.putString("CCCD", CCCD);
+        editor.apply();
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> data = new HashMap<>();
+        data.put("CCCD", CCCD);
+
+        db.collection("Account")
+                .document(user.getUid())
+                .set(data, SetOptions.merge())
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(this, "Lưu CCCD thành công", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+    loadUserInfo();
+    }
+
+
 
 }
