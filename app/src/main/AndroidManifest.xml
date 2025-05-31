@@ -69,7 +69,7 @@
             android:launchMode="singleTop"/>
 
         <activity
-            android:name=".Activity.LoginActivity"
+            android:name=".Activity.Admin.AdHomeActivity"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />

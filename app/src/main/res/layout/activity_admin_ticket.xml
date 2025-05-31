@@ -29,7 +29,22 @@
             android:textColor="@color/lightGray"
             android:drawableStart="@drawable/search"
             android:drawablePadding="8dp" />
+
+        <!-- Add button -->
+        <ImageButton
+            android:id="@+id/button_add_ticket"
+            android:layout_width="50dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="8dp"
+            android:background="@drawable/custom_button"
+            android:backgroundTint="@color/blue"
+            android:clickable="true"
+            android:contentDescription="Add Button"
+            android:focusable="true"
+            android:scaleType="centerInside"
+            android:src="@drawable/baseline_add_24" />
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -49,28 +64,15 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1" />
-
-        <!-- Add button -->
-        <ImageButton
-            android:id="@+id/button_add_ticket"
-            android:layout_width="50dp"
-            android:layout_height="40dp"
-            android:layout_marginEnd="16dp"
-            android:background="@drawable/custom_button"
-            android:backgroundTint="@color/blue"
-            android:clickable="true"
-            android:contentDescription="Add Button"
-            android:focusable="true"
-            android:scaleType="centerInside"
-            android:src="@drawable/baseline_add_24" />
     </LinearLayout>
 
-    <!-- Scrollable Content -->
+    <!-- Scrollable Content with RecyclerView -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:padding="20dp">
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -84,6 +86,14 @@
         </LinearLayout>
     </ScrollView>
 
+    <!-- ProgressBar -->
+    <ProgressBar
+        android:id="@+id/progress_bar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        android:layout_gravity="center" />
+
     <!-- Bottom Navigation -->
     <com.google.android.material.bottomnavigation.BottomNavigationView
         android:id="@+id/bottomNavigationView"
@@ -93,4 +103,5 @@
         app:menu="@menu/menu_admin"
         app:itemIconTint="@android:color/white"
         app:itemTextColor="@android:color/white" />
+
 </LinearLayout>

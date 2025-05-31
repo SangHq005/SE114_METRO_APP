@@ -2,76 +2,71 @@ package com.example.metro_app.Activity.Admin;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.metro_app.Domain.TicketModel;
+import com.example.metro_app.Model.TicketType;
 import com.example.metro_app.R;
+import com.google.firebase.firestore.FirebaseFirestore;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.text.DecimalFormat;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class AddTicketActivity extends AppCompatActivity {
+    private static final String TAG = "AddTicketActivity";
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_add_ticket);
 
+        // Initialize Firestore
+        db = FirebaseFirestore.getInstance();
+
         // Initialize views
-        Spinner spinnerTypeTicket = findViewById(R.id.spinner_type_ticket);
+        EditText editTextName = findViewById(R.id.editTextName);
         EditText editTextPrice = findViewById(R.id.editTextPrice);
-        EditText editTextExpireDate = findViewById(R.id.editTextExpireDate);
+        EditText editTextActive = findViewById(R.id.editTextActive);
+        EditText editTextAutoActive = findViewById(R.id.editTextAutoActive);
+        Spinner spinnerStatus = findViewById(R.id.spinnerStatus);
+        Button cancelButton = findViewById(R.id.cancel_button);
+        Button saveButton = findViewById(R.id.save_button);
 
-        // Set up adapter for spinner
-        String[] ticketTypes = {"Vé lượt đi", "Vé 1 ngày", "Vé 3 ngày", "Vé 30 ngày"};
-        ArrayAdapter<String> ticketTypeAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, ticketTypes);
-        ticketTypeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerTypeTicket.setAdapter(ticketTypeAdapter);
-
-        // Set up DatePickerDialog for expireDate
-        editTextExpireDate.setFocusable(false); // Prevent manual input
-        editTextExpireDate.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            int year = calendar.get(Calendar.YEAR);
-            int month = calendar.get(Calendar.MONTH);
-            int day = calendar.get(Calendar.DAY_OF_MONTH);
-
-            android.app.DatePickerDialog datePickerDialog = new android.app.DatePickerDialog(
-                    AddTicketActivity.this,
-                    (view, selectedYear, selectedMonth, selectedDay) -> {
-                        // Format selected date as dd/MM/yyyy
-                        String date = String.format(Locale.US, "%02d/%02d/%d", selectedDay, selectedMonth + 1, selectedYear);
-                        editTextExpireDate.setText(date);
-                    }, year, month, day);
-            datePickerDialog.show();
-        });
+        // Set up adapter for status spinner
+        String[] statusOptions = {"Hoạt động", "Tạm dừng"};
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item, statusOptions);
+        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerStatus.setAdapter(statusAdapter);
 
         // Button actions
-        findViewById(R.id.cancel_button).setOnClickListener(v -> finish());
+        cancelButton.setOnClickListener(v -> finish());
 
-        findViewById(R.id.save_button).setOnClickListener(v -> {
-            String ticketType = spinnerTypeTicket.getSelectedItem().toString();
-            String price = editTextPrice.getText().toString();
-            String expireDate = editTextExpireDate.getText().toString();
+        saveButton.setOnClickListener(v -> {
+            String name = editTextName.getText().toString().trim();
+            String price = editTextPrice.getText().toString().trim();
+            String active = editTextActive.getText().toString().trim();
+            String autoActive = editTextAutoActive.getText().toString().trim();
+            String status = spinnerStatus.getSelectedItem().toString();
 
             // Check for empty fields
-            if (ticketType.isEmpty() || price.isEmpty() || expireDate.isEmpty()) {
+            if (name.isEmpty() || price.isEmpty() || active.isEmpty() || autoActive.isEmpty()) {
                 Toast.makeText(AddTicketActivity.this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             // Check if price is a valid positive number
+            long priceValue;
             try {
-                double priceValue = Double.parseDouble(price.replaceAll("[^0-9.]", ""));
+                priceValue = Long.parseLong(price.replaceAll("[^0-9]", ""));
                 if (priceValue <= 0) {
                     Toast.makeText(AddTicketActivity.this, "Giá vé phải là số dương.", Toast.LENGTH_SHORT).show();
                     return;
@@ -81,26 +76,64 @@ public class AddTicketActivity extends AppCompatActivity {
                 return;
             }
 
-            // Check if expireDate is after today
-            SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.US);
+            // Check if active is a valid positive integer
+            long activeDays;
             try {
-                Date expire = sdf.parse(expireDate);
-                Date today = new Date();
-                if (!expire.after(today)) {
-                    Toast.makeText(AddTicketActivity.this, "Ngày hết hạn phải sau ngày hiện tại.", Toast.LENGTH_SHORT).show();
+                activeDays = Long.parseLong(active);
+                if (activeDays <= 0) {
+                    Toast.makeText(AddTicketActivity.this, "Số ngày kích hoạt phải là số dương.", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                // All checks passed, save the ticket
-                TicketModel newTicket = new TicketModel(ticketType, price, expireDate, "Chưa kích hoạt");
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("ticket", newTicket);
-                setResult(RESULT_OK, resultIntent);
-                Toast.makeText(AddTicketActivity.this, "Loại vé đã được lưu!", Toast.LENGTH_SHORT).show();
-                finish();
-            } catch (Exception e) {
-                Toast.makeText(AddTicketActivity.this, "Định dạng ngày hết hạn không hợp lệ.", Toast.LENGTH_SHORT).show();
+            } catch (NumberFormatException e) {
+                Toast.makeText(AddTicketActivity.this, "Số ngày kích hoạt không hợp lệ.", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            // Check if autoActive is a valid non-negative integer
+            long autoActiveDays;
+            try {
+                autoActiveDays = Long.parseLong(autoActive);
+                if (autoActiveDays < 0) {
+                    Toast.makeText(AddTicketActivity.this, "Số ngày tự động kích hoạt phải là số không âm.", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+            } catch (NumberFormatException e) {
+                Toast.makeText(AddTicketActivity.this, "Số ngày tự động kích hoạt không hợp lệ.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Format price for display
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            String formattedPrice = formatter.format(priceValue) + " VND";
+
+            // Generate unique ID
+            String id = UUID.randomUUID().toString();
+
+            // Create TicketType
+            TicketType newTicket = new TicketType(id, name, formattedPrice, active, autoActive, status);
+
+            // Save to Firestore without Id field
+            Map<String, Object> ticketData = new HashMap<>();
+            ticketData.put("Name", name);
+            ticketData.put("Price", priceValue); // Store as number
+            ticketData.put("Active", activeDays); // Store as number
+            ticketData.put("AutoActive", autoActiveDays); // Store as number
+            ticketData.put("Status", status);
+
+            db.collection("TicketType")
+                    .document(id)
+                    .set(ticketData)
+                    .addOnSuccessListener(aVoid -> {
+                        // Return result to AdTicketActivity
+                        Intent resultIntent = new Intent();
+                        resultIntent.putExtra("ticket", newTicket);
+                        setResult(RESULT_OK, resultIntent);
+                        Toast.makeText(AddTicketActivity.this, "Loại vé đã được lưu!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(AddTicketActivity.this, "Lỗi khi lưu vé: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
         });
     }
 }
