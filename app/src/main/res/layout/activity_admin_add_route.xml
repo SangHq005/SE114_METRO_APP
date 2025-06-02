@@ -117,42 +117,23 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thời gian khởi hành"
+                android:text="Giá"
                 android:textStyle="bold"
                 android:textColor="@color/grey_text"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"/>
 
             <EditText
-                android:id="@+id/editTextFromTime"
+                android:id="@+id/editTextPrice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
                 android:layout_marginTop="5dp"
-                android:inputType="time"
-                android:singleLine="true"
-                android:hint="00:00"/>
+                android:inputType="text"
+                android:singleLine="true" />
 
-            <!-- To Time Field -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Thời gian đến"
-                android:textColor="@color/grey_text"
-                android:textSize="16sp"
-                android:layout_marginTop="10dp"/>
 
-            <EditText
-                android:id="@+id/editTextToTime"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:background="@drawable/custome_edittext2"
-                android:padding="10dp"
-                android:layout_marginTop="5dp"
-                android:inputType="time"
-                android:singleLine="true"
-                android:hint="00:00"/>
 
 
             <!-- Button -->

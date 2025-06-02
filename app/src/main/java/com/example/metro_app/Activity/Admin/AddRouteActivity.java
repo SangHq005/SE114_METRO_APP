@@ -3,120 +3,153 @@ package com.example.metro_app.Activity.Admin;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.metro_app.Domain.RouteModel;
+import com.example.metro_app.Model.TicketType;
 import com.example.metro_app.R;
+import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
-import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Locale;
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 public class AddRouteActivity extends AppCompatActivity {
+    private static final String TAG = "AddRouteActivity";
+    private FirebaseFirestore db;
+    private List<String> stationNames;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_add_route);
 
+        // Initialize Firestore
+        db = FirebaseFirestore.getInstance();
+
         // Initialize views
         Spinner spinnerFromStation = findViewById(R.id.spinner_type_fromStation);
         Spinner spinnerToStation = findViewById(R.id.spinner_type_toStation);
-        EditText editTextStartTime = findViewById(R.id.editTextFromTime);
-        EditText editTextEndTime = findViewById(R.id.editTextToTime);
+        EditText editTextPrice = findViewById(R.id.editTextPrice);
+        Button cancelButton = findViewById(R.id.cancel_button);
+        Button saveButton = findViewById(R.id.save_button);
 
-        // Set up adapter for spinners
-        String[] stations = {
-                "Ga Bến Thành", "Ga Nhà hát Thành phố", "Ga Ba Son", "Ga Công viên Văn Thánh", "Ga Tân Cảng",
-                "Ga Thảo Điền", "Ga An Phú", "Ga Rạch Chiếc", "Ga Phước Long", "Ga Bình Thái", "Ga Thủ Đức",
-                "Ga Khu Công nghệ cao", "Ga Đại học Quốc gia", "Ga Bến xe Suối Tiên"
-        };
-        ArrayAdapter<String> stationAdapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, stations);
-        stationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerFromStation.setAdapter(stationAdapter);
-        spinnerToStation.setAdapter(stationAdapter);
-
-        // Set up TimePickerDialog for startTime
-        editTextStartTime.setFocusable(false); // Prevent manual input
-        editTextStartTime.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            int minute = calendar.get(Calendar.MINUTE);
-
-            android.app.TimePickerDialog timePickerDialog = new android.app.TimePickerDialog(
-                    AddRouteActivity.this,
-                    (view, selectedHour, selectedMinute) -> {
-                        // Format selected time as HH:mm
-                        String time = String.format(Locale.US, "%02d:%02d", selectedHour, selectedMinute);
-                        editTextStartTime.setText(time);
-                    }, hour, minute, true); // true for 24-hour format
-            timePickerDialog.show();
-        });
-
-        // Set up TimePickerDialog for endTime
-        editTextEndTime.setFocusable(false); // Prevent manual input
-        editTextEndTime.setOnClickListener(v -> {
-            Calendar calendar = Calendar.getInstance();
-            int hour = calendar.get(Calendar.HOUR_OF_DAY);
-            int minute = calendar.get(Calendar.MINUTE);
-
-            android.app.TimePickerDialog timePickerDialog = new android.app.TimePickerDialog(
-                    AddRouteActivity.this,
-                    (view, selectedHour, selectedMinute) -> {
-                        // Format selected time as HH:mm
-                        String time = String.format(Locale.US, "%02d:%02d", selectedHour, selectedMinute);
-                        editTextEndTime.setText(time);
-                    }, hour, minute, true); // true for 24-hour format
-            timePickerDialog.show();
-        });
+        // Load stations from Firestore
+        stationNames = new ArrayList<>();
+        loadStationsFromFirestore(spinnerFromStation, spinnerToStation);
 
         // Button actions
-        findViewById(R.id.cancel_button).setOnClickListener(v -> finish());
+        cancelButton.setOnClickListener(v -> finish());
 
-        findViewById(R.id.save_button).setOnClickListener(v -> {
-            String fromStation = spinnerFromStation.getSelectedItem().toString();
-            String toStation = spinnerToStation.getSelectedItem().toString();
-            String startTime = editTextStartTime.getText().toString();
-            String endTime = editTextEndTime.getText().toString();
+        saveButton.setOnClickListener(v -> {
+            String fromStation = spinnerFromStation.getSelectedItem() != null ? spinnerFromStation.getSelectedItem().toString() : "";
+            String toStation = spinnerToStation.getSelectedItem() != null ? spinnerToStation.getSelectedItem().toString() : "";
+            String price = editTextPrice.getText().toString().trim();
 
             // Check for empty fields
-            if (fromStation.isEmpty() || toStation.isEmpty() || startTime.isEmpty() || endTime.isEmpty()) {
+            if (fromStation.isEmpty() || toStation.isEmpty() || price.isEmpty()) {
                 Toast.makeText(AddRouteActivity.this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
             // Check if fromStation and toStation are different
             if (fromStation.equals(toStation)) {
-                Toast.makeText(AddRouteActivity.this, "Ga khởi hành và ga đến không được giống nhau.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(AddRouteActivity.this, "Ga đi và ga đến không được giống nhau.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
-            // Check if endTime is after startTime
-            SimpleDateFormat sdf = new SimpleDateFormat("HH:mm", Locale.US);
+            // Check if price is a valid positive number
+            long priceValue;
             try {
-                Date start = sdf.parse(startTime);
-                Date end = sdf.parse(endTime);
-                if (!end.after(start)) {
-                    Toast.makeText(AddRouteActivity.this, "Giờ đến phải sau giờ khởi hành.", Toast.LENGTH_SHORT).show();
+                priceValue = Long.parseLong(price.replaceAll("[^0-9]", ""));
+                if (priceValue <= 0) {
+                    Toast.makeText(AddRouteActivity.this, "Giá vé phải là số dương.", Toast.LENGTH_SHORT).show();
                     return;
                 }
-
-                // All checks passed, save the route
-                RouteModel newRoute = new RouteModel(fromStation, toStation, startTime, endTime);
-                Intent resultIntent = new Intent();
-                resultIntent.putExtra("route", newRoute);
-                setResult(RESULT_OK, resultIntent);
-                Toast.makeText(AddRouteActivity.this, "Tuyến đường đã được lưu!", Toast.LENGTH_SHORT).show();
-                finish();
-            } catch (Exception e) {
-                Toast.makeText(AddRouteActivity.this, "Định dạng giờ không hợp lệ.", Toast.LENGTH_SHORT).show();
+            } catch (NumberFormatException e) {
+                Toast.makeText(AddRouteActivity.this, "Giá vé không hợp lệ.", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            // Format price for display
+            DecimalFormat formatter = new DecimalFormat("#,###");
+            String formattedPrice = formatter.format(priceValue) + " VND";
+
+            // Generate unique ID
+            String id = UUID.randomUUID().toString();
+
+            // Create ticket name
+            String ticketName = "Vé lượt: " + fromStation + " - " + toStation;
+
+            // Create TicketType
+            TicketType newTicket = new TicketType(id, fromStation, toStation, formattedPrice, ticketName);
+
+            // Save to Firestore without Id field
+            Map<String, Object> ticketData = new HashMap<>();
+            ticketData.put("Name", ticketName);
+            ticketData.put("Price", priceValue); // Store as number
+            ticketData.put("StartStation", fromStation);
+            ticketData.put("EndStation", toStation);
+            ticketData.put("Active", 0L); // Store as number
+            ticketData.put("AutoActive", 30L); // Store as number
+            ticketData.put("Status", "Hoạt động"); // Default status
+            ticketData.put("Type", "Vé lượt");
+
+            db.collection("TicketType")
+                    .document(id)
+                    .set(ticketData)
+                    .addOnSuccessListener(aVoid -> {
+                        // Return result to parent activity (if needed)
+                        Intent resultIntent = new Intent();
+                        resultIntent.putExtra("ticket", newTicket);
+                        setResult(RESULT_OK, resultIntent);
+                        Toast.makeText(AddRouteActivity.this, "Tuyến vé đã được lưu!", Toast.LENGTH_SHORT).show();
+                        finish();
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(AddRouteActivity.this, "Lỗi khi lưu vé: " + e.getMessage(), Toast.LENGTH_LONG).show();
+                    });
         });
+    }
+
+    private void loadStationsFromFirestore(Spinner spinnerFromStation, Spinner spinnerToStation) {
+        db.collection("stations")
+                .get()
+                .addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        QuerySnapshot querySnapshot = task.getResult();
+                        if (querySnapshot != null && !querySnapshot.isEmpty()) {
+                            stationNames.clear();
+                            for (var doc : querySnapshot.getDocuments()) {
+                                String stationName = doc.getString("Name");
+                                if (stationName != null) {
+                                    stationNames.add(stationName);
+                                }
+                            }
+                            if (stationNames.isEmpty()) {
+                                Toast.makeText(AddRouteActivity.this, "Không tìm thấy ga trong Firestore.", Toast.LENGTH_SHORT).show();
+                                return;
+                            }
+                            // Set up adapters for spinners
+                            ArrayAdapter<String> stationAdapter = new ArrayAdapter<>(AddRouteActivity.this,
+                                    android.R.layout.simple_spinner_item, stationNames);
+                            stationAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                            spinnerFromStation.setAdapter(stationAdapter);
+                            spinnerToStation.setAdapter(stationAdapter);
+                        } else {
+                            Toast.makeText(AddRouteActivity.this, "Không tìm thấy ga trong Firestore.", Toast.LENGTH_SHORT).show();
+                        }
+                    } else {
+                        Toast.makeText(AddRouteActivity.this, "Lỗi khi tải danh sách ga: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
     }
 }

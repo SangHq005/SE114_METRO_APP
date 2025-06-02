@@ -118,42 +118,57 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thời gian khởi hành"
+                android:text="Giá"
                 android:textStyle="bold"
                 android:textColor="@color/grey_text"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"/>
 
             <EditText
-                android:id="@+id/editTextFromTime"
+                android:id="@+id/editTextPrice"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
                 android:layout_marginTop="5dp"
                 android:singleLine="true"
-                android:hint="00:00"
-                android:inputType="time" />
+                android:inputType="text" />
 
-            <!-- To Time Field -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Thời gian đến"
+                android:text="Tình trạng"
+                android:textStyle="bold"
                 android:textColor="@color/grey_text"
                 android:textSize="16sp"
                 android:layout_marginTop="10dp"/>
 
-            <EditText
-                android:id="@+id/editTextToTime"
+            <RelativeLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:background="@drawable/custome_edittext2"
-                android:padding="10dp"
                 android:layout_marginTop="5dp"
-                android:singleLine="true"
-                android:hint="00:00"
-                android:inputType="time" />
+                android:padding="10dp">
+
+                <Spinner
+                    android:id="@+id/spinnerStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:background="@android:drawable/edit_text"
+                    android:padding="12dp"
+                    android:layout_marginTop="8dp" />
+
+                <ImageButton
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/arrow_drop_down"
+                    android:background="@android:color/transparent"
+                    android:focusable="false"
+                    android:clickable="true" />
+            </RelativeLayout>
+
 
             <!-- Button -->
             <LinearLayout

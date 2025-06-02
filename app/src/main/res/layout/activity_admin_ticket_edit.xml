@@ -5,95 +5,182 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#121212"
+    android:background="@drawable/darkbg"
     tools:context=".Activity.Admin.AdTicketDetails">
 
-    <!-- Name -->
-    <EditText
-        android:id="@+id/editTextName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Tên vé"
-        android:background="@android:drawable/edit_text"
-        android:padding="12dp"
-        android:textColor="#CCCCCC"
-        android:textSize="16sp" />
-
-    <!-- Price -->
-    <EditText
-        android:id="@+id/editTextPrice"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Giá vé (VND)"
-        android:background="@android:drawable/edit_text"
-        android:padding="12dp"
-        android:textColor="#CCCCCC"
-        android:textSize="16sp"
-        android:inputType="numberDecimal"
-        android:layout_marginTop="8dp" />
-
-    <!-- Active -->
-    <EditText
-        android:id="@+id/editTextActive"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Kích hoạt trong bao nhiêu ngày"
-        android:background="@android:drawable/edit_text"
-        android:padding="12dp"
-        android:textColor="#CCCCCC"
-        android:textSize="16sp"
-        android:inputType="number"
-        android:layout_marginTop="8dp" />
-
-    <!-- AutoActive -->
-    <EditText
-        android:id="@+id/editTextAutoActive"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Tự động kích hoạt sau bao nhiêu ngày"
-        android:background="@android:drawable/edit_text"
-        android:padding="12dp"
-        android:textColor="#CCCCCC"
-        android:textSize="16sp"
-        android:inputType="number"
-        android:layout_marginTop="8dp" />
-
-    <!-- Status -->
-    <Spinner
-        android:id="@+id/spinnerStatus"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/edit_text"
-        android:padding="12dp"
-        android:layout_marginTop="8dp" />
-
-    <!-- Buttons -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="end"
-        android:layout_marginTop="16dp">
+        android:orientation="vertical"
+        android:paddingTop="30dp"
+        android:paddingBottom="15dp">
 
-        <Button
-            android:id="@+id/button_cancel"
-            android:layout_width="wrap_content"
+        <!-- Header -->
+        <TextView
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Hủy"
-            android:backgroundTint="#666666"
-            android:textColor="#FFFFFF"
-            android:padding="12dp" />
+            android:text="CHI TIẾT LOẠI VÉ"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="@color/white"
+            android:gravity="center"/>
 
-        <Button
-            android:id="@+id/button_save"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Lưu"
-            android:backgroundTint="#2196F3"
-            android:textColor="#FFFFFF"
-            android:padding="12dp"
-            android:layout_marginStart="8dp" />
     </LinearLayout>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="15dp">
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Ticket Name Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Loại vé"
+                android:textStyle="bold"
+                android:textColor="@color/grey_text"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/editTextName"
+                android:background="@drawable/custome_edittext2"
+                android:padding="10dp"
+                android:layout_marginTop="5dp"/>
+
+            <!-- Price Field -->
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Giá vé"
+                android:textColor="@color/grey_text"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/editTextPrice"
+                android:background="@drawable/custome_edittext2"
+                android:padding="10dp"
+                android:layout_marginTop="5dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Kích hoạt trong: (ngày)"
+                android:textStyle="bold"
+                android:textColor="@color/grey_text"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/editTextActive"
+                android:background="@drawable/custome_edittext2"
+                android:padding="10dp"
+                android:layout_marginTop="5dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tự động kích hoạt sau: (ngày)"
+                android:textStyle="bold"
+                android:textColor="@color/grey_text"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"/>
+
+            <EditText
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:id="@+id/editTextAutoActive"
+                android:background="@drawable/custome_edittext2"
+                android:padding="10dp"
+                android:layout_marginTop="5dp"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tình trạng"
+                android:textStyle="bold"
+                android:textColor="@color/grey_text"
+                android:textSize="16sp"
+                android:layout_marginTop="10dp"/>
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/custome_edittext2"
+                android:layout_marginTop="5dp"
+                android:padding="10dp">
+
+                <Spinner
+                    android:id="@+id/spinnerStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerVertical="true"
+                    android:layout_toLeftOf="@+id/dropdown_iconTypeTicket"
+                    android:background="@android:color/transparent"
+                    android:paddingEnd="40dp" />
+
+                <ImageButton
+                    android:id="@+id/dropdown_iconTypeTicket"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:src="@drawable/arrow_drop_down"
+                    android:background="@android:color/transparent"
+                    android:focusable="false"
+                    android:clickable="true" />
+            </RelativeLayout>
+
+            <!-- Button -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:paddingVertical="30dp"
+                android:layout_centerHorizontal="true">
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/cancel_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/grey_btn_bg"
+                    android:paddingVertical="15dp"
+                    android:text="HỦY"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginEnd="8dp" />
+
+                <androidx.appcompat.widget.AppCompatButton
+                    android:id="@+id/save_button"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:background="@drawable/blue_btn_bg"
+                    android:paddingVertical="15dp"
+                    android:text="LƯU"
+                    android:textColor="@android:color/white"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:layout_marginStart="8dp" />
+            </LinearLayout>
+
+        </LinearLayout>
+    </ScrollView>
 
 </LinearLayout>

@@ -37,8 +37,8 @@ public class AdTicketDetails extends AppCompatActivity {
         EditText editTextActive = findViewById(R.id.editTextActive);
         EditText editTextAutoActive = findViewById(R.id.editTextAutoActive);
         Spinner spinnerStatus = findViewById(R.id.spinnerStatus);
-        Button cancelButton = findViewById(R.id.button_cancel);
-        Button saveButton = findViewById(R.id.button_save);
+        Button cancelButton = findViewById(R.id.cancel_button);
+        Button saveButton = findViewById(R.id.save_button);
 
         // Set up adapter for status spinner
         ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,

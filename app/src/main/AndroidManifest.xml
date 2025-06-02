@@ -47,7 +47,6 @@
         <activity
             android:name=".Activity.User.TransactionHistoryActivity"
             android:exported="false">
-
         </activity>
         <activity android:name=".Activity.User.JourneyActivity"
             android:exported="true">
