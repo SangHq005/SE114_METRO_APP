@@ -1,6 +1,7 @@
 package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -23,7 +24,6 @@ import java.util.ArrayList;
 public class HomeActivity extends AppCompatActivity {
     ActivityHomeBinding binding;
     MainViewModel viewModel;
-    private String userUUID; // Biến để lưu UUID
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -32,13 +32,6 @@ public class HomeActivity extends AppCompatActivity {
         binding = ActivityHomeBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
         viewModel = new MainViewModel();
-
-        // Lấy UUID từ Intent
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("UUID")) {
-            userUUID = intent.getStringExtra("UUID");
-            System.out.println("Received UUID: " + userUUID);
-        }
 
         initCategory();
         initNews();
@@ -109,31 +102,22 @@ public class HomeActivity extends AppCompatActivity {
             // Tạo adapter với sự kiện click
             CategoryAdapter adapter = new CategoryAdapter(categoryModels, category -> {
                 if ("Mua vé".equals(category.getName())) {
-                    Intent intent = new Intent(HomeActivity.this, MyTicketsActivity.class);
-                    intent.putExtra("UUID", userUUID);
-                    startActivity(intent);
+                    startActivity(new Intent(HomeActivity.this, MyTicketsActivity.class));
                 }
                 if ("Vé của tôi".equals(category.getName())) {
-                    Intent intent = new Intent(HomeActivity.this, YourTicketsActivity.class);
-                    intent.putExtra("UUID", userUUID);
-                    startActivity(intent);
+                    startActivity(new Intent(HomeActivity.this, YourTicketsActivity.class));
                 }
                 if ("Đổi mã lấy vé".equals(category.getName())) {
-                    Intent intent = new Intent(HomeActivity.this, ChangeQRActivity.class);
-                    intent.putExtra("userId", userUUID); // Truyền userId
-                    startActivity(intent);
+                    startActivity(new Intent(HomeActivity.this, ChangeQRActivity.class));
                 }
                 if ("Bản đồ".equals(category.getName())) {
-                    Intent intent = new Intent(HomeActivity.this, FindPathActivity.class);
-                    startActivity(intent);
+                    startActivity(new Intent(HomeActivity.this, FindPathActivity.class));
                 }
                 if ("Hành trình".equals(category.getName())) {
-                    Intent intent = new Intent(HomeActivity.this, JourneyActivity.class);
-                    startActivity(intent);
+                    startActivity(new Intent(HomeActivity.this, JourneyActivity.class));
                 }
                 if ("Tài khoản".equals(category.getName())) {
-                    Intent intent = new Intent(HomeActivity.this, InfoAcitivity.class);
-                    startActivity(intent);
+                    startActivity(new Intent(HomeActivity.this, InfoAcitivity.class));
                 }
             });
             binding.recyclerViewCategory.setAdapter(adapter);

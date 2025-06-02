@@ -119,6 +119,7 @@ public class AddTicketActivity extends AppCompatActivity {
             ticketData.put("Active", activeDays); // Store as number
             ticketData.put("AutoActive", autoActiveDays); // Store as number
             ticketData.put("Status", status);
+            ticketData.put("Type", "Vé dài hạn"); // Add Type field
 
             db.collection("TicketType")
                     .document(id)

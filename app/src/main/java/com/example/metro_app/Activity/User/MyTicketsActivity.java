@@ -1,26 +1,26 @@
 package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+
 import com.example.metro_app.Adapter.TicketTypeAdapter;
 import com.example.metro_app.Model.TicketType;
 import com.example.metro_app.R;
 import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -33,7 +33,6 @@ public class MyTicketsActivity extends AppCompatActivity {
     private List<TicketType> noiBatTickets, hssvTickets;
     private FirebaseFirestore db;
     private DecimalFormat decimalFormat;
-    private String userUUID;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -43,13 +42,11 @@ public class MyTicketsActivity extends AppCompatActivity {
 
         checkGooglePlayServices();
 
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("UUID")) {
-            userUUID = intent.getStringExtra("UUID");
-            Log.d("MyTicketsActivity", "Received UUID in MyTicketsActivity: " + userUUID);
-        } else {
-            Log.e("MyTicketsActivity", "No UUID received in Intent");
-        }
+        // Lấy userId và name từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        String userId = prefs.getString("UserID", null);
+        String userName = prefs.getString("name", "Không có thông tin");
+        Log.d("MyTicketsActivity", "Retrieved userId from SharedPreferences: " + userId);
 
         db = FirebaseFirestore.getInstance();
 
@@ -67,6 +64,9 @@ public class MyTicketsActivity extends AppCompatActivity {
             Log.e("MyTicketsActivity", "Error initializing UI: " + e.getMessage());
             return;
         }
+
+        // Hiển thị tên từ SharedPreferences
+        nameTxt.setText(userName);
 
         recyclerViewTickets.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewHSSV.setLayoutManager(new LinearLayoutManager(this));
@@ -91,9 +91,7 @@ public class MyTicketsActivity extends AppCompatActivity {
             backBtn.bringToFront();
             backBtn.setOnClickListener(v -> {
                 Log.d("MyTicketsActivity", "backBtn clicked");
-                Intent backIntent = new Intent(MyTicketsActivity.this, HomeActivity.class);
-                backIntent.putExtra("UUID", userUUID);
-                startActivity(backIntent);
+                startActivity(new Intent(MyTicketsActivity.this, HomeActivity.class));
                 finish();
             });
         } else {
@@ -107,7 +105,6 @@ public class MyTicketsActivity extends AppCompatActivity {
             toolbar.setOnClickListener(v -> Log.d("MyTicketsActivity", "ToolbarconstraintLayout clicked"));
         }
 
-        fetchUserName();
         loadTickets();
     }
 
@@ -115,7 +112,10 @@ public class MyTicketsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d("MyTicketsActivity", "onResume called");
-        fetchUserName();
+        // Cập nhật tên từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        String userName = prefs.getString("name", "Không có thông tin");
+        nameTxt.setText(userName);
     }
 
     private void checkGooglePlayServices() {
@@ -123,43 +123,11 @@ public class MyTicketsActivity extends AppCompatActivity {
         int resultCode = googleApi.isGooglePlayServicesAvailable(this);
     }
 
-    private void fetchUserName() {
-        if (userUUID == null) {
-            nameTxt.setText("Không có thông tin");
-            Log.e("MyTicketsActivity", "userUUID is null");
-            return;
-        }
-
-        Log.d("MyTicketsActivity", "Fetching username for userUUID: " + userUUID);
-        db.collection("Account").document(userUUID).get()
-                .addOnCompleteListener(task -> {
-                    if (task.isSuccessful()) {
-                        DocumentSnapshot document = task.getResult();
-                        if (document != null && document.exists()) {
-                            String userName = document.getString("Name");
-                            if (userName != null) {
-                                nameTxt.setText(userName);
-                                Log.d("MyTicketsActivity", "Fetched userName: " + userName);
-                            } else {
-                                nameTxt.setText("Không có thông tin");
-                                Log.e("MyTicketsActivity", "Field 'Name' not found for userId: " + userUUID);
-                            }
-                        } else {
-                            nameTxt.setText("Không có thông tin");
-                            Log.e("MyTicketsActivity", "Document does not exist for userId: " + userUUID);
-                        }
-                    } else {
-                        nameTxt.setText("Không có thông tin");
-                        Log.e("MyTicketsActivity", "Failed to fetch user name: " + (task.getException() != null ? task.getException().getMessage() : "Unknown error"));
-                    }
-                });
-    }
-
     private void fetchTicketDetailsAndStartActivity(String ticketId) {
         db.collection("TicketType").document(ticketId).get().addOnCompleteListener(task -> {
             if (task.isSuccessful() && task.getResult() != null) {
                 String name = task.getResult().getString("Name");
-                Object expirationObj = task.getResult().get("Expiration");
+                Object expirationObj = task.getResult().get("Active");
                 Object autoActiveObj = task.getResult().get("AutoActive");
 
                 long expiration = 0;
@@ -204,10 +172,9 @@ public class MyTicketsActivity extends AppCompatActivity {
                 Intent intent = new Intent(MyTicketsActivity.this, ChooseTicketActivity.class);
                 intent.putExtra("ticket_type_id", ticketId);
                 intent.putExtra("ticket_name", name != null ? name : "Không có thông tin");
-                intent.putExtra("ticket_expiration", String.valueOf(expiration));
+                intent.putExtra("ticket_active", String.valueOf(expiration));
                 intent.putExtra("ticket_auto_active", String.valueOf(autoActive));
                 intent.putExtra("ticket_price", price);
-                intent.putExtra("UUID", userUUID);
                 startActivity(intent);
             } else {
                 Toast.makeText(this, "Lỗi tải dữ liệu vé: " + (task.getException() != null ? task.getException().getMessage() : "Không xác định"), Toast.LENGTH_LONG).show();
@@ -235,6 +202,7 @@ public class MyTicketsActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String id = document.getId();
                             String name = document.getString("Name");
+                            String type = document.getString("Type");
                             if (name == null) {
                                 Object nameObj = document.get("Name");
                                 if (nameObj != null) {
@@ -265,9 +233,9 @@ public class MyTicketsActivity extends AppCompatActivity {
                             }
 
                             TicketType ticket = new TicketType(id, name, price);
-                            if (id.equals("2")) {
+                            if (name.toLowerCase().contains("hssv")) {
                                 hssvTickets.add(ticket);
-                            } else {
+                            } else if ("Vé dài hạn".equals(type)) {
                                 noiBatTickets.add(ticket);
                             }
                         }

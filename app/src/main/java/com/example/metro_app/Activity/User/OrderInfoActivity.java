@@ -1,6 +1,7 @@
 package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
@@ -9,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.metro_app.Domain.PaymentMethodDialog;
@@ -29,6 +31,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
+
 import javax.crypto.Mac;
 import javax.crypto.spec.SecretKeySpec;
 
@@ -42,7 +45,7 @@ public class OrderInfoActivity extends AppCompatActivity {
     private long ticketPrice;
     private String lastOrderId;
     private String lastTicketTypeId;
-    private String userUUID;
+    private String userId;
     private String ticketExpiration;
     private String ticketAutoActive;
     private boolean isPaymentProcessed = false;
@@ -60,12 +63,13 @@ public class OrderInfoActivity extends AppCompatActivity {
         decimalFormat = new DecimalFormat("#,###");
         decimalFormat.setGroupingSize(3);
 
+        // Lấy userId từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        userId = prefs.getString("UserID", null);
+        Log.d("OrderInfo", "Retrieved userId from SharedPreferences: " + userId);
+
         Intent intent = getIntent();
         if (intent != null) {
-            if (intent.hasExtra("UUID")) {
-                userUUID = intent.getStringExtra("UUID");
-                Log.d("OrderInfo", "Received UUID in OrderInfoActivity: " + userUUID);
-            }
             if (intent.hasExtra("ticket_type_id")) {
                 lastTicketTypeId = intent.getStringExtra("ticket_type_id");
                 Log.d("OrderInfo", "Received ticket_type_id in OrderInfoActivity: " + lastTicketTypeId);
@@ -95,7 +99,6 @@ public class OrderInfoActivity extends AppCompatActivity {
         TextView soLuongTxt = findViewById(R.id.soLuongTxt);
         TextView thanhTienTxt = findViewById(R.id.thanhTienTxt);
         TextView tongTienTxt = findViewById(R.id.tongTienTxt);
-        TextView tongThanhTienTxt = findViewById(R.id.tongThanhTienTxt);
         TextView loaiVeTxt = findViewById(R.id.loaiVeTxt);
         TextView hsdTxt = findViewById(R.id.hsdTxt);
         TextView luuYTxt = findViewById(R.id.luuYTxt);
@@ -113,7 +116,6 @@ public class OrderInfoActivity extends AppCompatActivity {
         String totalFormatted = decimalFormat.format(total) + " VND";
         thanhTienTxt.setText(totalFormatted);
         tongTienTxt.setText(totalFormatted);
-        tongThanhTienTxt.setText(totalFormatted);
 
         loaiVeTxt.setText(ticketName != null ? ticketName : "Không có thông tin");
         hsdTxt.setText("HSD: " + (ticketExpiration != null ? ticketExpiration : "0") + " ngày kể từ ngày kích hoạt");
@@ -136,21 +138,19 @@ public class OrderInfoActivity extends AppCompatActivity {
                 Toast.makeText(OrderInfoActivity.this, "Vui lòng chọn phương thức thanh toán VN PAY", Toast.LENGTH_SHORT).show();
                 return;
             }
-            initiateVNPayPayment(ticketPrice, ticketName);
+            initiateVNPayPayment(selectedPaymentMethod, ticketPrice);
         });
 
         // Sự kiện nhấn nút Back
         backBtn.setOnClickListener(v -> {
-            Intent backIntent = new Intent(OrderInfoActivity.this, MyTicketsActivity.class);
-            backIntent.putExtra("UUID", userUUID);
-            startActivity(backIntent);
+            startActivity(new Intent(OrderInfoActivity.this, MyTicketsActivity.class));
             finish();
         });
     }
 
-    private void initiateVNPayPayment(long amount, String ticketName) {
+    private void initiateVNPayPayment(String ticketName, long amount) {
         try {
-            String orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 20);
+            String orderId = UUID.randomUUID().toString().replace("-", "").substring(0, 8);
             String createDate = new SimpleDateFormat("yyyyMMddHHmmss").format(new Date());
 
             this.lastOrderId = orderId;
@@ -230,8 +230,7 @@ public class OrderInfoActivity extends AppCompatActivity {
             String transactionNo = UUID.randomUUID().toString().substring(0, 10);
             Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
             saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
-            Intent successIntent = new Intent(this, YourTicketsActivity.class); // Chuyển đến YourTicketsActivity
-            successIntent.putExtra("UUID", userUUID);
+            Intent successIntent = new Intent(this, YourTicketsActivity.class);
             successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(successIntent);
             finish();
@@ -320,7 +319,7 @@ public class OrderInfoActivity extends AppCompatActivity {
             ticket.put("ticketTypeId", ticketTypeId != null ? ticketTypeId : "unknown");
             ticket.put("ticketCode", ticketCode);
             ticket.put("timestamp", currentTimestamp);
-            ticket.put("userId", userUUID != null ? userUUID : "unknown");
+            ticket.put("userId", userId != null ? userId : "unknown");
             ticket.put("Status", "Chưa kích hoạt");
             ticket.put("AutoActiveDate", autoActiveDate);
             ticket.put("ExpirationDate", expirationDate);
@@ -332,7 +331,6 @@ public class OrderInfoActivity extends AppCompatActivity {
         }).addOnSuccessListener(ticketCode -> {
             Log.d("Firestore", "Lưu giao dịch và vé thành công: " + orderId + ", ticketCode: " + ticketCode);
             Intent successIntent = new Intent(this, YourTicketsActivity.class);
-            successIntent.putExtra("UUID", userUUID);
             successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(successIntent);
             finish();
@@ -380,7 +378,6 @@ public class OrderInfoActivity extends AppCompatActivity {
                         Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
                         saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
                         Intent successIntent = new Intent(this, YourTicketsActivity.class);
-                        successIntent.putExtra("UUID", userUUID);
                         successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(successIntent);
                         finish();
