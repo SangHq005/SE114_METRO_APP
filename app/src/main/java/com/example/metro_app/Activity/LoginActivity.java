@@ -119,6 +119,8 @@ public class LoginActivity extends AppCompatActivity {
                                                 data.put("Name", user.getDisplayName());
                                                 data.put("Email", user.getEmail());
                                                 data.put("Role", "User"); // mặc định là user
+                                                data.put("CCCD","");
+                                                data.put("avatarUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
                                                 db.collection("Account").document(uid).set(data)
                                                         .addOnSuccessListener(aVoid -> {
                                                             saveUserInfo(user);

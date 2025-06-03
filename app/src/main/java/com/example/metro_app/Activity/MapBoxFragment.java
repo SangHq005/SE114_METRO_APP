@@ -320,6 +320,7 @@ private final LocationObserver locationObserver= new LocationObserver() {
             Glide.with(this)
                     .asBitmap()
                     .load(avatarUrl)
+                    .circleCrop()
                     .into(new CustomTarget<Bitmap>() {
                         @Override
                         public void onResourceReady(Bitmap resource, Transition<? super Bitmap> transition) {
