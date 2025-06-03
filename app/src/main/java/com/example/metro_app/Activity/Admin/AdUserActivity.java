@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.metro_app.Model.UserHelper;
+import com.example.metro_app.Model.FireStoreHelper;
 import com.example.metro_app.Model.UserModel;
 import com.example.metro_app.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -136,7 +136,7 @@ public class AdUserActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
     private List<UserModel> userList;
-    private UserHelper userHelper;
+    private FireStoreHelper fireStoreHelper;
 
     private final ActivityResultLauncher<Intent> editUserLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -185,7 +185,7 @@ public class AdUserActivity extends AppCompatActivity {
         }
 
         userList = new ArrayList<>();
-        userHelper = new UserHelper();
+        fireStoreHelper = new FireStoreHelper();
 
         // Set up adapter
         userAdapter = new UserAdapter(this, new ArrayList<>(), user -> {
@@ -207,7 +207,7 @@ public class AdUserActivity extends AppCompatActivity {
         });
         recyclerView.setAdapter(userAdapter);
 
-        userHelper.getAllUsers(new UserHelper.Callback<List<UserModel>>() {
+        fireStoreHelper.getAllUsers(new FireStoreHelper.Callback<List<UserModel>>() {
             @Override
             public void onSuccess(List<UserModel> result) {
                 runOnUiThread(() -> {

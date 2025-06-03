@@ -91,6 +91,8 @@ dependencies {
     //QR
     implementation ("com.google.zxing:core:3.5.2")
     implementation ("com.google.zxing:android-integration:3.3.0")
+    //chart
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
     implementation(libs.appcompat) // androidx.appcompat
     implementation(libs.activity) // androidx.activity

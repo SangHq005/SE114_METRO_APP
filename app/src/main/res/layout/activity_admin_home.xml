@@ -117,10 +117,11 @@
                             android:drawablePadding="8dp" />
 
                         <TextView
+                            android:id="@+id/tvRevenue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="1,000,000 đ"
+                            android:text="1,00000 đ"
                             android:textColor="@android:color/white"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -162,6 +163,7 @@
                             android:drawablePadding="8dp" />
 
                         <TextView
+                            android:id="@+id/tvTicket"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
@@ -205,6 +207,7 @@
                             android:drawablePadding="8dp" />
 
                         <TextView
+                            android:id="@+id/tvUser"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
@@ -294,11 +297,12 @@
                     android:layout_marginTop="8dp">
 
                     <Button
+                        android:id="@+id/btnWeekly"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Weekly"
                         android:background="@android:color/transparent"
+                        android:text="Weekly"
                         android:textColor="@android:color/white" />
 
                     <Button
@@ -318,10 +322,10 @@
                         android:textColor="@android:color/white" />
                 </LinearLayout>
 
-                <androidx.cardview.widget.CardView
-                    android:id="@+id/earningsChart"
+                <com.github.mikephil.charting.charts.LineChart
+                    android:id="@+id/lineChart"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
+                    android:layout_height="300dp"
                     android:layout_marginTop="16dp" />
             </LinearLayout>
         </LinearLayout>
