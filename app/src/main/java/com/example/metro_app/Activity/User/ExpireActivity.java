@@ -1,6 +1,7 @@
 package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -33,7 +34,7 @@ public class ExpireActivity extends AppCompatActivity {
     private TicketAdapter ticketAdapter;
     private List<TicketModel> ticketList;
     private FirebaseFirestore db;
-    private String userUUID;
+    private String userId;
     private ImageView homeImgBtn;
 
     @Override
@@ -48,11 +49,10 @@ public class ExpireActivity extends AppCompatActivity {
             return insets;
         });
 
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("UUID")) {
-            userUUID = intent.getStringExtra("UUID");
-            System.out.println("Received UUID in ExpireActivity: " + userUUID);
-        }
+        // Lấy userId từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        userId = prefs.getString("UserID", null);
+        Log.d("ExpireActivity", "Retrieved userId from SharedPreferences: " + userId);
 
         db = FirebaseFirestore.getInstance();
 
@@ -62,7 +62,7 @@ public class ExpireActivity extends AppCompatActivity {
         recyclerViewTickets.setLayoutManager(new LinearLayoutManager(this));
         ticketList = new ArrayList<>();
 
-        ticketAdapter = new TicketAdapter(ticketList, item -> {}, userUUID);
+        ticketAdapter = new TicketAdapter(ticketList, item -> {}, userId);
         recyclerViewTickets.setAdapter(ticketAdapter);
         homeImgBtn = findViewById(R.id.homeImgBtn);
 
@@ -76,11 +76,9 @@ public class ExpireActivity extends AppCompatActivity {
 
         loadExpiredTickets();
         homeImgBtn.setOnClickListener(v -> {
-            Intent homeIntent = new Intent(ExpireActivity.this, HomeActivity.class);
-            homeIntent.putExtra("UUID", userUUID);
-            startActivity(homeIntent);
+            startActivity(new Intent(ExpireActivity.this, HomeActivity.class));
             finish();
-            });
+        });
     }
 
     private void loadExpiredTickets() {
@@ -89,7 +87,7 @@ public class ExpireActivity extends AppCompatActivity {
         ticketAdapter.notifyDataSetChanged();
 
         db.collection("Ticket")
-                .whereEqualTo("userId", userUUID)
+                .whereEqualTo("userId", userId)
                 .whereEqualTo("Status", "Hết hạn")
                 .get()
                 .addOnCompleteListener(task -> {
@@ -105,7 +103,7 @@ public class ExpireActivity extends AppCompatActivity {
                             String ticketTypeId = document.getString("ticketTypeId");
                             String ticketStatus = document.getString("Status");
                             Date issueDate = document.getDate("timestamp");
-                            String userId = document.getString("userId");
+                            String userIdDoc = document.getString("userId");
                             String ticketCode = document.getString("ticketCode");
 
                             db.collection("TicketType").document(ticketTypeId).get()
@@ -114,7 +112,7 @@ public class ExpireActivity extends AppCompatActivity {
                                             String ticketName = typeTask.getResult().getString("Name");
                                             String price = typeTask.getResult().get("Price") != null ? typeTask.getResult().get("Price").toString() + " VND" : "0 VND";
 
-                                            db.collection("users").document(userId).get()
+                                            db.collection("users").document(userIdDoc).get()
                                                     .addOnCompleteListener(userTask -> {
                                                         String userName = "Không có thông tin";
                                                         if (userTask.isSuccessful() && userTask.getResult() != null) {

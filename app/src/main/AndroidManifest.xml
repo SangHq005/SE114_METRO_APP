@@ -45,6 +45,10 @@
             android:exported="false">
         </activity>
         <activity
+            android:name=".Activity.User.ChangeQRActivity"
+            android:exported="false">
+        </activity>
+        <activity
             android:name=".Activity.User.TransactionHistoryActivity"
             android:exported="false">
         </activity>
@@ -53,6 +57,9 @@
         </activity>
 
         <activity android:name=".Activity.User.MyTicketsActivity"
+            android:exported="true">
+        </activity>
+        <activity android:name=".Activity.User.ExpireActivity"
             android:exported="true">
         </activity>
 
