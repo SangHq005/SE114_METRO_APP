@@ -1,6 +1,7 @@
 package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -23,6 +24,7 @@ import com.example.metro_app.R;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -38,7 +40,7 @@ public class YourTicketsActivity extends AppCompatActivity {
     private TicketAdapter ticketAdapter;
     private List<TicketModel> ticketList;
     private FirebaseFirestore db;
-    private String userUUID;
+    private String userId;
     private final Date currentDate = new Date();
 
     @Override
@@ -53,11 +55,10 @@ public class YourTicketsActivity extends AppCompatActivity {
             return insets;
         });
 
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("UUID")) {
-            userUUID = intent.getStringExtra("UUID");
-            Log.d("YourTicketsActivity", "Received UUID in YourTicketsActivity: " + userUUID);
-        }
+        // Lấy userId từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        userId = prefs.getString("UserID", null);
+        Log.d("YourTicketsActivity", "Retrieved userId from SharedPreferences: " + userId);
 
         db = FirebaseFirestore.getInstance();
 
@@ -71,26 +72,22 @@ public class YourTicketsActivity extends AppCompatActivity {
         recyclerViewTickets.setLayoutManager(new LinearLayoutManager(this));
         ticketList = new ArrayList<>();
 
-        ticketAdapter = new TicketAdapter(ticketList, item -> {}, userUUID);
+        ticketAdapter = new TicketAdapter(ticketList, item -> {}, userId);
         recyclerViewTickets.setAdapter(ticketAdapter);
 
         btnDangSuDung.setOnClickListener(v -> loadTicketsByStatus("Đang kích hoạt"));
         btnChuaSuDung.setOnClickListener(v -> loadTicketsByStatus("Chưa kích hoạt"));
 
         hethanTxt.setOnClickListener(v -> {
-            Intent expireIntent = new Intent(YourTicketsActivity.this, ExpireActivity.class);
-            expireIntent.putExtra("UUID", userUUID);
-            startActivity(expireIntent);
+            startActivity(new Intent(YourTicketsActivity.this, ExpireActivity.class));
         });
 
         // Sự kiện nhấn homeImgBtn
         homeImgBtn.setOnClickListener(v -> {
             Log.d("YourTicketsActivity", "homeImgBtn clicked");
-            Intent homeIntent = new Intent(YourTicketsActivity.this, HomeActivity.class);
-            homeIntent.putExtra("UUID", userUUID);
-            startActivity(homeIntent);
+            startActivity(new Intent(YourTicketsActivity.this, HomeActivity.class));
             finish();
-            });
+        });
 
         loadTicketsByStatus("Đang kích hoạt");
     }
@@ -101,7 +98,7 @@ public class YourTicketsActivity extends AppCompatActivity {
         ticketAdapter.notifyDataSetChanged();
 
         db.collection("Ticket")
-                .whereEqualTo("userId", userUUID)
+                .whereEqualTo("userId", userId)
                 .whereEqualTo("Status", status)
                 .get()
                 .addOnCompleteListener(task -> {
@@ -119,7 +116,7 @@ public class YourTicketsActivity extends AppCompatActivity {
                             Date autoActiveDate = document.getDate("AutoActiveDate");
                             Date expirationDate = document.getDate("ExpirationDate");
                             Date issueDate = document.getDate("timestamp");
-                            String userId = document.getString("userId");
+                            String userIdDoc = document.getString("userId");
                             String ticketCode = document.getString("ticketCode");
 
                             if (!"Hết hạn".equals(ticketStatus) && expirationDate != null && !expirationDate.after(currentDate)) {
@@ -156,7 +153,7 @@ public class YourTicketsActivity extends AppCompatActivity {
                                             String formattedAutoActiveDate = autoActiveDate != null ? "Tự động kích hoạt vào: " + dateFormat.format(autoActiveDate) : "Tự động kích hoạt vào: N/A";
                                             String formattedExpirationDate = expirationDate != null ? dateFormat.format(expirationDate) : "N/A";
 
-                                            db.collection("Account").document(userId).get()
+                                            db.collection("Account").document(userIdDoc).get()
                                                     .addOnCompleteListener(userTask -> {
                                                         String userName = "Không có thông tin";
                                                         if (userTask.isSuccessful()) {
@@ -167,10 +164,10 @@ public class YourTicketsActivity extends AppCompatActivity {
                                                                 } else if (userDoc.contains("name")) {
                                                                     userName = userDoc.getString("name");
                                                                 } else {
-                                                                    Log.e("YourTicketsActivity", "Document exists but 'Name' or 'name' field not found for userId: " + userId);
+                                                                    Log.e("YourTicketsActivity", "Document exists but 'Name' or 'name' field not found for userId: " + userIdDoc);
                                                                 }
                                                             } else {
-                                                                Log.e("YourTicketsActivity", "Document does not exist for userId: " + userId);
+                                                                Log.e("YourTicketsActivity", "Document does not exist for userId: " + userIdDoc);
                                                             }
                                                         } else {
                                                             Log.e("YourTicketsActivity", "Failed to fetch user name: " + (userTask.getException() != null ? userTask.getException().getMessage() : "Unknown error"));
@@ -187,7 +184,7 @@ public class YourTicketsActivity extends AppCompatActivity {
                                                                 userName,
                                                                 ticketCode,
                                                                 formattedExpirationDate,
-                                                                userId
+                                                                userIdDoc
                                                         );
                                                         ticketList.add(ticket);
 

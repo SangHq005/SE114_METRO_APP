@@ -1,6 +1,7 @@
 package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -12,6 +13,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
+
 import com.example.metro_app.R;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
@@ -21,6 +23,7 @@ import com.google.firebase.firestore.ListenerRegistration;
 import com.google.zxing.BarcodeFormat;
 import com.google.zxing.MultiFormatWriter;
 import com.google.zxing.common.BitMatrix;
+
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -50,6 +53,11 @@ public class CreateQRActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
 
+        // Lấy userId từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        userId = prefs.getString("UserID", null);
+        Log.d("CreateQRActivity", "Retrieved userId from SharedPreferences: " + userId);
+
         // Ánh xạ view
         toggleButtonGroup = findViewById(R.id.toggleButtonGroup);
         qrCodeContainer = findViewById(R.id.qrCodeContainer);
@@ -73,12 +81,10 @@ public class CreateQRActivity extends AppCompatActivity {
             long issueDateMillis = intent.getLongExtra("issueDate", 0L);
             String userName = intent.getStringExtra("userName");
             String ticketCode = intent.getStringExtra("ticketCode");
-            userId = intent.getStringExtra("userId");
             source = intent.getStringExtra("source");
 
-            // Log giá trị userName, userId và source để kiểm tra
+            // Log giá trị userName và source để kiểm tra
             Log.d("CreateQRActivity", "Received userName: " + userName);
-            Log.d("CreateQRActivity", "Received userId: " + userId);
             Log.d("CreateQRActivity", "Received source: " + source);
 
             // Cập nhật TextView trong infoContainer
@@ -117,9 +123,7 @@ public class CreateQRActivity extends AppCompatActivity {
 
             if ("YourTicketsActivity".equals(source)) {
                 // Nếu nguồn là YourTicketsActivity, chỉ chuyển lại YourTicketsActivity
-                Intent yourTicketsIntent = new Intent(CreateQRActivity.this, YourTicketsActivity.class);
-                yourTicketsIntent.putExtra("UUID", userId);
-                startActivity(yourTicketsIntent);
+                startActivity(new Intent(CreateQRActivity.this, YourTicketsActivity.class));
                 finish();
             } else if ("ChangeQRActivity".equals(source)) {
                 // Nếu nguồn là ChangeQRActivity, kiểm tra userId và cập nhật trước khi chuyển
@@ -131,9 +135,7 @@ public class CreateQRActivity extends AppCompatActivity {
                 ticketRef.update("userId", userId)
                         .addOnSuccessListener(aVoid -> {
                             Toast.makeText(this, "Vé đã được thêm vào tài khoản!", Toast.LENGTH_LONG).show();
-                            Intent yourTicketsIntent = new Intent(CreateQRActivity.this, YourTicketsActivity.class);
-                            yourTicketsIntent.putExtra("UUID", userId);
-                            startActivity(yourTicketsIntent);
+                            startActivity(new Intent(CreateQRActivity.this, YourTicketsActivity.class));
                             finish();
                         })
                         .addOnFailureListener(e -> {
@@ -141,9 +143,7 @@ public class CreateQRActivity extends AppCompatActivity {
                         });
             } else {
                 // Trường hợp không xác định được source, chuyển lại YourTicketsActivity
-                Intent yourTicketsIntent = new Intent(CreateQRActivity.this, YourTicketsActivity.class);
-                yourTicketsIntent.putExtra("UUID", userId);
-                startActivity(yourTicketsIntent);
+                startActivity(new Intent(CreateQRActivity.this, YourTicketsActivity.class));
                 finish();
             }
         });

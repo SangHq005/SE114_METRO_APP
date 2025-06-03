@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.metro_app.Adapter.RouteListAdapter;
 import com.example.metro_app.Adapter.TicketTypeAdapter;
 import com.example.metro_app.Model.TicketType;
 import com.example.metro_app.R;
@@ -27,10 +28,11 @@ import java.util.List;
 
 public class MyTicketsActivity extends AppCompatActivity {
 
-    private RecyclerView recyclerViewTickets, recyclerViewHSSV;
-    private TextView tvNoTicketsNoiBat, tvNoTicketsHSSV, nameTxt;
+    private RecyclerView recyclerViewTickets, recyclerViewHSSV, recyclerViewRouteList;
+    private TextView tvNoTicketsNoiBat, tvNoTicketsHSSV, tvNoTicketsRoute, nameTxt;
     private TicketTypeAdapter noiBatAdapter, hssvAdapter;
-    private List<TicketType> noiBatTickets, hssvTickets;
+    private RouteListAdapter routeListAdapter;
+    private List<TicketType> noiBatTickets, hssvTickets, routeTickets;
     private FirebaseFirestore db;
     private DecimalFormat decimalFormat;
 
@@ -56,6 +58,7 @@ public class MyTicketsActivity extends AppCompatActivity {
         try {
             recyclerViewTickets = findViewById(R.id.recyclerViewTickets);
             recyclerViewHSSV = findViewById(R.id.recyclerViewHSSV);
+            recyclerViewRouteList = findViewById(R.id.recyclerViewRouteList);
             tvNoTicketsNoiBat = findViewById(R.id.tv_no_tickets_noi_bat);
             tvNoTicketsHSSV = findViewById(R.id.tv_no_tickets_hssv);
             nameTxt = findViewById(R.id.nameTxt);
@@ -70,9 +73,11 @@ public class MyTicketsActivity extends AppCompatActivity {
 
         recyclerViewTickets.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewHSSV.setLayoutManager(new LinearLayoutManager(this));
+        recyclerViewRouteList.setLayoutManager(new LinearLayoutManager(this));
 
         noiBatTickets = new ArrayList<>();
         hssvTickets = new ArrayList<>();
+        routeTickets = new ArrayList<>();
 
         noiBatAdapter = new TicketTypeAdapter(noiBatTickets, ticket -> {
             fetchTicketDetailsAndStartActivity(ticket.getId());
@@ -80,9 +85,19 @@ public class MyTicketsActivity extends AppCompatActivity {
         hssvAdapter = new TicketTypeAdapter(hssvTickets, ticket -> {
             fetchTicketDetailsAndStartActivity(ticket.getId());
         });
+        routeListAdapter = new RouteListAdapter(routeTickets, ticket -> {
+            Intent intent = new Intent(MyTicketsActivity.this, DetailRouteActivity.class);
+            intent.putExtra("ticket_id", ticket.getId());
+            intent.putExtra("ticket_name", ticket.getName());
+            intent.putExtra("start_station", ticket.getStartStation());
+            intent.putExtra("end_station", ticket.getEndStation());
+            intent.putExtra("ticket_price", ticket.getPrice());
+            startActivity(intent);
+        });
 
         recyclerViewTickets.setAdapter(noiBatAdapter);
         recyclerViewHSSV.setAdapter(hssvAdapter);
+        recyclerViewRouteList.setAdapter(routeListAdapter);
 
         ImageView backBtn = findViewById(R.id.backBtn);
         if (backBtn != null) {
@@ -189,12 +204,16 @@ public class MyTicketsActivity extends AppCompatActivity {
         if (tvNoTicketsHSSV != null) {
             tvNoTicketsHSSV.setVisibility(View.GONE);
         }
+        if (tvNoTicketsRoute != null) {
+            tvNoTicketsRoute.setVisibility(View.GONE);
+        }
 
         db.collection("TicketType").get().addOnCompleteListener(task -> {
             try {
                 if (task.isSuccessful()) {
                     noiBatTickets.clear();
                     hssvTickets.clear();
+                    routeTickets.clear();
 
                     if (task.getResult().isEmpty()) {
                         runOnUiThread(() -> Toast.makeText(MyTicketsActivity.this, "Không có dữ liệu trong TicketType", Toast.LENGTH_LONG).show());
@@ -203,6 +222,8 @@ public class MyTicketsActivity extends AppCompatActivity {
                             String id = document.getId();
                             String name = document.getString("Name");
                             String type = document.getString("Type");
+                            String startStation = document.getString("StartStation");
+                            String endStation = document.getString("EndStation");
                             if (name == null) {
                                 Object nameObj = document.get("Name");
                                 if (nameObj != null) {
@@ -233,10 +254,16 @@ public class MyTicketsActivity extends AppCompatActivity {
                             }
 
                             TicketType ticket = new TicketType(id, name, price);
+                            ticket.setType(type);
+                            ticket.setStartStation(startStation);
+                            ticket.setEndStation(endStation);
+
                             if (name.toLowerCase().contains("hssv")) {
                                 hssvTickets.add(ticket);
                             } else if ("Vé dài hạn".equals(type)) {
                                 noiBatTickets.add(ticket);
+                            } else if ("Vé lượt".equals(type)) {
+                                routeTickets.add(ticket);
                             }
                         }
                     }
@@ -247,12 +274,18 @@ public class MyTicketsActivity extends AppCompatActivity {
                     if (hssvAdapter != null) {
                         hssvAdapter.notifyDataSetChanged();
                     }
+                    if (routeListAdapter != null) {
+                        routeListAdapter.notifyDataSetChanged();
+                    }
 
                     if (tvNoTicketsNoiBat != null) {
                         tvNoTicketsNoiBat.setVisibility(noiBatTickets.isEmpty() ? View.VISIBLE : View.GONE);
                     }
                     if (tvNoTicketsHSSV != null) {
                         tvNoTicketsHSSV.setVisibility(hssvTickets.isEmpty() ? View.VISIBLE : View.GONE);
+                    }
+                    if (tvNoTicketsRoute != null) {
+                        tvNoTicketsRoute.setVisibility(routeTickets.isEmpty() ? View.VISIBLE : View.GONE);
                     }
                 } else {
                     runOnUiThread(() -> Toast.makeText(MyTicketsActivity.this, "Lỗi tải dữ liệu: " + (task.getException() != null ? task.getException().getMessage() : "Không xác định"), Toast.LENGTH_LONG).show());
@@ -261,6 +294,9 @@ public class MyTicketsActivity extends AppCompatActivity {
                     }
                     if (tvNoTicketsHSSV != null) {
                         tvNoTicketsHSSV.setVisibility(View.VISIBLE);
+                    }
+                    if (tvNoTicketsRoute != null) {
+                        tvNoTicketsRoute.setVisibility(View.VISIBLE);
                     }
                 }
             } catch (Exception e) {

@@ -1,6 +1,7 @@
 package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -41,11 +42,10 @@ public class ChangeQRActivity extends AppCompatActivity {
             return insets;
         });
 
-        // Nhận userId từ Intent
-        Intent intent = getIntent();
-        if (intent != null && intent.hasExtra("userId")) {
-            userId = intent.getStringExtra("userId");
-        } else {
+        // Lấy userId từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        userId = prefs.getString("UserID", null);
+        if (userId == null) {
             Toast.makeText(this, "Không nhận được userId!", Toast.LENGTH_LONG).show();
             finish();
             return;
@@ -95,7 +95,6 @@ public class ChangeQRActivity extends AppCompatActivity {
                             intent.putExtra("ticketType", document.getString("ticketTypeId"));
                             intent.putExtra("status", document.getString("Status"));
                             intent.putExtra("ticketCode", ticketCode);
-                            intent.putExtra("userId", userId);
                             // Lấy thêm các thông tin khác nếu cần
                             SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
                             Date autoActiveDate = document.getDate("AutoActiveDate");
@@ -106,7 +105,7 @@ public class ChangeQRActivity extends AppCompatActivity {
                             intent.putExtra("expireDate", formattedAutoActiveDate);
                             intent.putExtra("issueDate", issueDate != null ? issueDate.getTime() : 0L);
                             intent.putExtra("expirationDate", formattedExpirationDate);
-                            intent.putExtra("source", "ChangeQRActivity"); // Đánh dấu nguồn
+                            intent.putExtra("source", "ChangeQRActivity");
                             startActivity(intent);
                             finish();
                             return;
