@@ -46,6 +46,7 @@ public class AdHomeActivity extends AppCompatActivity {
     private Runnable dataUpdater;
     private LineChart lineChart;
     private Button btnWeekly;
+    private int FilterState = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -62,14 +63,96 @@ public class AdHomeActivity extends AppCompatActivity {
         btnWeekly = findViewById(R.id.btnWeekly);
         fireStoreHelper =new FireStoreHelper();
         spinnerTime.setAdapter(adapter);
+        // ...existing code...
         spinnerTime.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                Calendar cal = Calendar.getInstance();
+                int day = cal.get(Calendar.DAY_OF_MONTH);
+                int month = cal.get(Calendar.MONTH) + 1; // Calendar.MONTH is 0-based
+                int year = cal.get(Calendar.YEAR);
+
+                switch (position) {
+                    case 0: // Per Day
+                        fireStoreHelper.getSumOfTransactionFiltered(day, month, year, sum ->
+                                tvRevenue.setText(String.format("%.2f Đ", sum))
+                        );
+                        fireStoreHelper.getTotalTicketsFiltered(day, month, year, new FireStoreHelper.Callback<Long>() {
+                            @Override
+                            public void onSuccess(Long result) {
+                                tvTicket.setText(result + " Vé");
+                            }
+                            @Override
+                            public void onFailure(Exception e) {
+                                tvTicket.setText("0 Vé");
+                            }
+                        });
+                        fireStoreHelper.getTotalUsersFiltered(day, month, year, new FireStoreHelper.Callback<Long>() {
+                            @Override
+                            public void onSuccess(Long result) {
+                                tvUser.setText(result + "\nTài khoản");
+                            }
+                            @Override
+                            public void onFailure(Exception e) {
+                                tvUser.setText("0\nTài khoản");
+                            }
+                        });
+                        break;
+                    case 1: // Per Month
+                        fireStoreHelper.getSumOfTransactionFiltered(null, month, year, sum ->
+                                tvRevenue.setText(String.format("%.2f Đ", sum))
+                        );
+                        fireStoreHelper.getTotalTicketsFiltered(null, month, year, new FireStoreHelper.Callback<Long>() {
+                            @Override
+                            public void onSuccess(Long result) {
+                                tvTicket.setText(result + " Vé");
+                            }
+                            @Override
+                            public void onFailure(Exception e) {
+                                tvTicket.setText("0 Vé");
+                            }
+                        });
+                        fireStoreHelper.getTotalUsersFiltered(null, month, year, new FireStoreHelper.Callback<Long>() {
+                            @Override
+                            public void onSuccess(Long result) {
+                                tvUser.setText(result + "\nTài khoản");
+                            }
+                            @Override
+                            public void onFailure(Exception e) {
+                                tvUser.setText("0\nTài khoản");
+                            }
+                        });
+                        break;
+                    case 2: // Per Year
+                        fireStoreHelper.getSumOfTransactionFiltered(null, null, year, sum ->
+                                tvRevenue.setText(String.format("%.2f Đ", sum))
+                        );
+                        fireStoreHelper.getTotalTicketsFiltered(null, null, year, new FireStoreHelper.Callback<Long>() {
+                            @Override
+                            public void onSuccess(Long result) {
+                                tvTicket.setText(result + " Vé");
+                            }
+                            @Override
+                            public void onFailure(Exception e) {
+                                tvTicket.setText("0 Vé");
+                            }
+                        });
+                        fireStoreHelper.getTotalUsersFiltered(null, null, year, new FireStoreHelper.Callback<Long>() {
+                            @Override
+                            public void onSuccess(Long result) {
+                                tvUser.setText(result + "\nTài khoản");
+                            }
+                            @Override
+                            public void onFailure(Exception e) {
+                                tvUser.setText("0\nTài khoản");
+                            }
+                        });
+                        break;
+                }
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-            }
+            public void onNothingSelected(AdapterView<?> parent) { }
         });
         btnWeekly.setOnClickListener(v -> {
             // Get current week and year
@@ -109,40 +192,40 @@ public class AdHomeActivity extends AppCompatActivity {
         });
         btnWeekly.performClick();
     }
-    private void updateRevenue(){
-        fireStoreHelper.getSumOfTransaction(new FireStoreHelper.OnTransactionSumCallback() {
-            @Override
-            public void onCallback(double sum) {
-                tvRevenue.setText(String.format("%.2f Đ",sum));
-            }
-        });
-    }
-    private void updateTicket(){
-        fireStoreHelper.getTotalTiketSold(new FireStoreHelper.Callback<Long>() {
-            @Override
-            public void onSuccess(Long result) {
-                tvTicket.setText(result + " Vé");
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-    }
-    private void updateUserCount(){
-        fireStoreHelper.getTotalUser(new FireStoreHelper.Callback<Long>() {
-            @Override
-            public void onSuccess(Long result) {
-                tvUser.setText(result + "\nTài khoản");
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-
-            }
-        });
-    }
+//    private void updateRevenue(){
+//        fireStoreHelper.getSumOfTransaction(new FireStoreHelper.OnTransactionSumCallback() {
+//            @Override
+//            public void onCallback(double sum) {
+//                tvRevenue.setText(String.format("%.2f Đ",sum));
+//            }
+//        });
+//    }
+//    private void updateTicket(){
+//        fireStoreHelper.getTotalTiketSold(new FireStoreHelper.Callback<Long>() {
+//            @Override
+//            public void onSuccess(Long result) {
+//                tvTicket.setText(result + " Vé");
+//            }
+//
+//            @Override
+//            public void onFailure(Exception e) {
+//
+//            }
+//        });
+//    }
+//    private void updateUserCount(){
+//        fireStoreHelper.getTotalUser(new FireStoreHelper.Callback<Long>() {
+//            @Override
+//            public void onSuccess(Long result) {
+//                tvUser.setText(result + "\nTài khoản");
+//            }
+//
+//            @Override
+//            public void onFailure(Exception e) {
+//
+//            }
+//        });
+//    }
     private void drawDayOfWeekChart(Map<Integer, Double> dataMap) {
         // Day names: 1=Sunday, 2=Monday, ..., 7=Saturday
         String[] dayNames = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
@@ -215,23 +298,22 @@ public class AdHomeActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
 
-        dataUpdater = new Runnable() {
-            @Override
-            public void run() {
-                updateRevenue();
-                updateTicket();
-                updateUserCount();
-                handler.postDelayed(this, 5000);
-            }
-        };
-
-        handler.post(dataUpdater); // Bắt đầu chạy lần đầu
+//        dataUpdater = new Runnable() {
+//            @Override
+//            public void run() {
+//                updateRevenue();
+//                updateTicket();
+//                updateUserCount();
+//                handler.postDelayed(this, 5000);
+//            }
+//        };
+//
+//        handler.post(dataUpdater); // Bắt đầu chạy lần đầu
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-        handler.removeCallbacks(dataUpdater);
+//        handler.removeCallbacks(dataUpdater);
     }
-
 }

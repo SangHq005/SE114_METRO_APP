@@ -76,38 +76,137 @@ public class FireStoreHelper {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
-    public void getSumOfTransaction(OnTransactionSumCallback callback) {
-        db.collection("Transactions").get().addOnSuccessListener(queryDocumentSnapshots -> {
-            double totalAmount = 0.0;
-            for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                String status = document.getString("status");
-                if ("SUCCESS".equals(status)) {
-                    Number amount = document.getDouble("amount");
-                    if (amount != null) {
-                        totalAmount += amount.doubleValue();
-                    }
-                }
-            }
-            callback.onCallback(totalAmount);
-        }).addOnFailureListener(e -> {
+    public void getSumOfTransactionFiltered(Integer day, Integer month, Integer year, OnTransactionSumCallback callback) {
+        Calendar calStart = Calendar.getInstance();
+        Calendar calEnd = Calendar.getInstance();
+
+        if (year == null) {
             callback.onCallback(0.0);
-        });
-    }
-    public void getTotalTiketSold(Callback<Long> callback){
+            return;
+        }
 
-        AggregateQuery countQuery = db.collection("Ticket").count();
+        // Thiết lập thời gian bắt đầu
+        calStart.set(Calendar.YEAR, year);
+        calStart.set(Calendar.MONTH, month != null ? month - 1 : 0);
+        calStart.set(Calendar.DAY_OF_MONTH, day != null ? day : 1);
+        calStart.set(Calendar.HOUR_OF_DAY, 0);
+        calStart.set(Calendar.MINUTE, 0);
+        calStart.set(Calendar.SECOND, 0);
+        calStart.set(Calendar.MILLISECOND, 0);
 
-        countQuery.get(AggregateSource.SERVER).addOnSuccessListener(snapshot -> {
-            callback.onSuccess(snapshot.getCount());
-        });
+        // Thiết lập thời gian kết thúc
+        if (day != null) {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.DATE, 1); // +1 ngày
+        } else if (month != null) {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.MONTH, 1); // +1 tháng
+        } else {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.YEAR, 1); // +1 năm
+        }
+
+        Date startDate = calStart.getTime();
+        Date endDate = calEnd.getTime();
+
+        db.collection("Transactions")
+                .whereGreaterThanOrEqualTo("timestamp", new Timestamp(startDate))
+                .whereLessThan("timestamp", new Timestamp(endDate))
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    double totalAmount = 0.0;
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        String status = doc.getString("status");
+                        if ("SUCCESS".equals(status)) {
+                            Number amount = doc.getDouble("amount");
+                            if (amount != null) {
+                                totalAmount += amount.doubleValue();
+                            }
+                        }
+                    }
+                    callback.onCallback(totalAmount);
+                })
+                .addOnFailureListener(e -> callback.onCallback(0.0));
     }
-    public void getTotalUser(Callback<Long> callback){
-        AggregateQuery countQuery = db.collection("Account").count();
-        countQuery.get(AggregateSource.SERVER).addOnSuccessListener(snapshot -> {
-            callback.onSuccess(snapshot.getCount());
-        });
+
+    public void getTotalTicketsFiltered(Integer day, Integer month, Integer year, Callback<Long> callback) {
+        if (year == null) {
+            callback.onFailure(new IllegalArgumentException("Year must be provided"));
+            return;
+        }
+
+        Calendar calStart = Calendar.getInstance();
+        Calendar calEnd = Calendar.getInstance();
+
+        calStart.set(Calendar.YEAR, year);
+        calStart.set(Calendar.MONTH, month != null ? month - 1 : 0);
+        calStart.set(Calendar.DAY_OF_MONTH, day != null ? day : 1);
+        calStart.set(Calendar.HOUR_OF_DAY, 0);
+        calStart.set(Calendar.MINUTE, 0);
+        calStart.set(Calendar.SECOND, 0);
+        calStart.set(Calendar.MILLISECOND, 0);
+
+        if (day != null) {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.DATE, 1);
+        } else if (month != null) {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.MONTH, 1);
+        } else {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.YEAR, 1);
+        }
+
+        Date start = calStart.getTime();
+        Date end = calEnd.getTime();
+
+        db.collection("Ticket")
+                .whereGreaterThanOrEqualTo("timestamp", new Timestamp(start))
+                .whereLessThan("timestamp", new Timestamp(end))
+                .get()
+                .addOnSuccessListener(snapshots -> callback.onSuccess((long) snapshots.size()))
+                .addOnFailureListener(callback::onFailure);
     }
-    // ...existing code...
+    public void getTotalUsersFiltered(Integer day, Integer month, Integer year, Callback<Long> callback) {
+        if (year == null) {
+            callback.onFailure(new IllegalArgumentException("Year must be provided"));
+            return;
+        }
+
+        Calendar calStart = Calendar.getInstance();
+        Calendar calEnd = Calendar.getInstance();
+
+        calStart.set(Calendar.YEAR, year);
+        calStart.set(Calendar.MONTH, month != null ? month - 1 : 0);
+        calStart.set(Calendar.DAY_OF_MONTH, day != null ? day : 1);
+        calStart.set(Calendar.HOUR_OF_DAY, 0);
+        calStart.set(Calendar.MINUTE, 0);
+        calStart.set(Calendar.SECOND, 0);
+        calStart.set(Calendar.MILLISECOND, 0);
+
+        if (day != null) {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.DATE, 1);
+        } else if (month != null) {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.MONTH, 1);
+        } else {
+            calEnd.setTime(calStart.getTime());
+            calEnd.add(Calendar.YEAR, 1);
+        }
+
+        Date start = calStart.getTime();
+        Date end = calEnd.getTime();
+
+        db.collection("Account")
+                .whereGreaterThanOrEqualTo("timestamp", new Timestamp(start))
+                .whereLessThan("timestamp", new Timestamp(end))
+                .get()
+                .addOnSuccessListener(snapshots -> callback.onSuccess((long) snapshots.size()))
+                .addOnFailureListener(callback::onFailure);
+    }
+
+
 
     public void sumByDayOfWeek(int year, int weekOfYear, Callback<Map<Integer, Double>> callback) {
         Map<Integer, Double> sumByDay = new HashMap<>();
