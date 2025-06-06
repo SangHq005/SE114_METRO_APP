@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.drawable.Drawable;
 import android.location.Location;
 import android.os.Bundle;
@@ -80,6 +81,7 @@ public class FindPathActivity extends AppCompatActivity {
                 .commit();
 
         mapFragment.setOnMapReadyCallback(mapboxMap -> {
+            mapFragment.zoomToLocation(Point.fromLngLat(106.7009,10.7769 ));
         });
 
 
@@ -138,7 +140,47 @@ public class FindPathActivity extends AppCompatActivity {
 
             };
         }
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("goto_lat") && intent.hasExtra("goto_lng")) {
+            String name = intent.getStringExtra("goto_name");
+            double lat = intent.getDoubleExtra("goto_lat", 0);
+            double lng = intent.getDoubleExtra("goto_lng", 0);
+            pointTo = Point.fromLngLat(lng, lat);
 
+            mapFragment.setOnMapReadyCallback(mapboxMap -> {
+                mapFragment.addMarkerAt(pointTo, R.drawable.location_pin, 50);
+                mapFragment.zoomToLocation(pointTo);
+                if (name != null) {
+                    tvSearchTo.setText(name);
+                }
+                if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED){
+                    fusedLocationClient.getLastLocation().addOnSuccessListener(location -> {
+                        if(location != null){
+                            pointFrom = Point.fromLngLat(location.getLongitude(),location.getLatitude());
+                            tvSearchFrom.setText("vị trí của tôi");
+                            if (pointFrom != null) {
+                                BusDataHelper.fetchPathByStop(pointFrom.latitude(), pointFrom.longitude(),
+                                        pointTo.latitude(), pointTo.longitude(),
+                                        new BusDataHelper.OnRouteListFetchedListener() {
+                                            @Override
+                                            public void onResult(List<RouteResponse> routes) {
+                                                showRouteDialog(routes);
+                                            }
+
+                                            @Override
+                                            public void onError(Exception e) {
+                                                Toast.makeText(FindPathActivity.this, "Không tìm được đường", Toast.LENGTH_SHORT).show();
+                                            }
+                                        });
+                            }
+                        }
+                    });
+                }
+            });
+
+
+
+        }
     }
     private void showRouteDialog(List<RouteResponse> routeResponses) {
         List<String> titles = new ArrayList<>();
@@ -151,15 +193,18 @@ public class FindPathActivity extends AppCompatActivity {
                 .setItems(titles.toArray(new String[0]), (dialog, which) -> {
                     RouteResponse selectedRoute = routeResponses.get(which);
 
-
+                    Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_bus_stop);
+                    Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 80, 80, false);
                     drawRouteOnMap(selectedRoute);
                     mapFragment.clearAllMarkers();
                     for (Stop entry : selectedRoute.stops) {
                         Point stop = Point.fromLngLat(entry.Lng, entry.Lat);
-                        mapFragment.addMarkerAt(stop,R.drawable.ic_bus_stop);
+                        mapFragment.addMarkerAt(stop,R.drawable.ic_bus_stop,70);
                     }
                 })
                 .show();
+        mapFragment.addMarkerAt(pointFrom, R.drawable.location_pin,50);
+        mapFragment.addMarkerAt(pointTo, R.drawable.location_pin,50);
     }
 
     private void drawRouteOnMap(RouteResponse route) {
@@ -174,6 +219,7 @@ public class FindPathActivity extends AppCompatActivity {
 
             if (mapFragment != null) {
                 mapFragment.drawRouteFromPoints(points);
+                mapFragment.zoomToFit(points);
             }
         }
     }
@@ -193,22 +239,21 @@ public class FindPathActivity extends AppCompatActivity {
             if (requestCode == REQUEST_SEARCH_FROM) {
                 tvSearchFrom.setText(name);
                 pointFrom = selectedPoint;
-                mapFragment.addMarkerAt(pointFrom, R.drawable.location_pin);
+                mapFragment.addMarkerAt(pointFrom, R.drawable.location_pin,50);
                 mapFragment.zoomToLocation(pointFrom);
             } else if (requestCode == REQUEST_SEARCH_TO) {
                 tvSearchTo.setText(name);
                 pointTo = selectedPoint;
-                mapFragment.addMarkerAt(pointTo, R.drawable.location_pin);
+                mapFragment.addMarkerAt(pointTo, R.drawable.location_pin,50);
                 mapFragment.zoomToLocation(pointTo);
             }
             if (pointFrom != null && pointTo != null) {
-                Log.d("BusData:", "MyLocation:" +pointFrom.latitude()+","+ pointFrom.longitude() +","+ pointTo.latitude() +","+ pointTo.longitude());
                 BusDataHelper.fetchPathByStop(pointFrom.latitude(), pointFrom.longitude(),
                         pointTo.latitude(), pointTo.longitude(),
                         new BusDataHelper.OnRouteListFetchedListener() {
                             @Override
                             public void onResult(List<RouteResponse> routes) {
-                                 showRouteDialog(routes);
+                                showRouteDialog(routes);
                             }
 
                             @Override

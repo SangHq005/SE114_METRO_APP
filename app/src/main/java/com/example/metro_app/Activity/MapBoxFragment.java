@@ -31,7 +31,11 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.example.metro_app.Activity.User.StationBottomSheet;
+import com.example.metro_app.Model.Station;
 import com.example.metro_app.R;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.mapbox.android.core.location.LocationEngine;
 import com.mapbox.android.core.location.LocationEngineCallback;
 import com.mapbox.android.core.location.LocationEngineProvider;
@@ -184,10 +188,13 @@ private final LocationObserver locationObserver= new LocationObserver() {
         routeLineView = new MapboxRouteLineView(options);
         routeLineApi = new MapboxRouteLineApi(options);
         NavigationOptions navigationOptions = new NavigationOptions.Builder(requireContext()).accessToken(getString(R.string.mapbox_access_token)).build();
-        MapboxNavigationApp.setup(navigationOptions);
-        mapboxNavigation = new MapboxNavigation(navigationOptions);
-        mapboxNavigation.registerRoutesObserver(routesObserver);
-        mapboxNavigation.registerLocationObserver(locationObserver);
+        if (!MapboxNavigationApp.isSetup()) {
+            MapboxNavigationApp.setup(navigationOptions);
+            mapboxNavigation = new MapboxNavigation(navigationOptions);
+            mapboxNavigation.registerRoutesObserver(routesObserver);
+            mapboxNavigation.registerLocationObserver(locationObserver);
+        }
+
 
         LocationComponentPlugin locationComponentPlugin = getLocationComponent(mapView);
         getGestures(mapView).addOnMoveListener(onMoveListener);
@@ -199,9 +206,22 @@ private final LocationObserver locationObserver= new LocationObserver() {
         AnnotationPlugin annotationPlugin = mapView.getPlugin(Plugin.MAPBOX_ANNOTATION_PLUGIN_ID);
         if (annotationPlugin != null) {
             AnnotationConfig config = new AnnotationConfig(); // có thể truyền context hoặc cấu hình nâng cao
+            polylineAnnotationManager = (PolylineAnnotationManager)annotationPlugin.createAnnotationManager(mapView,AnnotationType.PolylineAnnotation,config);
             pointAnnotationManager = (PointAnnotationManager)
                     annotationPlugin.createAnnotationManager(mapView, AnnotationType.PointAnnotation, config);
-            polylineAnnotationManager = (PolylineAnnotationManager)annotationPlugin.createAnnotationManager(mapView,AnnotationType.PolylineAnnotation,config);
+            pointAnnotationManager.addClickListener(annotation -> {
+                JsonElement data = annotation.getData();
+                if (data != null && data.isJsonObject()) {
+                    Station station = new Gson().fromJson(data, Station.class);
+                    if (station != null) {
+                        StationBottomSheet sheet = new StationBottomSheet(station);
+                        sheet.show(getParentFragmentManager(), "station_sheet");
+                    }
+                }
+                return true;
+            });
+
+
         }
         if (onMapReadyCallback != null) {
             onMapReadyCallback.onMapReady(mapboxMap);
@@ -223,39 +243,24 @@ private final LocationObserver locationObserver= new LocationObserver() {
         }
     }
     public void zoomToFit(List<Point> points) {
-        if (points.isEmpty()) return;
+        if (points == null || points.isEmpty() || mapboxMap == null) return;
 
-        double minLat = Double.MAX_VALUE, minLng = Double.MAX_VALUE;
-        double maxLat = -Double.MAX_VALUE, maxLng = -Double.MAX_VALUE;
+        // Padding (pixels): top, left, bottom, right
+        EdgeInsets padding = new EdgeInsets(100.0, 100.0, 100.0, 100.0); // có thể điều chỉnh
 
-        for (Point p : points) {
-            double lat = p.latitude();
-            double lng = p.longitude();
-            minLat = Math.min(minLat, lat);
-            maxLat = Math.max(maxLat, lat);
-            minLng = Math.min(minLng, lng);
-            maxLng = Math.max(maxLng, lng);
+        CameraOptions cameraOptions = mapboxMap.cameraForCoordinates(points, padding, null, null);
+
+        if (cameraOptions != null) {
+            mapboxMap.setCamera(cameraOptions);
         }
-
-        // Tính trung tâm và zoom phù hợp
-        Point center = Point.fromLngLat((minLng + maxLng) / 2, (minLat + maxLat) / 2);
-        double padding = 50.0;
-
-        CameraOptions cameraOptions = new CameraOptions.Builder()
-                .center(center)
-                .zoom(12.0)
-                .build();
-
-        mapboxMap.setCamera(cameraOptions);
     }
 
 
-    public void addMarkerAt(Point point, int drawableResId) {
+
+    public void addMarkerAt(Point point, int drawableResId,int size) {
         if (pointAnnotationManager == null) return;
-
-
         Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), drawableResId);
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 50, 50, false);
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, size, size, false);
 
         PointAnnotationOptions options = new PointAnnotationOptions()
                 .withPoint(point)
@@ -264,17 +269,12 @@ private final LocationObserver locationObserver= new LocationObserver() {
 
         pointAnnotationManager.create(options);
     }
-    public void addMarkerAt(Point point, Bitmap bitmap) {
-        if (pointAnnotationManager == null || point == null || bitmap == null) return;
-
-
-        PointAnnotationOptions options = new PointAnnotationOptions()
-                .withPoint(point)
-                .withIconImage(bitmap)
-                .withIconSize(0.75f); // Tùy chỉnh kích cỡ icon nếu cần
-
-        pointAnnotationManager.create(options);
+    public void createStationMarker(PointAnnotationOptions options) {
+        if (pointAnnotationManager != null) {
+            pointAnnotationManager.create(options);
+        }
     }
+
     // Hàm vẽ đường từ danh sách các Point
     public void drawRouteFromPoints(List<Point> pointList) {
         String color1 = "#FF0000"; // Tuyến 1 - đỏ
