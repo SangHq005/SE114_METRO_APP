@@ -74,4 +74,7 @@ public class TicketModel implements Serializable {
     public String getUserId() {
         return userId;
     }
+
+    public void setId(String id) { this.ticketId = id;
+    }
 }

@@ -143,83 +143,83 @@
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/StationInfo"
-        android:visibility="invisible"
+<com.google.android.material.card.MaterialCardView
+android:id="@+id/StationInfo"
+android:visibility="invisible"
+android:layout_width="match_parent"
+android:layout_height="wrap_content"
+android:layout_marginStart="16dp"
+android:layout_marginEnd="24dp"
+android:layout_marginBottom="10dp"
+app:cardCornerRadius="12dp"
+app:cardElevation="8dp"
+app:layout_constraintBottom_toBottomOf="parent"
+app:layout_constraintEnd_toEndOf="parent"
+app:layout_constraintStart_toStartOf="parent">
+
+<LinearLayout
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <!-- Header với nút back, title, và menu -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="10dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        android:padding="12dp">
 
-        <LinearLayout
-            android:layout_width="match_parent"
+        <TextView
+            android:id="@+id/tvStationTitle"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
+            android:layout_centerInParent="true"
+            android:text="Ga"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold" />
 
-            <!-- Header với nút back, title, và menu -->
-            <RelativeLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:padding="12dp">
+        <ImageView
+            android:id="@+id/btnHideStationInfo"
+            android:layout_width="42dp"
+            android:layout_height="42dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:src="@drawable/exitbtn2" />
 
-                <TextView
-                    android:id="@+id/tvStationTitle"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_centerInParent="true"
-                    android:text="Ga"
-                    android:textColor="@android:color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/btnHideStationInfo"
-                    android:layout_width="42dp"
-                    android:layout_height="42dp"
-                    android:layout_alignParentEnd="true"
-                    android:layout_centerVertical="true"
-                    android:src="@drawable/exitbtn2" />
-
-                <ImageView
-                    android:id="@+id/btnNavigationToThisStation"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
-                    android:layout_centerVertical="true"
-                    android:layout_marginEnd="20dp"
-                    android:layout_toStartOf="@+id/btnHideStationInfo"
-                    android:src="@drawable/search_icon" />
+        <ImageView
+            android:id="@+id/btnNavigationToThisStation"
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:layout_centerVertical="true"
+            android:layout_marginEnd="20dp"
+            android:layout_toStartOf="@+id/btnHideStationInfo"
+            android:src="@drawable/search_icon" />
 
 
-            </RelativeLayout>
+    </RelativeLayout>
 
-            <!-- Nội dung thông tin trạm -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingStart="16dp"
-                android:paddingEnd="16dp"
-                android:paddingBottom="16dp">
+    <!-- Nội dung thông tin trạm -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="16dp">
 
-                <TextView
-                    android:id="@+id/tvStationInfo"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:text="Ga Rạch Chiếc"
-                    android:textColor="@android:color/black"
-                    android:textSize="18sp"
-                    android:textStyle="bold">
-                </TextView>
-            </LinearLayout>
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+        <TextView
+            android:id="@+id/tvStationInfo"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="Ga Rạch Chiếc"
+            android:textColor="@android:color/black"
+            android:textSize="18sp"
+            android:textStyle="bold">
+        </TextView>
+    </LinearLayout>
+</LinearLayout>
+</com.google.android.material.card.MaterialCardView>
 
     <!-- FAB: Định vị vị trí của tôi -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton

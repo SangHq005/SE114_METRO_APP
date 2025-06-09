@@ -20,7 +20,8 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.example.metro_app.Domain.UserModel;
+import com.example.metro_app.Model.FireStoreHelper;
+import com.example.metro_app.Model.UserModel;
 import com.example.metro_app.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 
@@ -34,7 +35,7 @@ class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
     private final AppCompatActivity context;
 
     public interface OnItemClickListener {
-        void onItemClick(int position);
+        void onItemClick(UserModel user);
     }
 
     public UserAdapter(AppCompatActivity context, List<UserModel> filteredUserList, OnItemClickListener listener) {
@@ -59,12 +60,11 @@ class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
             holder.userName.setText("Unknown User");
             return;
         }
-        String fullName = user.getFullName() != null ? user.getFullName() : "Unknown";
-        String email = user.getEmail() != null ? user.getEmail() : "N/A";
+        String fullName = user.getName() != null ? user.getName() : "Unknown";
         holder.userName.setText(context.getString(R.string.user_name_format, fullName));
         holder.itemView.setOnClickListener(v -> {
-            Log.d("UserAdapter", "Item clicked at position: " + position + ", User: " + fullName + ", Email: " + email);
-            listener.onItemClick(position);
+            Log.d("UserAdapter", "Item clicked at position: " + position + ", User: " + fullName);
+            listener.onItemClick(user);
         });
     }
 
@@ -112,16 +112,21 @@ class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldList.get(oldItemPosition).getEmail().equals(newList.get(newItemPosition).getEmail());
+            String oldUid = oldList.get(oldItemPosition).getUid();
+            String newUid = newList.get(newItemPosition).getUid();
+            if (oldUid == null && newUid == null) return true;
+            if (oldUid == null || newUid == null) return false;
+            return oldUid.equals(newUid);
         }
 
         @Override
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
             UserModel oldUser = oldList.get(oldItemPosition);
             UserModel newUser = newList.get(newItemPosition);
-            return (oldUser.getFullName() == null ? newUser.getFullName() == null : oldUser.getFullName().equals(newUser.getFullName())) &&
+            return (oldUser.getName() == null ? newUser.getName() == null : oldUser.getName().equals(newUser.getName())) &&
                     (oldUser.getEmail() == null ? newUser.getEmail() == null : oldUser.getEmail().equals(newUser.getEmail())) &&
-                    (oldUser.getPhoneNumber() == null ? newUser.getPhoneNumber() == null : oldUser.getPhoneNumber().equals(newUser.getPhoneNumber()));
+                    (oldUser.getCCCD() == null ? newUser.getCCCD() == null : oldUser.getCCCD().equals(newUser.getCCCD())) &&
+                    (oldUser.getRole() == null ? newUser.getRole() == null : oldUser.getRole().equals(newUser.getRole()));
         }
     }
 }
@@ -131,20 +136,26 @@ public class AdUserActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private UserAdapter userAdapter;
     private List<UserModel> userList;
-    private List<UserModel> filteredUserList;
+    private FireStoreHelper fireStoreHelper;
 
     private final ActivityResultLauncher<Intent> editUserLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     UserModel user = (UserModel) result.getData().getSerializableExtra("user");
-                    int position = result.getData().getIntExtra("position", -1);
-                    if (user != null && position != -1) {
-                        Log.d(TAG, "Updated user at position: " + position + ", User: " + user.getFullName());
-                        userList.set(position, user);
-                        filterUsers("");
+                    String userUid = result.getData().getStringExtra("user_uid");
+                    if (user != null && userUid != null) {
+                        int index = findUserIndexByUid(userUid);
+                        if (index != -1) {
+                            Log.d(TAG, "Updated user at index: " + index + ", User: " + user.getName());
+                            userList.set(index, user);
+                            filterUsers(""); // Refresh list
+                        } else {
+                            Log.e(TAG, "User UID not found in userList: " + userUid);
+                            Toast.makeText(this, "Lỗi khi cập nhật người dùng.", Toast.LENGTH_SHORT).show();
+                        }
                     } else {
-                        Log.e(TAG, "Invalid user or position: user=" + user + ", position=" + position);
+                        Log.e(TAG, "Invalid user or user_uid: user=" + user + ", user_uid=" + userUid);
                         Toast.makeText(this, "Lỗi khi cập nhật người dùng.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
@@ -173,35 +184,21 @@ public class AdUserActivity extends AppCompatActivity {
             Toast.makeText(this, "Lỗi giao diện: Không tìm thấy thanh tìm kiếm.", Toast.LENGTH_LONG).show();
         }
 
-        // Sample data
         userList = new ArrayList<>();
-        userList.add(new UserModel("Hà Thư", "hathu@example.com", "0901234567"));
-        userList.add(new UserModel("Quốc Sang", "quocsang@example.com", "0912345678"));
-        userList.add(new UserModel("Lê Duy", "leduy@example.com", "0923456789"));
-        userList.add(new UserModel("Minh Thiện", "minhthien@example.com", "0934567890"));
-        userList.add(new UserModel("Thanh Bình", "thanhbinh@example.com", "0945678901"));
-
-        // Initialize filtered list
-        filteredUserList = new ArrayList<>(userList);
+        fireStoreHelper = new FireStoreHelper();
 
         // Set up adapter
-        userAdapter = new UserAdapter(this, filteredUserList, position -> {
-            if (position < 0 || position >= filteredUserList.size()) {
-                Log.e(TAG, "Invalid position: " + position);
-                Toast.makeText(this, "Lỗi: Vị trí không hợp lệ.", Toast.LENGTH_SHORT).show();
-                return;
-            }
-            UserModel selectedUser = filteredUserList.get(position);
-            if (selectedUser == null) {
-                Log.e(TAG, "Selected user is null at position: " + position);
+        userAdapter = new UserAdapter(this, new ArrayList<>(), user -> {
+            if (user == null) {
+                Log.e(TAG, "Selected user is null");
                 Toast.makeText(this, "Lỗi: Người dùng không tồn tại.", Toast.LENGTH_SHORT).show();
                 return;
             }
             try {
                 Intent intent = new Intent(AdUserActivity.this, AdUserDetails.class);
-                intent.putExtra("user", selectedUser);
-                intent.putExtra("position", userList.indexOf(selectedUser));
-                Log.d(TAG, "Launching AdUserDetails for user: " + selectedUser.getFullName() + ", position: " + position);
+                intent.putExtra("user", user);
+                intent.putExtra("user_uid", user.getUid());
+                Log.d(TAG, "Launching AdUserDetails for user: " + user.getName() + ", uid: " + user.getUid());
                 editUserLauncher.launch(intent);
             } catch (Exception e) {
                 Log.e(TAG, "Error launching AdUserDetails: " + e.getMessage(), e);
@@ -209,6 +206,22 @@ public class AdUserActivity extends AppCompatActivity {
             }
         });
         recyclerView.setAdapter(userAdapter);
+
+        fireStoreHelper.getAllUsers(new FireStoreHelper.Callback<List<UserModel>>() {
+            @Override
+            public void onSuccess(List<UserModel> result) {
+                runOnUiThread(() -> {
+                    userList.clear();
+                    userList.addAll(result);
+                    userAdapter.updateList(new ArrayList<>(userList)); // Always pass a new list
+                });
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Log.d("Admin", "onFailure: Cannot get User data");
+            }
+        });
 
         // Search functionality
         if (searchBar != null) {
@@ -256,18 +269,27 @@ public class AdUserActivity extends AppCompatActivity {
     }
 
     private void filterUsers(String query) {
-        filteredUserList.clear();
+        List<UserModel> filtered = new ArrayList<>();
         if (query.isEmpty()) {
-            filteredUserList.addAll(userList);
+            filtered.addAll(userList);
         } else {
             String lowerCaseQuery = query.toLowerCase();
             for (UserModel user : userList) {
-                if ((user.getFullName() != null && user.getFullName().toLowerCase().contains(lowerCaseQuery)) ||
+                if ((user.getName() != null && user.getName().toLowerCase().contains(lowerCaseQuery)) ||
                         (user.getEmail() != null && user.getEmail().toLowerCase().contains(lowerCaseQuery))) {
-                    filteredUserList.add(user);
+                    filtered.add(user);
                 }
             }
         }
-        userAdapter.updateList(filteredUserList);
+        userAdapter.updateList(filtered);
+    }
+
+    private int findUserIndexByUid(String uid) {
+        for (int i = 0; i < userList.size(); i++) {
+            if (userList.get(i).getUid() != null && userList.get(i).getUid().equals(uid)) {
+                return i;
+            }
+        }
+        return -1;
     }
 }

@@ -1,5 +1,7 @@
 package com.example.metro_app.Activity.User;
 
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.ImageView;
@@ -18,7 +20,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
 import com.mapbox.geojson.Point;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -45,7 +50,6 @@ public class JourneyActivity extends AppCompatActivity{
 
         Point startPoint =  Point.fromLngLat(106.7009,10.7769 ); // Vị trí trung tâm Sài Gòn
         mapFragment.setOnMapReadyCallback(mapboxMap -> {
-            mapFragment.zoomToLocation(startPoint);
             fetchAndDrawRoute("MetroWay","LuotDi");
 //            BusDataHelper busDataHelper = new BusDataHelper();
 //            busDataHelper.uploadStationsToFirestore(this);
@@ -80,6 +84,7 @@ public class JourneyActivity extends AppCompatActivity{
                                 pointList.add(point);
                             }
                             mapFragment.drawRouteFromPoints(pointList);
+                            mapFragment.zoomToFit(pointList);
                         } else {
                             Log.e("FIREBASE_ROUTE", "Không có đủ điểm để vẽ tuyến");
                         }
@@ -91,14 +96,23 @@ public class JourneyActivity extends AppCompatActivity{
                     Log.e("FIREBASE_ROUTE", "Lỗi khi lấy dữ liệu Firestore", e);
                 });
         // 2. Lấy các trạm dừng và hiển thị marker
+        Gson gson = new Gson();
+        Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.metro_station);
+        Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 80, 80, false);
+
         database.collection("stations")
                 .get()
                 .addOnSuccessListener(querySnapshot -> {
                     for (DocumentSnapshot doc : querySnapshot) {
                         Station station = doc.toObject(Station.class);
                         if (station != null) {
-                               Point p = Point.fromLngLat(station.Lng, station.Lat);
-                             mapFragment.addMarkerAt(p, R.drawable.metro_station);
+                            Point p = Point.fromLngLat(station.Lng, station.Lat);
+                            PointAnnotationOptions options = new PointAnnotationOptions()
+                                    .withPoint(p)
+                                    .withIconImage(resizedBitmap)
+                                    .withIconSize(1.0f)
+                                    .withData(JsonParser.parseString(gson.toJson(station))); // Gắn dữ liệu
+                            mapFragment.createStationMarker(options);
                         }
                     }
                 })
@@ -107,7 +121,7 @@ public class JourneyActivity extends AppCompatActivity{
                 });
     }
 
-    @Override
+        @Override
     public void onResume() {
         super.onResume();
     }

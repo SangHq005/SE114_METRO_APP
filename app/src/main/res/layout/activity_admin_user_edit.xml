@@ -90,11 +90,11 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Số điện thoại"
-                android:textStyle="bold"
+                android:layout_marginTop="10dp"
+                android:text="căn cước công dân"
                 android:textColor="@color/grey_text"
                 android:textSize="16sp"
-                android:layout_marginTop="10dp"/>
+                android:textStyle="bold" />
 
             <EditText
                 android:layout_width="match_parent"
