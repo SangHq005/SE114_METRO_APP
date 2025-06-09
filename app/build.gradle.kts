@@ -60,6 +60,8 @@ dependencies {
     implementation("de.hdodenhof:circleimageview:3.1.0")
     implementation(libs.viewpager)
 
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
     // Mapview
     implementation("org.osmdroid:osmdroid-android:6.1.16")
     implementation("org.osmdroid:osmdroid-wms:6.1.16")
@@ -91,6 +93,9 @@ dependencies {
     //QR
     implementation ("com.google.zxing:core:3.5.2")
     implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+
+    //Create pdf
+    implementation ("com.itextpdf:itext7-core:7.2.5")
 
 
     implementation(libs.appcompat) // androidx.appcompat

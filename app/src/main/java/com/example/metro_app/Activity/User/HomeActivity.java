@@ -107,7 +107,7 @@ public class HomeActivity extends AppCompatActivity {
                 if ("Vé của tôi".equals(category.getName())) {
                     startActivity(new Intent(HomeActivity.this, YourTicketsActivity.class));
                 }
-                if ("Đổi mã lấy vé".equals(category.getName())) {
+                if ("Đổi mã".equals(category.getName())) {
                     startActivity(new Intent(HomeActivity.this, ChangeQRActivity.class));
                 }
                 if ("Bản đồ".equals(category.getName())) {

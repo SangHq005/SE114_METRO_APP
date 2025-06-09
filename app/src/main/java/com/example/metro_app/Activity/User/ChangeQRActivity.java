@@ -28,6 +28,7 @@ public class ChangeQRActivity extends AppCompatActivity {
     private EditText nhapMaVeEdt;
     private Button checkBtn;
     private ImageView backBtn;
+    private ImageView qrImg; // Thêm nút quét QR
     private FirebaseFirestore db;
     private String userId;
 
@@ -57,12 +58,19 @@ public class ChangeQRActivity extends AppCompatActivity {
         nhapMaVeEdt = findViewById(R.id.nhapMaVeEdt);
         checkBtn = findViewById(R.id.checkBtn);
         backBtn = findViewById(R.id.backBtn);
+        qrImg = findViewById(R.id.qrImg); // Ánh xạ nút quét QR
 
         // Thiết lập sự kiện nhấn nút Kiểm tra
         checkBtn.setOnClickListener(v -> checkTicketCode());
 
         // Thiết lập sự kiện nhấn nút Back
         backBtn.setOnClickListener(v -> finish());
+
+        // Thiết lập sự kiện nhấn nút quét QR
+        qrImg.setOnClickListener(v -> {
+            Intent intent = new Intent(ChangeQRActivity.this, ScanQRActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void checkTicketCode() {
@@ -89,25 +97,48 @@ public class ChangeQRActivity extends AppCompatActivity {
                                 return;
                             }
 
-                            // Mã vé hợp lệ, chuyển sang CreateQRActivity
-                            Intent intent = new Intent(ChangeQRActivity.this, CreateQRActivity.class);
-                            intent.putExtra("ticketId", document.getId());
-                            intent.putExtra("ticketType", document.getString("ticketTypeId"));
-                            intent.putExtra("status", document.getString("Status"));
-                            intent.putExtra("ticketCode", ticketCode);
-                            // Lấy thêm các thông tin khác nếu cần
-                            SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
-                            Date autoActiveDate = document.getDate("AutoActiveDate");
-                            Date expirationDate = document.getDate("ExpirationDate");
-                            Date issueDate = document.getDate("timestamp");
-                            String formattedAutoActiveDate = autoActiveDate != null ? "Tự động kích hoạt vào: " + dateFormat.format(autoActiveDate) : "Tự động kích hoạt vào: N/A";
-                            String formattedExpirationDate = expirationDate != null ? dateFormat.format(expirationDate) : "N/A";
-                            intent.putExtra("expireDate", formattedAutoActiveDate);
-                            intent.putExtra("issueDate", issueDate != null ? issueDate.getTime() : 0L);
-                            intent.putExtra("expirationDate", formattedExpirationDate);
-                            intent.putExtra("source", "ChangeQRActivity");
-                            startActivity(intent);
-                            finish();
+                            // Lấy ticketTypeId để truy vấn Name trong TicketType
+                            String ticketTypeId = document.getString("ticketTypeId");
+                            if (ticketTypeId != null) {
+                                db.collection("TicketType")
+                                        .document(ticketTypeId)
+                                        .get()
+                                        .addOnCompleteListener(typeTask -> {
+                                            if (typeTask.isSuccessful()) {
+                                                String ticketTypeName = typeTask.getResult().getString("Name");
+                                                if (ticketTypeName == null) ticketTypeName = "Không xác định";
+
+                                                // Lấy username từ SharedPreferences
+                                                SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+                                                String username = prefs.getString("name", "Không xác định");
+
+                                                // Mã vé hợp lệ, chuyển sang CreateQRActivity
+                                                Intent intent = new Intent(ChangeQRActivity.this, CreateQRActivity.class);
+                                                intent.putExtra("ticketId", document.getId());
+                                                intent.putExtra("ticketType", ticketTypeName); // Sử dụng Name thay vì ticketTypeId
+                                                intent.putExtra("status", document.getString("Status"));
+                                                intent.putExtra("ticketCode", ticketCode);
+                                                // Lấy thêm các thông tin khác nếu cần
+                                                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.getDefault());
+                                                Date autoActiveDate = document.getDate("AutoActiveDate");
+                                                Date expirationDate = document.getDate("ExpirationDate");
+                                                Date issueDate = document.getDate("timestamp");
+                                                String formattedAutoActiveDate = autoActiveDate != null ? "Tự động kích hoạt vào: " + dateFormat.format(autoActiveDate) : "Tự động kích hoạt vào: N/A";
+                                                String formattedExpirationDate = expirationDate != null ? dateFormat.format(expirationDate) : "N/A";
+                                                intent.putExtra("expireDate", formattedAutoActiveDate);
+                                                intent.putExtra("issueDate", issueDate != null ? issueDate.getTime() : 0L);
+                                                intent.putExtra("expirationDate", formattedExpirationDate);
+                                                intent.putExtra("source", "ChangeQRActivity");
+                                                intent.putExtra("userName", username); // Thêm username
+                                                startActivity(intent);
+                                                finish();
+                                            } else {
+                                                Toast.makeText(this, "Lỗi tải loại vé: " + (typeTask.getException() != null ? typeTask.getException().getMessage() : "Không xác định"), Toast.LENGTH_LONG).show();
+                                            }
+                                        });
+                            } else {
+                                Toast.makeText(this, "Không tìm thấy ticketTypeId!", Toast.LENGTH_LONG).show();
+                            }
                             return;
                         }
                     } else {
