@@ -37,8 +37,6 @@ public class CreateQRActivity extends AppCompatActivity {
     private ImageView qrImg;
     private TextView typeTicketTxt, loaiVeTxt, hanSuDungTxt, ngayPhatHanhTxt, tenTxt, maVeTxt;
     private CountDownTimer countDownTimer;
-    private final long REFRESH_INTERVAL = 30000; // 30 giây
-    private final long COUNTDOWN_INTERVAL = 1000; // 1 giây
     private String ticketId;
     private String userId;
     private String initialStatus;
@@ -86,6 +84,7 @@ public class CreateQRActivity extends AppCompatActivity {
             // Log giá trị userName và source để kiểm tra
             Log.d("CreateQRActivity", "Received userName: " + userName);
             Log.d("CreateQRActivity", "Received source: " + source);
+            Log.d("CreateQRActivity", "Received ticketCode: " + ticketCode);
 
             // Cập nhật TextView trong infoContainer
             typeTicketTxt.setText(ticketType != null ? ticketType : "Không có thông tin");
@@ -151,15 +150,11 @@ public class CreateQRActivity extends AppCompatActivity {
         // Mặc định hiển thị QR code
         ((MaterialButton) findViewById(R.id.qrBtn)).setChecked(true);
         showQrCode();
-
-        // Lắng nghe sự kiện quét QR
-        setupQrScanListener();
     }
 
     private void showQrCode() {
         qrCodeContainer.setVisibility(View.VISIBLE);
         infoContainer.setVisibility(View.GONE);
-        startCountdown();
     }
 
     private void showTicketInfo() {
@@ -168,23 +163,7 @@ public class CreateQRActivity extends AppCompatActivity {
         stopCountdown();
     }
 
-    private void startCountdown() {
-        stopCountdown();
 
-        countDownTimer = new CountDownTimer(REFRESH_INTERVAL, COUNTDOWN_INTERVAL) {
-            @Override
-            public void onTick(long millisUntilFinished) {
-                long seconds = millisUntilFinished / 1000;
-                ((TextView) findViewById(R.id.tvRefreshTimer)).setText(seconds + "s");
-            }
-
-            @Override
-            public void onFinish() {
-                refreshQrCode();
-                startCountdown();
-            }
-        }.start();
-    }
 
     private void stopCountdown() {
         if (countDownTimer != null) {
@@ -199,6 +178,9 @@ public class CreateQRActivity extends AppCompatActivity {
 
     private void generateQRCode(String ticketId) {
         try {
+            if (ticketId == null) {
+                throw new IllegalArgumentException("Ticket ID is null");
+            }
             BitMatrix bitMatrix = new MultiFormatWriter().encode(
                     ticketId,
                     BarcodeFormat.QR_CODE,
@@ -216,35 +198,6 @@ public class CreateQRActivity extends AppCompatActivity {
             e.printStackTrace();
             Toast.makeText(this, "Lỗi tạo mã QR: " + e.getMessage(), Toast.LENGTH_LONG).show();
         }
-    }
-
-    private void setupQrScanListener() {
-        if (ticketId == null) return;
-
-        DocumentReference ticketRef = db.collection("Ticket").document(ticketId);
-        qrScanListener = ticketRef.addSnapshotListener((snapshot, error) -> {
-            if (error != null) {
-                Toast.makeText(CreateQRActivity.this, "Lỗi lắng nghe QR: " + error.getMessage(), Toast.LENGTH_LONG).show();
-                return;
-            }
-            if (snapshot != null && snapshot.exists()) {
-                String status = snapshot.getString("Status");
-                if ("Đang kích hoạt".equals(status) && !"Đang kích hoạt".equals(initialStatus)) {
-                    Toast.makeText(CreateQRActivity.this, "Mã QR đã được quét và vé đã kích hoạt!", Toast.LENGTH_LONG).show();
-                    finish();
-                }
-            }
-        });
-
-        new CountDownTimer(30000, 1000) {
-            @Override
-            public void onTick(long millisUntilFinished) {}
-
-            @Override
-            public void onFinish() {
-                ticketRef.update("Status", "Đang kích hoạt");
-            }
-        }.start();
     }
 
     @Override

@@ -90,7 +90,8 @@ dependencies {
 
     //QR
     implementation ("com.google.zxing:core:3.5.2")
-    implementation ("com.google.zxing:android-integration:3.3.0")
+    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+
 
     implementation(libs.appcompat) // androidx.appcompat
     implementation(libs.activity) // androidx.activity
