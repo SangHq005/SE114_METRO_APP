@@ -10,6 +10,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.RelativeLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -62,6 +63,7 @@ public class CreateTicketActivity extends AppCompatActivity {
     private Spinner typeSpinner, validitySpinner, startStationSpinner, endStationSpinner;
     private TextView validityLabel, startStationLabel, endStationLabel;
     private Button issueTicketButton;
+    private RelativeLayout  validityContainer, startStationContainer, endStationContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +92,9 @@ public class CreateTicketActivity extends AppCompatActivity {
         startStationLabel = findViewById(R.id.startStationLabel);
         endStationLabel = findViewById(R.id.endStationLabel);
         issueTicketButton = findViewById(R.id.issueTicketButton);
+        validityContainer = findViewById(R.id.validityContainer);
+        startStationContainer = findViewById(R.id.startStationContainer);
+        endStationContainer = findViewById(R.id.endStationContainer);
 
         // Load Type vào typeSpinner
         loadTicketTypes();
@@ -108,16 +113,22 @@ public class CreateTicketActivity extends AppCompatActivity {
                 startStationLabel.setVisibility(View.GONE);
                 endStationSpinner.setVisibility(View.GONE);
                 endStationLabel.setVisibility(View.GONE);
+                validityContainer.setVisibility(View.GONE);
+                startStationContainer.setVisibility(View.GONE);
+                endStationContainer.setVisibility(View.GONE);
 
                 if ("Vé dài hạn".equals(selectedType)) {
                     // Hiển thị Spinner thời hạn vé
+                    validityContainer.setVisibility(View.VISIBLE);
                     validitySpinner.setVisibility(View.VISIBLE);
                     validityLabel.setVisibility(View.VISIBLE);
                     loadValidityOptions();
                 } else if ("Vé lượt".equals(selectedType)) {
                     // Hiển thị Spinner ga đi và ga đến
+                    startStationContainer.setVisibility(View.VISIBLE);
                     startStationSpinner.setVisibility(View.VISIBLE);
                     startStationLabel.setVisibility(View.VISIBLE);
+                    endStationContainer.setVisibility(View.VISIBLE);
                     endStationSpinner.setVisibility(View.VISIBLE);
                     endStationLabel.setVisibility(View.VISIBLE);
                     loadStartStations();
@@ -364,6 +375,7 @@ public class CreateTicketActivity extends AppCompatActivity {
             ticketData.put("AutoActiveDate", autoActiveDate);
             ticketData.put("ExpirationDate", expirationDate);
 
+
             // Lưu vé vào Firestore
             db.collection("Ticket")
                     .document(ticketId)
@@ -419,6 +431,7 @@ public class CreateTicketActivity extends AppCompatActivity {
         String endStation = (String) ticketTypeData.get("EndStation");
         Object active = ticketTypeData.get("Active");
         Object autoActive = ticketTypeData.get("AutoActive");
+        Object type = ticketTypeData.get("Type");
 
         String activeStr = active != null ? String.valueOf(active) : "0";
         String autoActiveStr = autoActive != null ? String.valueOf(autoActive) : "0";
@@ -459,14 +472,20 @@ public class CreateTicketActivity extends AppCompatActivity {
                         .setTextAlignment(TextAlignment.CENTER));
                 document.add(new Paragraph("Ga đến: " + endStation)
                         .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph("HSD: Vé chỉ có thể sử dụng 1 lần")
+                        .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph("Lưu ý: Tự động kích hoạt sau " + autoActiveStr + " ngày")
+                        .setTextAlignment(TextAlignment.CENTER));
             }
-            document.add(new Paragraph("HSD: " + activeStr + " ngày sau khi kích hoạt")
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("Lưu ý: Tự động kích hoạt sau " + autoActiveStr + " ngày")
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("Mã vé: " + ticketCode)
-                    .setTextAlignment(TextAlignment.CENTER));
-            document.add(new Paragraph("\n"));
+            else {
+                document.add(new Paragraph("HSD: " + activeStr + " ngày sau khi kích hoạt")
+                        .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph("Lưu ý: Tự động kích hoạt sau " + autoActiveStr + " ngày")
+                        .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph("Mã vé: " + ticketCode)
+                        .setTextAlignment(TextAlignment.CENTER));
+                document.add(new Paragraph("\n"));
+            }
 
             // Tạo mã QR
             BarcodeQRCode qrCode = new BarcodeQRCode(ticketCode);
