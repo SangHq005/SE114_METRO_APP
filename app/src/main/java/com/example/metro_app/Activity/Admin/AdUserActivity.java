@@ -250,6 +250,8 @@ public class AdUserActivity extends AppCompatActivity {
                 startActivity(new Intent(AdUserActivity.this, AdRouteActivity.class));
             } else if (id == R.id.nav_ad_wallet) {
                 startActivity(new Intent(AdUserActivity.this, AdTicketActivity.class));
+            } else if (id == R.id.nav_ad_profile) {
+                startActivity(new Intent(AdUserActivity.this, AdProfileActivity.class));
             } else if (id == R.id.nav_ad_userlist) {
                 return true; // Already on this screen
             }

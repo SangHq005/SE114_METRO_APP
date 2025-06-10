@@ -194,9 +194,14 @@ public class AdHomeActivity extends AppCompatActivity {
                 startActivity(new Intent(AdHomeActivity.this, AdUserActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
+            } else if (id == R.id.nav_ad_profile) {
+                startActivity(new Intent(AdHomeActivity.this, AdProfileActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
             }
             return false;
         });
+        btnWeekly.performClick();
         btnWeekly.performClick();
     }
 

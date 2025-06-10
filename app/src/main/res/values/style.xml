@@ -7,4 +7,59 @@
         <item name="cornerSizeBottomLeft">0dp</item>
         <item name="cornerSizeBottomRight">0dp</item>
     </style>
+    <style name="AlertDialogTheme" parent="Theme.AppCompat.Dialog.Alert">
+        <item name="android:background">#333333</item> <!-- Màu nền tối cho dialog -->
+        <item name="android:textColor">@color/white</item> <!-- Màu chữ cho tiêu đề và nội dung -->
+        <item name="android:textColorPrimary">@color/white</item>
+        <item name="colorAccent">#FFFFFF</item> <!-- Màu cho các nút (ví dụ: "Hủy") -->
+        <item name="android:windowTitleStyle">@style/DialogWindowTitle</item>
+    </style>
+
+    <style name="DialogWindowTitle" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textColor">@color/white</item> <!-- Đảm bảo tiêu đề có màu trắng -->
+    </style>
+
+    <style name="UserInfoCard" parent="Widget.MaterialComponents.CardView">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginBottom">16dp</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="cardBackgroundColor">#33FFFFFF</item> <!-- Semi-transparent white -->
+        <item name="strokeWidth">0dp</item>
+    </style>
+
+    <style name="UserInfoLinearLayout">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:padding">16dp</item>
+        <item name="android:gravity">center_vertical</item>
+    </style>
+
+    <style name="UserInfoIcon">
+        <item name="android:layout_width">24dp</item>
+        <item name="android:layout_height">24dp</item>
+        <item name="android:layout_marginEnd">16dp</item>
+    </style>
+
+    <style name="UserInfoTextLayout">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:orientation">vertical</item>
+    </style>
+
+    <style name="UserInfoLabel" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/grey_text</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="UserInfoValue" parent="Widget.AppCompat.TextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textSize">18sp</item>
+    </style>
 </resources>

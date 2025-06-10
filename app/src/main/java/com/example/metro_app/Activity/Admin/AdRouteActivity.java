@@ -228,6 +228,10 @@ public class AdRouteActivity extends AppCompatActivity {
                 startActivity(new Intent(AdRouteActivity.this, AdUserActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
+            } else if (id == R.id.nav_ad_profile) {
+                startActivity(new Intent(AdRouteActivity.this, AdProfileActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
             }
             return false;
         });

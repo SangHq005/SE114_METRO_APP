@@ -114,6 +114,8 @@
             android:exported="true" />
         <activity android:name=".Activity.Admin.AddRouteActivity"
             android:exported="true" />
+        <activity android:name=".Activity.Admin.AdProfileActivity"
+            android:exported="true" />
         <activity
             android:name=".Activity.Admin.ScanQRActivity"
             android:exported="true" />

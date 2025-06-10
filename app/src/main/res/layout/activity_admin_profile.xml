@@ -1,0 +1,155 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/darkbg"
+    android:focusable="true"
+    android:focusableInTouchMode="true"
+    tools:context=".Activity.Admin.AdProfileActivity">
+
+    <!-- Header -->
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Hồ Sơ Cá Nhân"
+            android:textColor="@color/white"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:layout_centerInParent="true"/>
+    </RelativeLayout>
+
+    <!-- Profile Content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <!-- Avatar -->
+            <com.google.android.material.imageview.ShapeableImageView
+                android:id="@+id/profile_image"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:layout_gravity="center_horizontal"
+                android:scaleType="centerCrop"
+                android:src="@drawable/userbtn"
+                app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                app:strokeColor="@color/white"
+                app:strokeWidth="2dp"/>
+
+            <!-- Spacer -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="30dp" />
+
+            <!-- Name Card (Read-only) -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/UserInfoCard">
+                <LinearLayout style="@style/UserInfoLinearLayout">
+                    <ImageView style="@style/UserInfoIcon" android:src="@drawable/ic_person" />
+                    <LinearLayout style="@style/UserInfoTextLayout">
+                        <TextView style="@style/UserInfoLabel" android:text="Họ và tên" />
+                        <TextView android:id="@+id/tv_profile_name" style="@style/UserInfoValue" tools:text="Admin Name" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Email Card (Read-only) -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/UserInfoCard">
+                <LinearLayout style="@style/UserInfoLinearLayout">
+                    <ImageView style="@style/UserInfoIcon" android:src="@drawable/ic_email" />
+                    <LinearLayout style="@style/UserInfoTextLayout">
+                        <TextView style="@style/UserInfoLabel" android:text="Email" />
+                        <TextView android:id="@+id/tv_profile_email" style="@style/UserInfoValue" tools:text="admin@example.com" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- CCCD Card (Editable) -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/UserInfoCard">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            style="@style/UserInfoIcon"
+                            android:src="@drawable/ic_badge" />
+
+                        <LinearLayout
+                            style="@style/UserInfoTextLayout"
+                            android:layout_marginLeft="16dp">
+                            <TextView
+                                style="@style/UserInfoLabel"
+                                android:text="CCCD" />
+
+                            <EditText
+                                android:id="@+id/et_profile_cccd"
+                                style="@style/UserInfoValue"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@android:color/transparent"
+                                android:hint="Chưa cập nhật (12 số)"
+                                android:inputType="number"
+                                android:maxLength="12"
+                                android:padding="0dp"
+                                android:textColor="@color/white"
+                                android:textColorHint="#A8A8A8"
+                                android:importantForAutofill="no" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <!-- Logout Button -->
+            <androidx.appcompat.widget.AppCompatButton
+                android:id="@+id/btn_logout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/red_button_bg"
+                android:text="Đăng xuất"
+                android:textColor="@color/white"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+        </LinearLayout>
+    </ScrollView>
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottomNavigationView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        app:itemIconTint="@color/white"
+        app:itemTextColor="@color/white"
+        app:menu="@menu/menu_admin" />
+</LinearLayout>

@@ -1,13 +1,14 @@
 package com.example.metro_app.Model;
 
+import static android.content.ContentValues.TAG;
+
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.example.metro_app.Domain.TicketModel;
 import com.google.firebase.Timestamp;
-import com.google.firebase.firestore.AggregateQuery;
-import com.google.firebase.firestore.AggregateSource;
+import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
@@ -27,7 +28,53 @@ public class FireStoreHelper {
         db = FirebaseFirestore.getInstance();
     }
 
-    // Lấy danh sách toàn bộ người dùng
+    public void getUserById(String uid, Callback<UserModel> callback) {
+        if (uid == null || uid.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("User ID không được để trống"));
+            return;
+        }
+
+        DocumentReference userRef = db.collection("Account").document(uid);
+        userRef.get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DocumentSnapshot document = task.getResult();
+                if (document.exists()) {
+                    UserModel user = document.toObject(UserModel.class);
+                    if (user != null) {
+                        user.setUid(document.getId());
+                        Log.d(TAG, "Lấy thông tin người dùng thành công: " + user.getName());
+                        callback.onSuccess(user);
+                    } else {
+                        callback.onFailure(new Exception("Không thể chuyển đổi dữ liệu người dùng."));
+                    }
+                } else {
+                    Log.d(TAG, "Không tìm thấy người dùng với UID: " + uid);
+                    callback.onSuccess(null); // Không tìm thấy người dùng
+                }
+            } else {
+                Log.e(TAG, "Lỗi khi lấy thông tin người dùng: ", task.getException());
+                callback.onFailure(task.getException());
+            }
+        });
+    }
+
+    public void updateUserCccd(String uid, String newCccd, Callback<Void> callback) {
+        if (uid == null || uid.isEmpty()) {
+            callback.onFailure(new IllegalArgumentException("User ID không được để trống"));
+            return;
+        }
+
+        DocumentReference userRef = db.collection("Account").document(uid);
+        userRef.update("CCCD", newCccd)
+                .addOnSuccessListener(aVoid -> {
+                    Log.d(TAG, "Cập nhật CCCD thành công cho UID: " + uid);
+                    callback.onSuccess(null);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e(TAG, "Lỗi khi cập nhật CCCD: ", e);
+                    callback.onFailure(e);
+                });
+    }
     public void getAllUsers(Callback<List<UserModel>> callback) {
         db.collection("Account")
                 .get()
