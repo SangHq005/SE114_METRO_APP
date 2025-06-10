@@ -58,4 +58,6 @@
     <color name="onSurface">#1D1B20</color>
     <color name="onSurfaceVariant">#49454F</color>
     <color name="outlineVariant">#CAC4D0</color>
+
+    <color name="ripple_light">#1A667eea</color>
 </resources>

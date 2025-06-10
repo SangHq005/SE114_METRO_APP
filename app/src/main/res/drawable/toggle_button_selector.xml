@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- State khi button được chọn -->
+    <item android:state_selected="true">
+        <shape>
+            <gradient
+                android:startColor="#4568DC"
+                android:endColor="#B06AB3"
+                android:angle="45" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <!-- State khi button được pressed -->
+    <item android:state_pressed="true">
+        <shape>
+            <solid android:color="#E3F2FD" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+
+    <!-- State mặc định -->
+    <item>
+        <shape>
+            <solid android:color="@android:color/transparent" />
+            <corners android:radius="24dp" />
+        </shape>
+    </item>
+</selector>

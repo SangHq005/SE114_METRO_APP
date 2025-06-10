@@ -58,46 +58,74 @@
             app:layout_constraintTop_toBottomOf="@+id/hetHanTv"
             app:srcCompat="@drawable/fullwith" />
 
-        <com.google.android.material.button.MaterialButtonToggleGroup
-            android:id="@+id/buttonToggleGroup"
-            android:layout_width="wrap_content"
+        <!-- Modern Toggle Button Container -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/toggleContainer"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
             android:layout_marginTop="32dp"
-            android:animateLayoutChanges="true"
-            android:backgroundTint="@color/blue"
-            android:elevation="3dp"
-            android:outlineAmbientShadowColor="@color/blue"
-            android:outlineProvider="paddedBounds"
-            android:outlineSpotShadowColor="@color/bold_blue"
-            android:overScrollMode="never"
+            app:cardCornerRadius="30dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@android:color/white"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/hetHanTv"
-            app:singleSelection="true">
+            app:layout_constraintTop_toBottomOf="@+id/hetHanTv">
 
-            <Button
-                android:id="@+id/btn_dang_su_dung"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="150dp"
+            <LinearLayout
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Sử dụng"
-                android:textSize="14sp" />
+                android:orientation="horizontal"
+                android:padding="6dp"
+                android:background="@drawable/toggle_container_background">
 
-            <Button
-                android:id="@+id/btn_chua_su_dung"
-                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-                android:layout_width="150dp"
-                android:layout_height="46dp"
-                android:text="Chưa sử dụng"
-                android:textSize="14sp" />
+                <!-- Button Đang sử dụng -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_dang_su_dung"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:layout_marginEnd="3dp"
+                    android:text="Đang sử dụng"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:fontFamily="@font/roboto_medium"
+                    android:background="@drawable/toggle_button_selector"
+                    android:textColor="@drawable/toggle_text_selector"
+                    app:cornerRadius="24dp"
+                    app:rippleColor="@color/ripple_light"
+                    android:stateListAnimator="@animator/button_elevation" />
 
-        </com.google.android.material.button.MaterialButtonToggleGroup>
+                <!-- Button Chưa sử dụng -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_chua_su_dung"
+                    style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+                    android:layout_width="0dp"
+                    android:layout_height="48dp"
+                    android:layout_weight="1"
+                    android:layout_marginStart="3dp"
+                    android:text="Chưa sử dụng"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:textAllCaps="false"
+                    android:fontFamily="@font/roboto_medium"
+                    android:background="@drawable/toggle_button_selector"
+                    android:textColor="@drawable/toggle_text_selector"
+                    app:cornerRadius="24dp"
+                    app:rippleColor="@color/ripple_light"
+                    android:stateListAnimator="@animator/button_elevation" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewTickets"
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            app:layout_constraintTop_toBottomOf="@id/buttonToggleGroup"
+            app:layout_constraintTop_toBottomOf="@id/toggleContainer"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
@@ -111,7 +139,7 @@
             android:textSize="18sp"
             android:textColor="@android:color/black"
             android:visibility="gone"
-            app:layout_constraintTop_toBottomOf="@id/buttonToggleGroup"
+            app:layout_constraintTop_toBottomOf="@id/toggleContainer"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             android:layout_marginTop="16dp" />

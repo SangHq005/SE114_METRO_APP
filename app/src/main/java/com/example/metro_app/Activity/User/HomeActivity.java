@@ -50,11 +50,9 @@ public class HomeActivity extends AppCompatActivity {
             if (popularModels != null && !popularModels.isEmpty()) {
                 PopularAdapter adapter = new PopularAdapter((ArrayList<PopularModel>) popularModels);
                 binding.recyclerViewPopular.setAdapter(adapter);
-            } else {
-                System.out.println("Danh sách tin tức trống");
             }
-
         });
+
     }
 
     private void initNews() {
@@ -64,21 +62,17 @@ public class HomeActivity extends AppCompatActivity {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.recyclerViewNews.setLayoutManager(layoutManager);
 
-        // Quan sát dữ liệu từ ViewModel
         viewModel.loadNews().observe(this, newsModels -> {
             if (newsModels != null && !newsModels.isEmpty()) {
-                NewsAdapter adapter = new NewsAdapter((ArrayList<NewsModel>) newsModels);
+                NewsAdapter adapter = new NewsAdapter((ArrayList<NewsModel>) newsModels, this);
                 binding.recyclerViewNews.setAdapter(adapter);
-            } else {
-                System.out.println("Danh sách tin tức trống");
             }
-
-            binding.viewAllNewsBtn.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    startActivity(new Intent(HomeActivity.this, AllNewsActivity.class));
-                }
-            });
+        });
+        binding.viewAllNewsBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(HomeActivity.this,AllNewsActivity.class));
+            }
         });
     }
 

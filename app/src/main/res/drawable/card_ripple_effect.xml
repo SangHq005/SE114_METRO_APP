@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ripple xmlns:android="http://schemas.android.com/apk/res/android"
+    android:color="#1A2196F3">
+    <item android:drawable="@drawable/card_gradient_background" />
+</ripple>

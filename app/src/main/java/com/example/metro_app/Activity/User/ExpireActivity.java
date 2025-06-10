@@ -67,7 +67,7 @@ public class ExpireActivity extends AppCompatActivity {
         homeImgBtn = findViewById(R.id.homeImgBtn);
 
         // Ẩn các nút không cần thiết
-        findViewById(R.id.buttonToggleGroup).setVisibility(View.GONE);
+        findViewById(R.id.toggleContainer).setVisibility(View.GONE);
         findViewById(R.id.hethanTxt).setVisibility(View.GONE);
 
         // Đặt tiêu đề
