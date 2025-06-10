@@ -64,7 +64,6 @@ class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketViewHolder>
         if (holder.ticketPrice != null) {
             holder.ticketPrice.setText(price);
         } else {
-            // Fallback to single TextView with combined format
             holder.ticketName.setText(context.getString(R.string.ticket_name_format, ticketName, price));
         }
         holder.itemView.setOnClickListener(v -> listener.onItemClick(position));
@@ -77,18 +76,19 @@ class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketViewHolder>
 
     static class TicketViewHolder extends RecyclerView.ViewHolder {
         TextView ticketName;
-        TextView ticketPrice; // Nullable, for backward compatibility
+        TextView ticketPrice;
 
         public TicketViewHolder(@NonNull View itemView) {
             super(itemView);
             ticketName = itemView.findViewById(R.id.tv_ticket_name);
-            ticketPrice = itemView.findViewById(R.id.tv_ticket_price); // May be null
+            ticketPrice = itemView.findViewById(R.id.tv_ticket_price);
         }
     }
 
     public void updateList(List<TicketType> newList) {
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new TicketDiffCallback(filteredTicketList, newList));
-        filteredTicketList = new ArrayList<>(newList);
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new TicketDiffCallback(this.filteredTicketList, newList));
+        // Dòng code này sẽ tạo ra một danh sách mới cho adapter, tách biệt khỏi danh sách của Activity
+        this.filteredTicketList = new ArrayList<>(newList);
         diffResult.dispatchUpdatesTo(this);
     }
 
@@ -102,14 +102,10 @@ class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketViewHolder>
         }
 
         @Override
-        public int getOldListSize() {
-            return oldList.size();
-        }
+        public int getOldListSize() { return oldList.size(); }
 
         @Override
-        public int getNewListSize() {
-            return newList.size();
-        }
+        public int getNewListSize() { return newList.size(); }
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
@@ -120,6 +116,7 @@ class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketViewHolder>
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
             TicketType oldTicket = oldList.get(oldItemPosition);
             TicketType newTicket = newList.get(newItemPosition);
+            // So sánh nội dung các trường
             return (oldTicket.getName() == null ? newTicket.getName() == null : oldTicket.getName().equals(newTicket.getName())) &&
                     (oldTicket.getPrice() == null ? newTicket.getPrice() == null : oldTicket.getPrice().equals(newTicket.getPrice())) &&
                     (oldTicket.getActive() == null ? newTicket.getActive() == null : oldTicket.getActive().equals(newTicket.getActive())) &&
@@ -134,7 +131,6 @@ public class AdTicketActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private TicketAdapter ticketAdapter;
     private List<TicketType> ticketList;
-    private List<TicketType> filteredTicketList;
     private FirebaseFirestore db;
     private ProgressBar progressBar;
 
@@ -168,95 +164,70 @@ public class AdTicketActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_admin_ticket);
 
-        // Initialize Firestore
         db = FirebaseFirestore.getInstance();
-
-        // Initialize RecyclerView
         recyclerView = findViewById(R.id.recycler_view_tickets);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
-
-        // Initialize search bar
         EditText searchBar = findViewById(R.id.search_bar);
-
-        // Initialize ProgressBar
         progressBar = findViewById(R.id.progress_bar);
+
         progressBar.setVisibility(View.VISIBLE);
-
-        // Initialize lists
         ticketList = new ArrayList<>();
-        filteredTicketList = new ArrayList<>();
 
-        // Set up adapter
-        ticketAdapter = new TicketAdapter(this, filteredTicketList, position -> {
-            Intent intent = new Intent(AdTicketActivity.this, AdTicketDetails.class);
-            intent.putExtra("ticket", filteredTicketList.get(position));
-            intent.putExtra("position", ticketList.indexOf(filteredTicketList.get(position)));
-            editTicketLauncher.launch(intent);
+        ticketAdapter = new TicketAdapter(this, new ArrayList<>(), position -> {
         });
         recyclerView.setAdapter(ticketAdapter);
 
-        // Load data from Firestore
         loadTicketsFromFirestore();
 
         ImageButton addButton = findViewById(R.id.button_add_ticket);
         addButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdTicketActivity.this, AddTicketActivity.class);
-
-            startActivity(intent);
+            addTicketLauncher.launch(intent);
         });
-
         ImageButton publicButton = findViewById(R.id.btnPublic);
         publicButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdTicketActivity.this, CreateTicketActivity.class);
             startActivity(intent);
         });
 
-        // Search functionality
         searchBar.addTextChangedListener(new TextWatcher() {
             @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-            }
-
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int before, int count) {
                 filterTickets(s.toString());
             }
-
             @Override
-            public void afterTextChanged(Editable s) {
-            }
+            public void afterTextChanged(Editable s) {}
         });
 
-        // BottomNavigationView
+        setupBottomNavigation();
+    }
+
+    private void setupBottomNavigation() {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setSelectedItemId(R.id.nav_ad_wallet);
-
-// Sử dụng setOnItemSelectedListener đã được tối ưu hóa
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-
-            // Nếu item được chọn đã là item hiện tại thì không làm gì cả
             if (id == bottomNavigationView.getSelectedItemId()) {
                 return false;
             }
-
             if (id == R.id.nav_ad_home) {
                 startActivity(new Intent(AdTicketActivity.this, AdHomeActivity.class));
                 overridePendingTransition(0, 0);
-                finish(); // Đóng activity hiện tại
+                finish();
                 return true;
             } else if (id == R.id.nav_ad_route) {
                 startActivity(new Intent(AdTicketActivity.this, AdRouteActivity.class));
                 overridePendingTransition(0, 0);
-                finish(); // Đóng activity hiện tại
+                finish();
                 return true;
             } else if (id == R.id.nav_ad_userlist) {
                 startActivity(new Intent(AdTicketActivity.this, AdUserActivity.class));
                 overridePendingTransition(0, 0);
-                finish(); // Đóng activity hiện tại
+                finish();
                 return true;
             }
-            // Trường hợp id == R.id.nav_ad_wallet sẽ không xảy ra do đã lọc ở trên
             return false;
         });
     }
@@ -265,138 +236,69 @@ public class AdTicketActivity extends AppCompatActivity {
         db.collection("TicketType")
                 .get()
                 .addOnCompleteListener(task -> {
+                    progressBar.setVisibility(View.GONE);
                     if (task.isSuccessful()) {
                         ticketList.clear();
                         QuerySnapshot querySnapshot = task.getResult();
                         if (querySnapshot != null && !querySnapshot.isEmpty()) {
                             for (var doc : querySnapshot.getDocuments()) {
-//                                try {
-//                                    // Use Firestore document ID as id
-//                                    String id = doc.getId();
-//                                    String name = doc.getString("Name");
-//                                    String status = doc.getString("Status");
-//
-//                                    // Handle price as String or Number
-//                                    String price = null;
-//                                    Object priceObj = doc.get("Price") != null ? doc.get("Price") : doc.get("price");
-//                                    if (priceObj instanceof String) {
-//                                        price = (String) priceObj;
-//                                    } else if (priceObj instanceof Number) {
-//                                        DecimalFormat formatter = new DecimalFormat("#,###");
-//                                        price = formatter.format(((Number) priceObj).longValue()) + " VND";
-//                                    } else {
-//                                        Log.w(TAG, "Invalid price format in document: " + doc.getId());
-//                                        continue;
-//                                    }
-//
-//                                    // Handle active as Number (stored as days)
-//                                    String active = null;
-//                                    Object activeObj = doc.get("Active");
-//                                    if (activeObj instanceof Number) {
-//                                        active = String.valueOf(((Number) activeObj).longValue());
-//                                    } else if (activeObj instanceof String) {
-//                                        active = (String) activeObj;
-//                                    } else {
-//                                        Log.w(TAG, "Invalid active format in document: " + doc.getId());
-//                                        continue;
-//                                    }
-//
-//                                    // Handle autoActive as Number (stored as days)
-//                                    String autoActive = null;
-//                                    Object autoActiveObj = doc.get("AutoActive");
-//                                    if (autoActiveObj instanceof Number) {
-//                                        autoActive = String.valueOf(((Number) autoActiveObj).longValue());
-//                                    } else if (autoActiveObj instanceof String) {
-//                                        autoActive = (String) autoActiveObj;
-//                                    } else {
-//                                        Log.w(TAG, "Invalid autoActive format in document: " + doc.getId());
-//                                        continue;
-//                                    }
-//
-//                                    // Handle null values
-//                                    if (id == null || name == null || price == null || active == null || autoActive == null || status == null) {
-//                                        Log.w(TAG, "Missing fields in document: " + doc.getId() +
-//                                                ", id=" + id + ", name=" + name + ", price=" + price +
-//                                                ", active=" + active + ", autoActive=" + autoActive +
-//                                                ", status=" + status);
-//                                        continue;
-//                                    }
-//
-//                                    TicketType ticket = new TicketType(id, name, price, active, autoActive, status);
-//                                    ticketList.add(ticket);
-//                                    Log.d(TAG, "Added ticket: " + name + ", Price: " + price);
-//                                } catch (Exception e) {
-//                                    Log.e(TAG, "Error parsing document: " + doc.getId(), e);
-//                                }
                                 try {
                                     String id = doc.getId();
-                                    String name = doc.getString("Name") != null ? doc.getString("Name") : "Tên không xác định";
-                                    String status = doc.getString("Status") != null ? doc.getString("Status") : "Không có";
-
-                                    // Xử lý giá
-                                    String price = "0 VND"; // Giá trị mặc định
-                                    Object priceObj = doc.get("Price") != null ? doc.get("Price") : doc.get("price");
+                                    String name = doc.getString("Name");
+                                    String status = doc.getString("Status");
+                                    String price;
+                                    Object priceObj = doc.get("Price");
                                     if (priceObj instanceof String) {
                                         price = (String) priceObj;
                                     } else if (priceObj instanceof Number) {
                                         DecimalFormat formatter = new DecimalFormat("#,###");
                                         price = formatter.format(((Number) priceObj).longValue()) + " VND";
+                                    } else {
+                                        price = "N/A";
                                     }
 
-                                    // Xử lý active
-                                    String active = "0"; // Giá trị mặc định
-                                    Object activeObj = doc.get("Active");
-                                    if (activeObj instanceof Number) {
-                                        active = String.valueOf(((Number) activeObj).longValue());
-                                    } else if (activeObj instanceof String) {
-                                        active = (String) activeObj;
-                                    }
+                                    String active = doc.get("Active") != null ? String.valueOf(doc.get("Active")) : "0";
+                                    String autoActive = doc.get("AutoActive") != null ? String.valueOf(doc.get("AutoActive")) : "0";
 
-                                    // Xử lý autoActive
-                                    String autoActive = "0"; // Giá trị mặc định
-                                    Object autoActiveObj = doc.get("AutoActive");
-                                    if (autoActiveObj instanceof Number) {
-                                        autoActive = String.valueOf(((Number) autoActiveObj).longValue());
-                                    } else if (autoActiveObj instanceof String) {
-                                        autoActive = (String) autoActiveObj;
+                                    if (id == null || name == null || status == null) {
+                                        Log.w(TAG, "Document " + (doc != null ? doc.getId() : "null") + " has missing fields.");
+                                        continue;
                                     }
 
                                     TicketType ticket = new TicketType(id, name, price, active, autoActive, status);
                                     ticketList.add(ticket);
-                                    Log.d(TAG, "Added ticket: " + name + ", Price: " + price);
-
                                 } catch (Exception e) {
-                                    Log.e(TAG, "Error parsing document: " + doc.getId(), e);
+                                    Log.e(TAG, "Error parsing document: " + (doc != null ? doc.getId() : "null"), e);
                                 }
                             }
-                            filteredTicketList.clear();
-                            filteredTicketList.addAll(ticketList);
-                            ticketAdapter.updateList(filteredTicketList);
                             Log.d(TAG, "Loaded " + ticketList.size() + " tickets from Firestore");
+                            // Sau khi tải xong, gọi filterTickets để hiển thị toàn bộ danh sách
+                            filterTickets("");
                         } else {
                             Log.w(TAG, "No documents found in TicketType collection");
                             Toast.makeText(AdTicketActivity.this, "Không tìm thấy dữ liệu vé.", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Log.e(TAG, "Error loading tickets: ", task.getException());
-                        Toast.makeText(AdTicketActivity.this, "Lỗi khi tải dữ liệu vé: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        Toast.makeText(AdTicketActivity.this, "Lỗi khi tải dữ liệu vé: " + (task.getException() != null ? task.getException().getMessage() : ""), Toast.LENGTH_LONG).show();
                     }
-                    progressBar.setVisibility(View.GONE);
                 });
     }
 
     private void filterTickets(String query) {
-        filteredTicketList.clear();
+        List<TicketType> newFilteredList = new ArrayList<>();
+
         if (query.isEmpty()) {
-            filteredTicketList.addAll(ticketList);
+            newFilteredList.addAll(ticketList);
         } else {
             String lowerCaseQuery = query.toLowerCase();
             for (TicketType ticket : ticketList) {
                 if (ticket.getName() != null && ticket.getName().toLowerCase().contains(lowerCaseQuery)) {
-                    filteredTicketList.add(ticket);
+                    newFilteredList.add(ticket);
                 }
             }
         }
-        ticketAdapter.updateList(filteredTicketList);
+
+        ticketAdapter.updateList(newFilteredList);
     }
 }

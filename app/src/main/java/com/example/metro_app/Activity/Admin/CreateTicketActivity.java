@@ -63,10 +63,6 @@ public class CreateTicketActivity extends AppCompatActivity {
     private TextView validityLabel, startStationLabel, endStationLabel;
     private Button issueTicketButton;
 
-//    private TextView validityLabel, startStationLabel, endStationLabel;
-//    private Button issueTicketButton;
-    private View validityContainer, startStationContainer, endStationContainer;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,13 +90,6 @@ public class CreateTicketActivity extends AppCompatActivity {
         startStationLabel = findViewById(R.id.startStationLabel);
         endStationLabel = findViewById(R.id.endStationLabel);
         issueTicketButton = findViewById(R.id.issueTicketButton);
-        Button cancelButton = findViewById(R.id.cancelButton);
-
-        validityContainer = findViewById(R.id.validityContainer);
-        startStationContainer = findViewById(R.id.startStationContainer);
-        endStationContainer = findViewById(R.id.endStationContainer);
-
-        cancelButton.setOnClickListener(v -> finish());
 
         // Load Type vào typeSpinner
         loadTicketTypes();
@@ -112,25 +101,25 @@ public class CreateTicketActivity extends AppCompatActivity {
                 String selectedType = (String) parent.getItemAtPosition(position);
                 Log.d(TAG, "Selected Type: " + selectedType);
 
-                // Ẩn tất cả các trường phụ
+                // Ẩn tất cả Spinner phụ
+                validitySpinner.setVisibility(View.GONE);
                 validityLabel.setVisibility(View.GONE);
-                validityContainer.setVisibility(View.GONE); // Sửa ở đây
+                startStationSpinner.setVisibility(View.GONE);
                 startStationLabel.setVisibility(View.GONE);
-                startStationContainer.setVisibility(View.GONE); // Sửa ở đây
+                endStationSpinner.setVisibility(View.GONE);
                 endStationLabel.setVisibility(View.GONE);
-                endStationContainer.setVisibility(View.GONE); // Sửa ở đây
 
                 if ("Vé dài hạn".equals(selectedType)) {
-                    // Hiển thị trường thời hạn vé
+                    // Hiển thị Spinner thời hạn vé
+                    validitySpinner.setVisibility(View.VISIBLE);
                     validityLabel.setVisibility(View.VISIBLE);
-                    validityContainer.setVisibility(View.VISIBLE); // Sửa ở đây
                     loadValidityOptions();
                 } else if ("Vé lượt".equals(selectedType)) {
-                    // Hiển thị trường ga đi và ga đến
+                    // Hiển thị Spinner ga đi và ga đến
+                    startStationSpinner.setVisibility(View.VISIBLE);
                     startStationLabel.setVisibility(View.VISIBLE);
-                    startStationContainer.setVisibility(View.VISIBLE); // Sửa ở đây
+                    endStationSpinner.setVisibility(View.VISIBLE);
                     endStationLabel.setVisibility(View.VISIBLE);
-                    endStationContainer.setVisibility(View.VISIBLE); // Sửa ở đây
                     loadStartStations();
                 }
             }
@@ -365,7 +354,7 @@ public class CreateTicketActivity extends AppCompatActivity {
             calendar.add(Calendar.DAY_OF_YEAR, (int) activeDays);
             Date expirationDate = calendar.getTime();
 
-    // Tạo vé mới
+            // Tạo vé mới
             String ticketId = UUID.randomUUID().toString();
             Map<String, Object> ticketData = new HashMap<>();
             ticketData.put("ticketCode", ticketCode);

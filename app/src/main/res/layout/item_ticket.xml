@@ -17,7 +17,7 @@
             android:id="@+id/iv_ticket_icon"
             android:layout_width="20dp"
             android:layout_height="20dp"
-            android:src="@drawable/ticket"
+            android:src="@drawable/ticket_item"
             android:contentDescription="Ticket Icon" />
 
         <!-- Ticket Name and Price -->
@@ -34,7 +34,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Ticket Name"
-                android:textColor="@color/black"
+                android:textColor="@color/white"
                 android:textSize="16sp" />
 
             <!-- Ticket Price -->
@@ -43,8 +43,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="0đ"
-                android:textColor="#000000"
+                android:textColor="@color/white"
                 android:textSize="14sp" />
         </LinearLayout>
     </LinearLayout>
 </LinearLayout>
+
