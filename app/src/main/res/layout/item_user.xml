@@ -1,28 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="16dp"
+    android:padding="10dp"
+    android:layout_marginBottom="12dp"
     android:gravity="center_vertical">
 
-    <!-- Icon -->
+    <!-- Icon for user -->
     <ImageView
-        android:layout_width="20dp"
-        android:layout_height="20dp"
-        android:src="@drawable/user"
-        android:contentDescription="User Icon" />
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:src="@drawable/user_white"
+        android:layout_marginEnd="16dp"
+        android:contentDescription="User Icon"/>
 
-    <!-- Ticket Name -->
-    <TextView
-        android:id="@+id/tv_user_name"
+    <!-- User Info Section -->
+    <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:layout_marginStart="20dp"
-        android:text="User Name"
-        android:textColor="@color/white"
-        android:textSize="16sp" />
+        android:orientation="vertical">
+
+        <!-- User Name -->
+        <TextView
+            android:id="@+id/tv_user_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="User Name"
+            android:textColor="@android:color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <!-- User Role -->
+        <TextView
+            android:id="@+id/tv_user_role"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Role"
+            android:textColor="@color/lightGray"
+            android:textSize="14sp"
+            android:layout_marginTop="4dp"/>
+    </LinearLayout>
 
 </LinearLayout>

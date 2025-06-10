@@ -38,10 +38,13 @@ public class AdUserDetails extends AppCompatActivity {
         if (user != null) {
             editTextFullName.setText(user.getName());
             editTextEmail.setText(user.getEmail());
-            editTextPhoneNumber.setText(user.getCCCD());
 
-            // Display avatar if available
-            // Suppose UserModel has a getAvatarUrl() method, otherwise use a placeholder
+            if (user.getCCCD() != null && !user.getCCCD().isEmpty()) {
+                editTextPhoneNumber.setText(user.getCCCD());
+            } else {
+                editTextPhoneNumber.setText("Chưa cập nhật");
+            }
+
             String avatarUrl = null;
             try {
                 avatarUrl = user.getClass().getMethod("getAvatarUrl") != null ? (String) user.getClass().getMethod("getAvatarUrl").invoke(user) : null;

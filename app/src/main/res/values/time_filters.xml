@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string-array name="time_filters">
-        <item>per Day</item>
-        <item>per Week</item>
-        <item>per Month</item>
+        <item>Ngày</item>
+        <item>Tuần</item>
+        <item>Tháng</item>
     </string-array>
 </resources>

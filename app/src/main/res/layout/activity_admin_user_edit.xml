@@ -66,7 +66,9 @@
                 android:id="@+id/editTextFullName"
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
-                android:layout_marginTop="5dp"/>
+                android:layout_marginTop="5dp"
+                android:enabled="false"
+                android:textColor="@color/black"/>
 
             <!-- Email Field -->
             <TextView
@@ -84,14 +86,16 @@
                 android:id="@+id/editTextEmail"
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
-                android:layout_marginTop="5dp"/>
+                android:layout_marginTop="5dp"
+                android:enabled="false"
+                android:textColor="@color/black"/>
 
             <!-- Phone Number Field -->
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
-                android:text="căn cước công dân"
+                android:text="CCCD"
                 android:textColor="@color/grey_text"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -102,7 +106,9 @@
                 android:id="@+id/editTextPhoneNumber"
                 android:background="@drawable/custome_edittext2"
                 android:padding="10dp"
-                android:layout_marginTop="5dp"/>
+                android:layout_marginTop="5dp"
+                android:enabled="false"
+                android:textColor="@color/black"/>
             <!-- Button -->
             <LinearLayout
                 android:layout_width="match_parent"
@@ -128,14 +134,4 @@
 
         </LinearLayout>
     </ScrollView>
-
-    <!-- Bottom Navigation -->
-    <com.google.android.material.bottomnavigation.BottomNavigationView
-        android:id="@+id/bottomNavigationView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:itemIconTint="@android:color/white"
-        app:itemTextColor="@android:color/white"
-        app:menu="@menu/menu_admin" />
 </LinearLayout>
