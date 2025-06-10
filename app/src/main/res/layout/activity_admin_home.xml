@@ -1,29 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
+<androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:background="@drawable/darkbg"
     tools:context=".Activity.Admin.AdHomeActivity">
 
-    <!-- Header: Search and Icons -->
     <LinearLayout
+        android:id="@+id/header_layout"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:layout_marginTop="10dp"
-        android:paddingStart="16dp"
-        android:paddingEnd="16dp"
-        android:gravity="center_vertical">
+        android:padding="16dp"
+        android:gravity="center_vertical"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <EditText
+            android:id="@+id/search_bar"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:hint="Tìm kiếm"
+            android:hint="Tìm kiếm..."
             android:background="@drawable/custom_button"
             android:padding="8dp"
             android:textColor="@color/lightGray"
@@ -44,31 +46,40 @@
     </LinearLayout>
 
     <ScrollView
+        android:id="@+id/scroll_content"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
+        app:layout_constraintTop_toBottomOf="@id/header_layout"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavigationView"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tổng Quan"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:paddingHorizontal="30dp"/>
+            android:orientation="vertical"
+            android:paddingBottom="16dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingHorizontal="30dp"
-                android:paddingTop="10dp"
-                android:gravity="center_vertical">
+                android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
+                android:paddingTop="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Tổng Quan"
+                    android:textSize="22sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/white" />
+
+                <Space
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"/>
 
                 <TextView
                     android:layout_width="wrap_content"
@@ -85,15 +96,15 @@
                     android:background="@null"
                     android:popupBackground="@color/white"
                     android:entries="@array/time_filters"
-                    android:spinnerMode="dropdown"
-                    android:dropDownVerticalOffset="10dp" />
+                    android:spinnerMode="dropdown" />
             </LinearLayout>
+
 
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:columnCount="2"
-                android:padding="16dp"
+                android:padding="8dp"
                 android:columnOrderPreserved="false">
 
                 <androidx.cardview.widget.CardView
@@ -118,7 +129,7 @@
                             android:text="Doanh Thu"
                             android:gravity="center_vertical"
                             android:textColor="@android:color/white"
-                            android:textSize="18dp"
+                            android:textSize="18sp"
                             android:textStyle="bold"
                             android:drawablePadding="8dp" />
 
@@ -131,13 +142,6 @@
                             android:textColor="@android:color/white"
                             android:textSize="20sp"
                             android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="+0.0%"
-                            android:textColor="#00FF00" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -160,10 +164,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:drawableEnd="@drawable/i2"
-                            android:text="Vé Bán"
+                            android:text="Vé"
                             android:gravity="center_vertical"
                             android:textColor="@android:color/white"
-                            android:textSize="18dp"
+                            android:textSize="18sp"
                             android:textStyle="bold"
                             android:drawablePadding="8dp" />
 
@@ -176,15 +180,9 @@
                             android:textColor="@android:color/white"
                             android:textSize="20sp"
                             android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="+0.0%"
-                            android:textColor="#00FF00" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
+
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -207,7 +205,7 @@
                             android:text="Người Dùng"
                             android:gravity="center_vertical"
                             android:textColor="@android:color/white"
-                            android:textSize="18dp"
+                            android:textSize="18sp"
                             android:textStyle="bold"
                             android:drawablePadding="8dp" />
 
@@ -216,17 +214,10 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
-                            android:text="0 Tài khoản"
+                            android:text="0"
                             android:textColor="@android:color/white"
                             android:textSize="20sp"
                             android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="+0.0%"
-                            android:textColor="#00FF00" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
 
@@ -249,10 +240,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:drawableEnd="@drawable/i4"
-                            android:text="Lượt Truy Cập"
+                            android:text="Truy Cập"
                             android:gravity="center_vertical"
                             android:textColor="@android:color/white"
-                            android:textSize="18dp"
+                            android:textSize="18sp"
                             android:textStyle="bold"
                             android:drawablePadding="8dp" />
 
@@ -264,13 +255,6 @@
                             android:textColor="@android:color/white"
                             android:textSize="20sp"
                             android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:text="+0.0%"
-                            android:textColor="#00FF00" />
                     </LinearLayout>
                 </androidx.cardview.widget.CardView>
             </GridLayout>
@@ -288,7 +272,8 @@
                     android:textSize="22sp"
                     android:textStyle="bold"
                     android:textColor="@color/white"
-                    android:paddingHorizontal="30dp"/>
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp"/>
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -298,27 +283,27 @@
 
                     <Button
                         android:id="@+id/btnWeekly"
+                        style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:background="@android:color/transparent"
                         android:text="Tuần"
                         android:textColor="@android:color/white" />
 
                     <Button
+                        style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Tháng"
-                        android:background="@android:color/transparent"
                         android:textColor="@android:color/white" />
 
                     <Button
+                        style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Năm"
-                        android:background="@android:color/transparent"
                         android:textColor="@android:color/white" />
                 </LinearLayout>
 
@@ -336,7 +321,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@android:color/transparent"
-        app:menu="@menu/menu_admin"
         app:itemIconTint="@android:color/white"
-        app:itemTextColor="@android:color/white" />
-</LinearLayout>
+        app:itemTextColor="@android:color/white"
+        app:menu="@menu/menu_admin"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

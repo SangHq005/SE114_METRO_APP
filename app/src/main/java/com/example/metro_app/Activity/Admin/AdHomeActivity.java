@@ -83,21 +83,21 @@ public class AdHomeActivity extends AppCompatActivity {
                         fireStoreHelper.getTotalTicketsFiltered(day, month, year, new FireStoreHelper.Callback<Long>() {
                             @Override
                             public void onSuccess(Long result) {
-                                tvTicket.setText(result + " Vé");
+                                tvTicket.setText(result.toString());
                             }
                             @Override
                             public void onFailure(Exception e) {
-                                tvTicket.setText("0 Vé");
+                                tvTicket.setText("0");
                             }
                         });
                         fireStoreHelper.getTotalUsersFiltered(day, month, year, new FireStoreHelper.Callback<Long>() {
                             @Override
                             public void onSuccess(Long result) {
-                                tvUser.setText(result + "\nTài khoản");
+                                tvUser.setText(result.toString());
                             }
                             @Override
                             public void onFailure(Exception e) {
-                                tvUser.setText("0\nTài khoản");
+                                tvUser.setText("0");
                             }
                         });
                         break;
@@ -108,21 +108,21 @@ public class AdHomeActivity extends AppCompatActivity {
                         fireStoreHelper.getTotalTicketsFiltered(null, month, year, new FireStoreHelper.Callback<Long>() {
                             @Override
                             public void onSuccess(Long result) {
-                                tvTicket.setText(result + " Vé");
+                                tvTicket.setText(result.toString());
                             }
                             @Override
                             public void onFailure(Exception e) {
-                                tvTicket.setText("0 Vé");
+                                tvTicket.setText("0");
                             }
                         });
                         fireStoreHelper.getTotalUsersFiltered(null, month, year, new FireStoreHelper.Callback<Long>() {
                             @Override
                             public void onSuccess(Long result) {
-                                tvUser.setText(result + "\nTài khoản");
+                                tvUser.setText(result.toString());
                             }
                             @Override
                             public void onFailure(Exception e) {
-                                tvUser.setText("0\nTài khoản");
+                                tvUser.setText("0\n");
                             }
                         });
                         break;
@@ -133,21 +133,21 @@ public class AdHomeActivity extends AppCompatActivity {
                         fireStoreHelper.getTotalTicketsFiltered(null, null, year, new FireStoreHelper.Callback<Long>() {
                             @Override
                             public void onSuccess(Long result) {
-                                tvTicket.setText(result + " Vé");
+                                tvTicket.setText(result.toString());
                             }
                             @Override
                             public void onFailure(Exception e) {
-                                tvTicket.setText("0 Vé");
+                                tvTicket.setText("0");
                             }
                         });
                         fireStoreHelper.getTotalUsersFiltered(null, null, year, new FireStoreHelper.Callback<Long>() {
                             @Override
                             public void onSuccess(Long result) {
-                                tvUser.setText(result + "\nTài khoản");
+                                tvUser.setText(result.toString());
                             }
                             @Override
                             public void onFailure(Exception e) {
-                                tvUser.setText("0\nTài khoản");
+                                tvUser.setText("0");
                             }
                         });
                         break;

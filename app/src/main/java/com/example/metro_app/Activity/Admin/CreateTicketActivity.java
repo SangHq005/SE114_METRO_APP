@@ -63,6 +63,10 @@ public class CreateTicketActivity extends AppCompatActivity {
     private TextView validityLabel, startStationLabel, endStationLabel;
     private Button issueTicketButton;
 
+//    private TextView validityLabel, startStationLabel, endStationLabel;
+//    private Button issueTicketButton;
+    private View validityContainer, startStationContainer, endStationContainer;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -90,6 +94,13 @@ public class CreateTicketActivity extends AppCompatActivity {
         startStationLabel = findViewById(R.id.startStationLabel);
         endStationLabel = findViewById(R.id.endStationLabel);
         issueTicketButton = findViewById(R.id.issueTicketButton);
+        Button cancelButton = findViewById(R.id.cancelButton);
+
+        validityContainer = findViewById(R.id.validityContainer);
+        startStationContainer = findViewById(R.id.startStationContainer);
+        endStationContainer = findViewById(R.id.endStationContainer);
+
+        cancelButton.setOnClickListener(v -> finish());
 
         // Load Type vào typeSpinner
         loadTicketTypes();
@@ -101,25 +112,25 @@ public class CreateTicketActivity extends AppCompatActivity {
                 String selectedType = (String) parent.getItemAtPosition(position);
                 Log.d(TAG, "Selected Type: " + selectedType);
 
-                // Ẩn tất cả Spinner phụ
-                validitySpinner.setVisibility(View.GONE);
+                // Ẩn tất cả các trường phụ
                 validityLabel.setVisibility(View.GONE);
-                startStationSpinner.setVisibility(View.GONE);
+                validityContainer.setVisibility(View.GONE); // Sửa ở đây
                 startStationLabel.setVisibility(View.GONE);
-                endStationSpinner.setVisibility(View.GONE);
+                startStationContainer.setVisibility(View.GONE); // Sửa ở đây
                 endStationLabel.setVisibility(View.GONE);
+                endStationContainer.setVisibility(View.GONE); // Sửa ở đây
 
                 if ("Vé dài hạn".equals(selectedType)) {
-                    // Hiển thị Spinner thời hạn vé
-                    validitySpinner.setVisibility(View.VISIBLE);
+                    // Hiển thị trường thời hạn vé
                     validityLabel.setVisibility(View.VISIBLE);
+                    validityContainer.setVisibility(View.VISIBLE); // Sửa ở đây
                     loadValidityOptions();
                 } else if ("Vé lượt".equals(selectedType)) {
-                    // Hiển thị Spinner ga đi và ga đến
-                    startStationSpinner.setVisibility(View.VISIBLE);
+                    // Hiển thị trường ga đi và ga đến
                     startStationLabel.setVisibility(View.VISIBLE);
-                    endStationSpinner.setVisibility(View.VISIBLE);
+                    startStationContainer.setVisibility(View.VISIBLE); // Sửa ở đây
                     endStationLabel.setVisibility(View.VISIBLE);
+                    endStationContainer.setVisibility(View.VISIBLE); // Sửa ở đây
                     loadStartStations();
                 }
             }

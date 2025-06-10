@@ -116,11 +116,11 @@
             android:exported="true" />
         <activity
             android:name=".Activity.Admin.ScanQRActivity"
-            android:exported="false" />
+            android:exported="true" />
 
         <activity
-            android:name=".Activity.RegisterActivity"
-            android:exported="false" />
+            android:name=".Activity.Admin.CreateTicketActivity"
+            android:exported="true" />
         <activity
             android:name=".Activity.User.AllNewsActivity"
             android:exported="false" />

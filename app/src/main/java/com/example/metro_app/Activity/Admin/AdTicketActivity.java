@@ -201,7 +201,14 @@ public class AdTicketActivity extends AppCompatActivity {
         ImageButton addButton = findViewById(R.id.button_add_ticket);
         addButton.setOnClickListener(v -> {
             Intent intent = new Intent(AdTicketActivity.this, AddTicketActivity.class);
-            addTicketLauncher.launch(intent);
+
+            startActivity(intent);
+        });
+
+        ImageButton publicButton = findViewById(R.id.btnPublic);
+        publicButton.setOnClickListener(v -> {
+            Intent intent = new Intent(AdTicketActivity.this, CreateTicketActivity.class);
+            startActivity(intent);
         });
 
         // Search functionality
@@ -223,24 +230,33 @@ public class AdTicketActivity extends AppCompatActivity {
         // BottomNavigationView
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setSelectedItemId(R.id.nav_ad_wallet);
+
+// Sử dụng setOnItemSelectedListener đã được tối ưu hóa
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
+
+            // Nếu item được chọn đã là item hiện tại thì không làm gì cả
+            if (id == bottomNavigationView.getSelectedItemId()) {
+                return false;
+            }
 
             if (id == R.id.nav_ad_home) {
                 startActivity(new Intent(AdTicketActivity.this, AdHomeActivity.class));
                 overridePendingTransition(0, 0);
+                finish(); // Đóng activity hiện tại
                 return true;
             } else if (id == R.id.nav_ad_route) {
                 startActivity(new Intent(AdTicketActivity.this, AdRouteActivity.class));
                 overridePendingTransition(0, 0);
-                return true;
-            } else if (id == R.id.nav_ad_wallet) {
+                finish(); // Đóng activity hiện tại
                 return true;
             } else if (id == R.id.nav_ad_userlist) {
                 startActivity(new Intent(AdTicketActivity.this, AdUserActivity.class));
                 overridePendingTransition(0, 0);
+                finish(); // Đóng activity hiện tại
                 return true;
             }
+            // Trường hợp id == R.id.nav_ad_wallet sẽ không xảy ra do đã lọc ở trên
             return false;
         });
     }
@@ -254,61 +270,101 @@ public class AdTicketActivity extends AppCompatActivity {
                         QuerySnapshot querySnapshot = task.getResult();
                         if (querySnapshot != null && !querySnapshot.isEmpty()) {
                             for (var doc : querySnapshot.getDocuments()) {
+//                                try {
+//                                    // Use Firestore document ID as id
+//                                    String id = doc.getId();
+//                                    String name = doc.getString("Name");
+//                                    String status = doc.getString("Status");
+//
+//                                    // Handle price as String or Number
+//                                    String price = null;
+//                                    Object priceObj = doc.get("Price") != null ? doc.get("Price") : doc.get("price");
+//                                    if (priceObj instanceof String) {
+//                                        price = (String) priceObj;
+//                                    } else if (priceObj instanceof Number) {
+//                                        DecimalFormat formatter = new DecimalFormat("#,###");
+//                                        price = formatter.format(((Number) priceObj).longValue()) + " VND";
+//                                    } else {
+//                                        Log.w(TAG, "Invalid price format in document: " + doc.getId());
+//                                        continue;
+//                                    }
+//
+//                                    // Handle active as Number (stored as days)
+//                                    String active = null;
+//                                    Object activeObj = doc.get("Active");
+//                                    if (activeObj instanceof Number) {
+//                                        active = String.valueOf(((Number) activeObj).longValue());
+//                                    } else if (activeObj instanceof String) {
+//                                        active = (String) activeObj;
+//                                    } else {
+//                                        Log.w(TAG, "Invalid active format in document: " + doc.getId());
+//                                        continue;
+//                                    }
+//
+//                                    // Handle autoActive as Number (stored as days)
+//                                    String autoActive = null;
+//                                    Object autoActiveObj = doc.get("AutoActive");
+//                                    if (autoActiveObj instanceof Number) {
+//                                        autoActive = String.valueOf(((Number) autoActiveObj).longValue());
+//                                    } else if (autoActiveObj instanceof String) {
+//                                        autoActive = (String) autoActiveObj;
+//                                    } else {
+//                                        Log.w(TAG, "Invalid autoActive format in document: " + doc.getId());
+//                                        continue;
+//                                    }
+//
+//                                    // Handle null values
+//                                    if (id == null || name == null || price == null || active == null || autoActive == null || status == null) {
+//                                        Log.w(TAG, "Missing fields in document: " + doc.getId() +
+//                                                ", id=" + id + ", name=" + name + ", price=" + price +
+//                                                ", active=" + active + ", autoActive=" + autoActive +
+//                                                ", status=" + status);
+//                                        continue;
+//                                    }
+//
+//                                    TicketType ticket = new TicketType(id, name, price, active, autoActive, status);
+//                                    ticketList.add(ticket);
+//                                    Log.d(TAG, "Added ticket: " + name + ", Price: " + price);
+//                                } catch (Exception e) {
+//                                    Log.e(TAG, "Error parsing document: " + doc.getId(), e);
+//                                }
                                 try {
-                                    // Use Firestore document ID as id
                                     String id = doc.getId();
-                                    String name = doc.getString("Name");
-                                    String status = doc.getString("Status");
+                                    String name = doc.getString("Name") != null ? doc.getString("Name") : "Tên không xác định";
+                                    String status = doc.getString("Status") != null ? doc.getString("Status") : "Không có";
 
-                                    // Handle price as String or Number
-                                    String price = null;
+                                    // Xử lý giá
+                                    String price = "0 VND"; // Giá trị mặc định
                                     Object priceObj = doc.get("Price") != null ? doc.get("Price") : doc.get("price");
                                     if (priceObj instanceof String) {
                                         price = (String) priceObj;
                                     } else if (priceObj instanceof Number) {
                                         DecimalFormat formatter = new DecimalFormat("#,###");
                                         price = formatter.format(((Number) priceObj).longValue()) + " VND";
-                                    } else {
-                                        Log.w(TAG, "Invalid price format in document: " + doc.getId());
-                                        continue;
                                     }
 
-                                    // Handle active as Number (stored as days)
-                                    String active = null;
+                                    // Xử lý active
+                                    String active = "0"; // Giá trị mặc định
                                     Object activeObj = doc.get("Active");
                                     if (activeObj instanceof Number) {
                                         active = String.valueOf(((Number) activeObj).longValue());
                                     } else if (activeObj instanceof String) {
                                         active = (String) activeObj;
-                                    } else {
-                                        Log.w(TAG, "Invalid active format in document: " + doc.getId());
-                                        continue;
                                     }
 
-                                    // Handle autoActive as Number (stored as days)
-                                    String autoActive = null;
+                                    // Xử lý autoActive
+                                    String autoActive = "0"; // Giá trị mặc định
                                     Object autoActiveObj = doc.get("AutoActive");
                                     if (autoActiveObj instanceof Number) {
                                         autoActive = String.valueOf(((Number) autoActiveObj).longValue());
                                     } else if (autoActiveObj instanceof String) {
                                         autoActive = (String) autoActiveObj;
-                                    } else {
-                                        Log.w(TAG, "Invalid autoActive format in document: " + doc.getId());
-                                        continue;
-                                    }
-
-                                    // Handle null values
-                                    if (id == null || name == null || price == null || active == null || autoActive == null || status == null) {
-                                        Log.w(TAG, "Missing fields in document: " + doc.getId() +
-                                                ", id=" + id + ", name=" + name + ", price=" + price +
-                                                ", active=" + active + ", autoActive=" + autoActive +
-                                                ", status=" + status);
-                                        continue;
                                     }
 
                                     TicketType ticket = new TicketType(id, name, price, active, autoActive, status);
                                     ticketList.add(ticket);
                                     Log.d(TAG, "Added ticket: " + name + ", Price: " + price);
+
                                 } catch (Exception e) {
                                     Log.e(TAG, "Error parsing document: " + doc.getId(), e);
                                 }
