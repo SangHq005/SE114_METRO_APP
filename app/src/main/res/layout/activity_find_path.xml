@@ -1,44 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout_search_route"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:background="#F5F5F5">
 
-    <!-- Layout chứa nội dung và map -->
-    <LinearLayout
+    <!-- Bản đồ -->
+    <androidx.fragment.app.FragmentContainerView
+        android:id="@+id/fragmentContainer"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="match_parent" />
 
-        <TextView
-            android:id="@+id/tvSearchFrom"
+    <!-- Thanh tìm kiếm FROM và TO -->
+    <LinearLayout
+        android:id="@+id/searchBoxContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:layout_marginTop="32dp"
+        android:layout_gravity="top">
+
+        <!-- From -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="From"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:layout_marginBottom="8dp"
+            android:background="@drawable/bg_search_box"
+            android:gravity="center_vertical">
 
-        <TextView
-            android:id="@+id/tvSearchTo"
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_home_address" />
+
+            <TextView
+                android:id="@+id/tvSearchFrom"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Từ địa điểm"
+                android:textSize="16sp"
+                android:textColor="#333" />
+        </LinearLayout>
+
+        <!-- To -->
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
-            android:text="To"
-            android:textSize="16sp"
-            android:textStyle="bold" />
+            android:orientation="horizontal"
+            android:padding="12dp"
+            android:background="@drawable/bg_search_box"
+            android:gravity="center_vertical">
 
-        <!-- Map fragment container -->
-        <androidx.fragment.app.FragmentContainerView
-            android:id="@+id/fragmentContainer"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1" />
+            <ImageView
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:src="@drawable/ic_target_address" />
+
+            <TextView
+                android:id="@+id/tvSearchTo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="Đến địa điểm"
+                android:textSize="16sp"
+                android:textColor="#333" />
+        </LinearLayout>
     </LinearLayout>
 
-    <!-- FAB ở góc dưới bên phải -->
+    <!-- FAB: Vị trí hiện tại -->
     <com.google.android.material.floatingactionbutton.FloatingActionButton
         android:id="@+id/btnMyLocation"
         android:layout_width="wrap_content"
@@ -46,5 +80,81 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:src="@drawable/ic_my_location"
-         />
-</FrameLayout>
+        app:backgroundTint="@color/purple_500"
+        app:elevation="6dp" />
+
+    <!-- Bottom Card hiển thị thông tin tuyến -->
+    <androidx.cardview.widget.CardView
+        android:id="@+id/routeInfoCard"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
+        app:cardCornerRadius="16dp"
+        app:cardElevation="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <!-- Tiêu đề tuyến -->
+            <TextView
+                android:id="@+id/tvRouteTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tuyến xe gần nhất: Số 36"
+                android:textStyle="bold"
+                android:textSize="16sp"
+                android:textColor="#000" />
+
+            <!-- Tên trạm -->
+            <TextView
+                android:id="@+id/tvStationName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Trạm: Bến Thành"
+                android:textSize="14sp"
+                android:layout_marginTop="4dp" />
+
+            <!-- Khoảng cách và thời gian -->
+            <TextView
+                android:id="@+id/tvDistanceTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cách 230m - ~3 phút đi bộ"
+                android:textSize="14sp"
+                android:layout_marginTop="2dp"
+                android:textColor="#666" />
+
+            <!-- Nút chức năng -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="12dp"
+                android:gravity="end">
+
+                <Button
+                    android:id="@+id/btnDirection"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chỉ đường"
+                    android:textAllCaps="false"
+                    android:backgroundTint="@color/purple_500"
+                    android:textColor="@android:color/white"
+                    android:layout_marginEnd="8dp" />
+
+                <Button
+                    android:id="@+id/btnRoute"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Lộ trình"
+                    android:textAllCaps="false"
+                    android:backgroundTint="@android:color/darker_gray"
+                    android:textColor="@android:color/white" />
+            </LinearLayout>
+        </LinearLayout>
+    </androidx.cardview.widget.CardView>
+</androidx.coordinatorlayout.widget.CoordinatorLayout>
