@@ -2,61 +2,76 @@ package com.example.metro_app.Activity.Admin;
 
 import android.Manifest;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Looper;
 import android.util.Log;
+import android.view.View;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
+import android.widget.ImageButton;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.example.metro_app.R;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.google.zxing.Result;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
 
 import java.util.Calendar;
 import java.util.Date;
+import java.util.List;
 
 public class ScanQRActivity extends AppCompatActivity {
 
+    // --- Giữ nguyên các biến từ file cũ ---
     private static final String TAG = "ScanQRActivity";
     private static final int CAMERA_PERMISSION_CODE = 100;
     private DecoratedBarcodeView barcodeView;
     private FirebaseFirestore db;
     private String userId;
 
+    // --- Thêm các biến cho UI mới ---
+    private ImageButton btnBack;
+    private View scannerLine;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        // Bỏ EdgeToEdge vì layout mới đã xử lý việc này
         setContentView(R.layout.activity_scan_qr);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
 
-        // Lấy userId từ SharedPreferences
+        // --- Giữ nguyên logic khởi tạo từ file cũ ---
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
         userId = prefs.getString("UserID", null);
         Log.d(TAG, "Retrieved userId from SharedPreferences: " + userId);
 
         db = FirebaseFirestore.getInstance();
 
-        // Ánh xạ view
+        // --- Ánh xạ các view từ layout mới ---
         barcodeView = findViewById(R.id.barcode_scanner);
+        btnBack = findViewById(R.id.btn_back);
+        scannerLine = findViewById(R.id.scanner_line);
 
-        // Kiểm tra quyền CAMERA
+        // --- Thêm logic cho các thành phần UI mới ---
+        // 1. Xử lý nút quay lại
+        btnBack.setOnClickListener(v -> {
+            onBackPressed(); // Hoặc finish();
+        });
+
+        // 2. Bắt đầu animation cho đường quét
+        Animation animation = AnimationUtils.loadAnimation(this, R.anim.scanner_animation);
+        scannerLine.startAnimation(animation);
+
+        // --- Giữ nguyên logic kiểm tra quyền camera ---
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
                     new String[]{Manifest.permission.CAMERA},
                     CAMERA_PERMISSION_CODE);
@@ -69,31 +84,31 @@ public class ScanQRActivity extends AppCompatActivity {
         BarcodeCallback callback = new BarcodeCallback() {
             @Override
             public void barcodeResult(BarcodeResult result) {
-                if (result != null) {
+                if (result != null && result.getText() != null) {
+                    // Tạm dừng quét để tránh quét lại ngay lập tức
+                    barcodeView.pause();
                     String ticketId = result.getText();
                     Log.d(TAG, "Scanned ticketId: " + ticketId);
                     processTicketId(ticketId);
-                    // Tạm dừng quét để tránh quét lại ngay lập tức
-                    barcodeView.pause();
                 }
             }
 
             @Override
-            public void possibleResultPoints(java.util.List<com.google.zxing.ResultPoint> resultPoints) {
+            public void possibleResultPoints(@NonNull List<com.google.zxing.ResultPoint> resultPoints) {
                 // Không cần xử lý
             }
         };
         barcodeView.decodeContinuous(callback);
     }
 
+    // --- PHƯƠNG THỨC NÀY ĐƯỢC GIỮ NGUYÊN HOÀN TOÀN ---
     private void processTicketId(String ticketId) {
         if (ticketId == null || ticketId.isEmpty()) {
             Toast.makeText(this, "Mã QR không hợp lệ!", Toast.LENGTH_LONG).show();
-            resumeScanning();
+            resumeScanningAfterDelay();
             return;
         }
 
-        // Kiểm tra vé trong Firestore với document ID = ticketId
         db.collection("Ticket")
                 .document(ticketId)
                 .get()
@@ -102,7 +117,7 @@ public class ScanQRActivity extends AppCompatActivity {
                         var document = task.getResult();
                         if (!document.exists()) {
                             Toast.makeText(this, "Vé không tồn tại!", Toast.LENGTH_LONG).show();
-                            resumeScanning();
+                            resumeScanningAfterDelay();
                             return;
                         }
 
@@ -111,19 +126,17 @@ public class ScanQRActivity extends AppCompatActivity {
 
                         if ("Đang kích hoạt".equals(status)) {
                             Toast.makeText(this, "Vé hợp lệ", Toast.LENGTH_LONG).show();
-                            resumeScanning();
+                            resumeScanningAfterDelay();
                         } else if ("Chưa kích hoạt".equals(status)) {
-                            // Lấy ticketTypeId để truy vấn Expiration
                             String ticketTypeId = document.getString("ticketTypeId");
                             Log.d(TAG, "TicketTypeId: " + ticketTypeId);
 
                             if (ticketTypeId == null) {
                                 Toast.makeText(this, "Lỗi: Không tìm thấy ticketTypeId!", Toast.LENGTH_LONG).show();
-                                resumeScanning();
+                                resumeScanningAfterDelay();
                                 return;
                             }
 
-                            // Truy vấn TicketType để lấy Expiration
                             db.collection("TicketType")
                                     .document(ticketTypeId)
                                     .get()
@@ -132,7 +145,7 @@ public class ScanQRActivity extends AppCompatActivity {
                                             var typeDocument = typeTask.getResult();
                                             if (!typeDocument.exists()) {
                                                 Toast.makeText(this, "Lỗi: Không tìm thấy thông tin loại vé!", Toast.LENGTH_LONG).show();
-                                                resumeScanning();
+                                                resumeScanningAfterDelay();
                                                 return;
                                             }
 
@@ -149,14 +162,12 @@ public class ScanQRActivity extends AppCompatActivity {
                                             }
                                             Log.d(TAG, "Expiration: " + expirationDays + " days");
 
-                                            // Tính ExpirationDate
                                             Calendar calendar = Calendar.getInstance();
                                             calendar.setTime(new Date());
                                             calendar.add(Calendar.DAY_OF_YEAR, (int) expirationDays);
                                             Date newExpirationDate = calendar.getTime();
                                             Log.d(TAG, "New ExpirationDate: " + newExpirationDate);
 
-                                            // Cập nhật Status và ExpirationDate
                                             db.collection("Ticket")
                                                     .document(ticketId)
                                                     .update(
@@ -175,34 +186,41 @@ public class ScanQRActivity extends AppCompatActivity {
                                             Toast.makeText(this, "Lỗi truy vấn loại vé: " + (typeTask.getException() != null ? typeTask.getException().getMessage() : "Không xác định"), Toast.LENGTH_LONG).show();
                                             Log.e(TAG, "Error querying TicketType: " + (typeTask.getException() != null ? typeTask.getException().getMessage() : "Unknown error"));
                                         }
-                                        resumeScanning();
+                                        resumeScanningAfterDelay();
                                     });
                         } else if ("Hết hạn".equals(status)) {
                             Toast.makeText(this, "Vé đã hết hạn", Toast.LENGTH_LONG).show();
-                            resumeScanning();
+                            resumeScanningAfterDelay();
                         } else {
                             Toast.makeText(this, "Trạng thái vé không xác định: " + status, Toast.LENGTH_LONG).show();
-                            resumeScanning();
+                            resumeScanningAfterDelay();
                         }
                     } else {
                         Toast.makeText(this, "Lỗi kiểm tra vé: " + (task.getException() != null ? task.getException().getMessage() : "Không xác định"), Toast.LENGTH_LONG).show();
                         Log.e(TAG, "Error querying ticket: " + (task.getException() != null ? task.getException().getMessage() : "Unknown error"));
-                        resumeScanning();
+                        resumeScanningAfterDelay();
                     }
                 });
     }
 
-    private void resumeScanning() {
-        if (barcodeView != null) {
-            barcodeView.resume();
-        }
+    /**
+     * Cải tiến: Cho phép quét lại sau một khoảng trễ ngắn (ví dụ: 2 giây)
+     * để người dùng có thời gian đọc thông báo.
+     */
+    private void resumeScanningAfterDelay() {
+        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+            if (barcodeView != null) {
+                barcodeView.resume();
+            }
+        }, 2000); // 2000 milliseconds = 2 seconds
     }
 
+    // --- PHẦN QUẢN LÝ QUYỀN VÀ VÒNG ĐỜI ACTIVITY ĐƯỢC GIỮ NGUYÊN ---
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == CAMERA_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == android.content.pm.PackageManager.PERMISSION_GRANTED) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 initializeScanner();
             } else {
                 Toast.makeText(this, "Quyền camera bị từ chối!", Toast.LENGTH_LONG).show();
@@ -217,7 +235,15 @@ public class ScanQRActivity extends AppCompatActivity {
         if (barcodeView != null) {
             barcodeView.resume();
         }
+        // Hiển thị lại và chạy animation khi quay lại màn hình
+        if (scannerLine != null) {
+            scannerLine.setVisibility(View.VISIBLE);
+            Animation animation = AnimationUtils.loadAnimation(this, R.anim.scanner_animation);
+            scannerLine.startAnimation(animation);
+        }
     }
+
+
 
     @Override
     protected void onPause() {
@@ -225,12 +251,16 @@ public class ScanQRActivity extends AppCompatActivity {
         if (barcodeView != null) {
             barcodeView.pause();
         }
+        // Dừng animation để tiết kiệm tài nguyên
+        if (scannerLine != null) {
+            scannerLine.clearAnimation();
+            scannerLine.setVisibility(View.GONE);
+        }
     }
 
+    // Phương thức onDestroy được giữ nguyên, không cần thay đổi
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        if (barcodeView != null) {
-        }
     }
 }

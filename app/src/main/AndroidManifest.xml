@@ -54,6 +54,7 @@
                     android:host="return" />
             </intent-filter>
         </activity>
+
         <activity
             android:name=".Activity.User.ChooseTicketActivity"
             android:exported="false">
@@ -113,6 +114,10 @@
             android:exported="true" />
         <activity android:name=".Activity.Admin.AddRouteActivity"
             android:exported="true" />
+        <activity
+            android:name=".Activity.Admin.ScanQRActivity"
+            android:exported="false" />
+
         <activity
             android:name=".Activity.RegisterActivity"
             android:exported="false" />

@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.content.Intent;
 import android.widget.TextView;
@@ -46,6 +47,7 @@ public class AdHomeActivity extends AppCompatActivity {
     private Runnable dataUpdater;
     private LineChart lineChart;
     private Button btnWeekly;
+    private ImageView btnScanQR;
     private int FilterState = 0;
 
     @Override
@@ -61,6 +63,7 @@ public class AdHomeActivity extends AppCompatActivity {
         tvTicket = findViewById(R.id.tvTicket);
         lineChart = findViewById(R.id.lineChart);
         btnWeekly = findViewById(R.id.btnWeekly);
+        btnScanQR = findViewById(R.id.btnScanQR);
         fireStoreHelper =new FireStoreHelper();
         spinnerTime.setAdapter(adapter);
         // ...existing code...
@@ -75,7 +78,7 @@ public class AdHomeActivity extends AppCompatActivity {
                 switch (position) {
                     case 0: // Per Day
                         fireStoreHelper.getSumOfTransactionFiltered(day, month, year, sum ->
-                                tvRevenue.setText(String.format("%.2f Đ", sum))
+                                tvRevenue.setText(String.format("%.2f đ", sum))
                         );
                         fireStoreHelper.getTotalTicketsFiltered(day, month, year, new FireStoreHelper.Callback<Long>() {
                             @Override
@@ -100,7 +103,7 @@ public class AdHomeActivity extends AppCompatActivity {
                         break;
                     case 1: // Per Month
                         fireStoreHelper.getSumOfTransactionFiltered(null, month, year, sum ->
-                                tvRevenue.setText(String.format("%.2f Đ", sum))
+                                tvRevenue.setText(String.format("%.2f đ", sum))
                         );
                         fireStoreHelper.getTotalTicketsFiltered(null, month, year, new FireStoreHelper.Callback<Long>() {
                             @Override
@@ -125,7 +128,7 @@ public class AdHomeActivity extends AppCompatActivity {
                         break;
                     case 2: // Per Year
                         fireStoreHelper.getSumOfTransactionFiltered(null, null, year, sum ->
-                                tvRevenue.setText(String.format("%.2f Đ", sum))
+                                tvRevenue.setText(String.format("%.2f đ", sum))
                         );
                         fireStoreHelper.getTotalTicketsFiltered(null, null, year, new FireStoreHelper.Callback<Long>() {
                             @Override
@@ -170,6 +173,10 @@ public class AdHomeActivity extends AppCompatActivity {
             });
         });
 
+        btnScanQR.setOnClickListener(v -> {
+            startActivity(new Intent(AdHomeActivity.this, ScanQRActivity.class));
+        });
+
         bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
@@ -192,50 +199,17 @@ public class AdHomeActivity extends AppCompatActivity {
         });
         btnWeekly.performClick();
     }
-//    private void updateRevenue(){
-//        fireStoreHelper.getSumOfTransaction(new FireStoreHelper.OnTransactionSumCallback() {
-//            @Override
-//            public void onCallback(double sum) {
-//                tvRevenue.setText(String.format("%.2f Đ",sum));
-//            }
-//        });
-//    }
-//    private void updateTicket(){
-//        fireStoreHelper.getTotalTiketSold(new FireStoreHelper.Callback<Long>() {
-//            @Override
-//            public void onSuccess(Long result) {
-//                tvTicket.setText(result + " Vé");
-//            }
-//
-//            @Override
-//            public void onFailure(Exception e) {
-//
-//            }
-//        });
-//    }
-//    private void updateUserCount(){
-//        fireStoreHelper.getTotalUser(new FireStoreHelper.Callback<Long>() {
-//            @Override
-//            public void onSuccess(Long result) {
-//                tvUser.setText(result + "\nTài khoản");
-//            }
-//
-//            @Override
-//            public void onFailure(Exception e) {
-//
-//            }
-//        });
-//    }
+
     private void drawDayOfWeekChart(Map<Integer, Double> dataMap) {
         // Day names: 1=Sunday, 2=Monday, ..., 7=Saturday
-        String[] dayNames = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+        String[] dayNames = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
         List<Entry> entries = new ArrayList<>();
         for (int i = 1; i <= 7; i++) {
             float value = dataMap.containsKey(i) ? dataMap.get(i).floatValue() : 0f;
             entries.add(new Entry(i - 1, value));
         }
 
-        LineDataSet dataSet = new LineDataSet(entries, "VND");
+        LineDataSet dataSet = new LineDataSet(entries, "VNĐ");
         dataSet.setColor(Color.BLUE);
         dataSet.setValueTextColor(Color.WHITE);
         dataSet.setLineWidth(2f);
@@ -257,7 +231,7 @@ public class AdHomeActivity extends AppCompatActivity {
             public String getFormattedValue(float value) {
                 int i = (int) value;
                 if (i >= 0 && i < dayNames.length) {
-                    return dayNames[i];
+                    return dayNames[(int) value];
                 }
                 return "";
             }
@@ -284,8 +258,7 @@ public class AdHomeActivity extends AppCompatActivity {
         cal.add(Calendar.DAY_OF_MONTH, 6);
         String end = sdf.format(cal.getTime());
         Description description = new Description();
-        description.setText("Tuần: " + start + " - " + end + year
-        );
+        description.setText("Tuần: " + start + " - " + end + "/" + year);
         description.setTextColor(Color.WHITE);
         description.setTextSize(12f);
         lineChart.setDescription(description);
@@ -297,23 +270,10 @@ public class AdHomeActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-
-//        dataUpdater = new Runnable() {
-//            @Override
-//            public void run() {
-//                updateRevenue();
-//                updateTicket();
-//                updateUserCount();
-//                handler.postDelayed(this, 5000);
-//            }
-//        };
-//
-//        handler.post(dataUpdater); // Bắt đầu chạy lần đầu
     }
 
     @Override
     protected void onPause() {
         super.onPause();
-//        handler.removeCallbacks(dataUpdater);
     }
 }
