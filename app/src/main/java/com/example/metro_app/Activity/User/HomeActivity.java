@@ -39,7 +39,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void initPopular() {
-        binding.progressBarPopular.setVisibility(View.VISIBLE);
+
 
         // Thiết lập LayoutManager
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -53,12 +53,12 @@ public class HomeActivity extends AppCompatActivity {
             } else {
                 System.out.println("Danh sách tin tức trống");
             }
-            binding.progressBarPopular.setVisibility(View.GONE);
+
         });
     }
 
     private void initNews() {
-        binding.progressBarNews.setVisibility(View.VISIBLE);
+
 
         // Thiết lập LayoutManager
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
@@ -72,8 +72,8 @@ public class HomeActivity extends AppCompatActivity {
             } else {
                 System.out.println("Danh sách tin tức trống");
             }
-            binding.progressBarNews.setVisibility(View.GONE);
-            binding.newsList.setOnClickListener(new View.OnClickListener() {
+
+            binding.viewAllNewsBtn.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
                     startActivity(new Intent(HomeActivity.this, AllNewsActivity.class));
@@ -83,9 +83,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void initCategory() {
-        binding.progressBarCategory.setVisibility(View.VISIBLE);
 
-        GridLayoutManager layoutManager = new GridLayoutManager(HomeActivity.this, 4);
+        GridLayoutManager layoutManager = new GridLayoutManager(HomeActivity.this, 3);
         binding.recyclerViewCategory.setLayoutManager(layoutManager);
 
         viewModel.loadCategory().observe(this, categoryModels -> {
@@ -121,7 +120,7 @@ public class HomeActivity extends AppCompatActivity {
                 }
             });
             binding.recyclerViewCategory.setAdapter(adapter);
-            binding.progressBarCategory.setVisibility(View.GONE);
+
         });
     }
 }

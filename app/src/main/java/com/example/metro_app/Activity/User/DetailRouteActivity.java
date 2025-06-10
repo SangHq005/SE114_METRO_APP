@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -31,6 +32,8 @@ public class DetailRouteActivity extends AppCompatActivity {
 
     private static final String TAG = "DetailRouteActivity";
     private TextView nameRouteTxt;
+
+    private ImageView backBtn;
     private RecyclerView recyclerViewTicket;
     private ProgressBar progressBar;
     private RouteTicketAdapter routeTicketAdapter;
@@ -48,6 +51,14 @@ public class DetailRouteActivity extends AppCompatActivity {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
+        });
+
+        backBtn = findViewById(R.id.backBtn);
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(DetailRouteActivity.this, MyTicketsActivity.class));
+            }
         });
 
         // Lấy userId từ SharedPreferences

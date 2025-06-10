@@ -1,5 +1,6 @@
 package com.example.metro_app.Activity.User;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -31,7 +32,7 @@ import java.util.List;
 
 public class JourneyActivity extends AppCompatActivity{
     private MapBoxFragment mapFragment;
-    private ImageView btnSwap;
+    private ImageView btnSwap,btnBack;
     private Boolean Luotdi = true;
     private final FirebaseFirestore database = FirebaseFirestore.getInstance();
 
@@ -43,7 +44,10 @@ public class JourneyActivity extends AppCompatActivity{
         btnSwap = findViewById(R.id.btnSwap);
         FragmentManager fragmentManager = getSupportFragmentManager();
         mapFragment = new MapBoxFragment();
-
+        btnBack = findViewById(R.id.btnBack);
+        btnBack.setOnClickListener(v -> {
+            startActivity(new Intent(JourneyActivity.this, HomeActivity.class));
+        });
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, mapFragment)
                 .commit();
@@ -121,7 +125,7 @@ public class JourneyActivity extends AppCompatActivity{
                 });
     }
 
-        @Override
+    @Override
     public void onResume() {
         super.onResume();
     }

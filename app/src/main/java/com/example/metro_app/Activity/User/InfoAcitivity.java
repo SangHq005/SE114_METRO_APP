@@ -1,10 +1,12 @@
 package com.example.metro_app.Activity.User;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -19,6 +21,7 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
+import com.example.metro_app.Activity.LoginActivity;
 import com.example.metro_app.R;
 import com.example.metro_app.databinding.ActivityInfoAcitivityBinding;
 import com.google.firebase.auth.FirebaseAuth;
@@ -33,6 +36,7 @@ public class InfoAcitivity extends AppCompatActivity {
     ActivityInfoAcitivityBinding binding;
 
     ImageView backbtn;
+    Button btnLogout;
     LinearLayout CCCDButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -41,13 +45,19 @@ public class InfoAcitivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(binding.getRoot());
         backbtn = findViewById(R.id.backBtn);
+        btnLogout =findViewById(R.id.btnLogout);
         backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Toast.makeText(InfoAcitivity.this, "Success!", Toast.LENGTH_SHORT).show();
+               startActivity(new Intent(InfoAcitivity.this, HomeActivity.class));
             }
         });
-
+        btnLogout.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(InfoAcitivity.this, LoginActivity.class));
+            }
+        });
         CCCDButton=findViewById(R.id.CCCDButton);
         CCCDButton.setOnClickListener(v -> showEditCCCDDialog());
         loadUserInfo();

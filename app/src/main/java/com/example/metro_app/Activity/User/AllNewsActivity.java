@@ -1,5 +1,6 @@
 package com.example.metro_app.Activity.User;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 
@@ -43,6 +44,13 @@ public class AllNewsActivity extends AppCompatActivity {
                 System.out.println("Danh sách tin tức trống");
             }
             binding.progressbarAllNews.setVisibility(View.GONE);
+        });
+
+        binding.backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                startActivity(new Intent(AllNewsActivity.this, HomeActivity.class));
+            }
         });
     }
 }

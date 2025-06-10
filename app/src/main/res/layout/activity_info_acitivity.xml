@@ -20,8 +20,8 @@
 
         <androidx.appcompat.widget.AppCompatImageView
             android:id="@+id/backBtn"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
             android:layout_marginTop="16dp"
             android:layout_marginBottom="8dp"
             app:layout_constraintBottom_toBottomOf="parent"
@@ -36,14 +36,13 @@
             android:layout_gravity="center"
             android:text="@string/th_ng_tin_t_i_kho_n"
             android:textColor="@color/black"
-            android:textSize="26sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintHorizontal_bias="0.318"
+            app:layout_constraintHorizontal_bias="0.392"
             app:layout_constraintStart_toEndOf="@+id/backBtn"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintVertical_bias="0.517" />
+            app:layout_constraintTop_toTopOf="parent" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
     <androidx.cardview.widget.CardView
@@ -79,14 +78,6 @@
                 android:textColor="@color/text_primary"
                 android:textSize="20sp"
                 android:textStyle="bold" />
-            <TextView
-                android:id="@+id/editAccount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Edit Account"
-                android:textStyle="italic"
-                android:layout_marginTop="8dp"
-                />
         </LinearLayout>
     </androidx.cardview.widget.CardView>
 
@@ -132,15 +123,21 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
                         android:src="@drawable/userbtn" />
-
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="16dp"
+                        android:text="Họ tên:"
+                        android:textColor="@color/text_primary" />
                     <TextView
                         android:id="@+id/nameTxt"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="Họ tên: Huỳnh Quốc Sang"
+                        android:text="Huỳnh Quốc Sang"
                         android:textColor="@color/text_primary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -169,15 +166,21 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
                         android:src="@drawable/userbtn" />
-
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="16dp"
+                        android:text="Email: "
+                        android:textColor="@color/text_primary" />
                     <TextView
                         android:id="@+id/tvEmail"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="Email: quocsangt05.uit@gmail.com"
+                        android:text="quocsangt05.uit@gmail.com"
                         android:textColor="@color/text_primary" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -206,15 +209,21 @@
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
                         android:src="@drawable/userbtn" />
-
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_vertical"
+                        android:layout_marginStart="16dp"
+                        android:text="CCCD/CMND: "
+                        android:textColor="@color/text_primary" />
                     <TextView
                         android:id="@+id/nationalIdTxt"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="CCCD/CMND: 012345678901"
+                        android:text="012345678901"
                         android:textColor="@color/text_primary" />
 
                     <ImageView
@@ -322,18 +331,6 @@
         android:layout_marginEnd="16dp"
         android:orientation="vertical"
         app:layout_constraintTop_toBottomOf="@id/formCard">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnDeleteAccount"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-
-            android:padding="12dp"
-            android:text="Xóa tài khoản"
-            android:textColor="@color/error_color"
-            app:iconTint="@color/error_color"
-            app:strokeColor="@color/error_color" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"

@@ -1,4 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item name="recyclerViewCategory" type="id" />
+    <item name="nestedScrollView" type="id" />
+    <item name="headerSection" type="id" />
+    <item name="backgroundImg" type="id" />
+    <item name="gradientOverlay" type="id" />
+    <item name="categoryCard" type="id" />
+    <item name="popularTitle" type="id" />
+    <item name="newsTitle" type="id" />
+    <item name="viewAllNewsBtn" type="id" />
 </resources>

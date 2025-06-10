@@ -20,8 +20,8 @@
             android:layout_marginBottom="24dp">
             <ImageView
                 android:id="@+id/backBtn"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
+                android:layout_width="36dp"
+                android:layout_height="36dp"
                 android:src="@drawable/back_black"/>
             <TextView
                 android:id="@+id/titleTextView"
@@ -30,7 +30,7 @@
                 android:layout_centerHorizontal="true"
                 android:text="Thông tin đơn hàng"
                 android:textColor="@color/black"
-                android:textSize="18sp"
+                android:textSize="24sp"
                 android:textStyle="bold"/>
         </RelativeLayout>
 
@@ -51,30 +51,30 @@
             app:cardCornerRadius="8dp"
             android:layout_marginBottom="24dp">
 
+            <LinearLayout
+                android:id="@+id/paymentMethodCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:background="@drawable/border_gray"
+                android:padding="8dp">
 
-                <LinearLayout
-                    android:id="@+id/paymentMethodCard"
-                    android:layout_width="match_parent"
+                <TextView
+                    android:id="@+id/paymentMethodTxt"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:background="@drawable/border_gray"
-                    android:padding="8dp">
+                    android:layout_weight="1"
+                    android:text="Ví điện tử / Thẻ ngân hàng"
+                    android:textSize="16sp" />
 
-                    <TextView
-                        android:id="@+id/paymentMethodTxt"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Ví điện tử / Thẻ ngân hàng"/>
-                    <ImageView
-                        android:id="@+id/rightChevronBtn"
-                        android:layout_marginEnd="8dp"
-                        android:layout_marginStart="180dp"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/mdtp_ic_chevron_right_black_24dp"
-                        />
-                </LinearLayout>
+                <ImageView
+                    android:id="@+id/rightChevronBtn"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:src="@drawable/mdtp_ic_chevron_right_black_24dp" />
+            </LinearLayout>
         </androidx.cardview.widget.CardView>
+
 
         <!-- Payment Information Section -->
         <TextView
