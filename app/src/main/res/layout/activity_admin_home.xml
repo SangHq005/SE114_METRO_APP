@@ -291,6 +291,7 @@
                         android:textColor="@android:color/white" />
 
                     <Button
+                        android:id="@+id/btnMonthly"
                         style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -299,6 +300,7 @@
                         android:textColor="@android:color/white" />
 
                     <Button
+                        android:id="@+id/btnYearly"
                         style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"

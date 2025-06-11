@@ -47,7 +47,7 @@ public class AdHomeActivity extends AppCompatActivity {
     private Handler handler = new Handler();
     private Runnable dataUpdater;
     private LineChart lineChart;
-    private Button btnWeekly;
+    private Button btnWeekly,btnMonthly,btnYearly;
     private ImageView btnScanQR;
     private int FilterState = 0;
 
@@ -64,6 +64,9 @@ public class AdHomeActivity extends AppCompatActivity {
         tvTicket = findViewById(R.id.tvTicket);
         lineChart = findViewById(R.id.lineChart);
         btnWeekly = findViewById(R.id.btnWeekly);
+        btnMonthly = findViewById(R.id.btnMonthly);
+        btnYearly = findViewById(R.id.btnYearly);
+
         btnScanQR = findViewById(R.id.btnScanQR);
         fireStoreHelper = new FireStoreHelper();
         spinnerTime.setAdapter(adapter);
@@ -127,22 +130,10 @@ public class AdHomeActivity extends AppCompatActivity {
             }
         });
 
-        btnWeekly.setOnClickListener(v -> {
-            Calendar cal = Calendar.getInstance();
-            int year = cal.get(Calendar.YEAR);
-            int week = cal.get(Calendar.WEEK_OF_YEAR);
+        btnWeekly.setOnClickListener(v -> drawChartByFilter(TimeFilterType.THIS_WEEK));
+        btnMonthly.setOnClickListener(v -> drawChartByFilter(TimeFilterType.THIS_MONTH));
+        btnYearly.setOnClickListener(v -> drawChartByFilter(TimeFilterType.ALL));
 
-            fireStoreHelper.sumByDayOfWeek(year, week, new FireStoreHelper.Callback<Map<Integer, Double>>() {
-                @Override
-                public void onSuccess(Map<Integer, Double> result) {
-                    drawDayOfWeekChart(result);
-                }
-
-                @Override
-                public void onFailure(Exception e) {
-                }
-            });
-        });
 
         btnScanQR.setOnClickListener(v -> {
             startActivity(new Intent(AdHomeActivity.this, ScanQRActivity.class));
@@ -177,12 +168,60 @@ public class AdHomeActivity extends AppCompatActivity {
         btnWeekly.performClick();
     }
 
-    private void drawDayOfWeekChart(Map<Integer, Double> dataMap) {
-        String[] dayNames = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
+    private void drawChartByFilter(TimeFilterType type) {
+        Calendar cal = Calendar.getInstance();
+        int day = cal.get(Calendar.DAY_OF_MONTH);
+        int month = cal.get(Calendar.MONTH) + 1;
+        int year = cal.get(Calendar.YEAR);
+
+        fireStoreHelper.sumByFilterForChart(type, day, month, year, new FireStoreHelper.Callback<Map<Integer, Double>>() {
+            @Override
+            public void onSuccess(Map<Integer, Double> result) {
+                drawDynamicChart(type, result);
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+            }
+        });
+    }
+    private void drawDynamicChart(TimeFilterType type, Map<Integer, Double> dataMap) {
         List<Entry> entries = new ArrayList<>();
-        for (int i = 1; i <= 7; i++) {
-            float value = dataMap.containsKey(i) ? dataMap.get(i).floatValue() : 0f;
-            entries.add(new Entry(i - 1, value));
+        String[] labels;
+        int maxIndex = 0;
+
+        switch (type) {
+            case THIS_WEEK:
+                labels = new String[]{"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
+                maxIndex = 7;
+                for (int i = 1; i <= maxIndex; i++) {
+                    float value = dataMap.getOrDefault(i, 0.0).floatValue();
+                    entries.add(new Entry(i - 1, value));
+                }
+                break;
+
+            case THIS_MONTH:
+                Calendar cal = Calendar.getInstance();
+                int daysInMonth = cal.getActualMaximum(Calendar.DAY_OF_MONTH);
+                labels = new String[daysInMonth];
+                for (int i = 1; i <= daysInMonth; i++) {
+                    labels[i - 1] = String.valueOf(i);
+                    float value = dataMap.getOrDefault(i, 0.0).floatValue();
+                    entries.add(new Entry(i - 1, value));
+                }
+                break;
+
+            case ALL:
+                labels = new String[]{"T1", "T2", "T3", "T4", "T5", "T6", "T7", "T8", "T9", "T10", "T11", "T12"};
+                for (int i = 1; i <= 12; i++) {
+                    float value = dataMap.getOrDefault(i, 0.0).floatValue();
+                    entries.add(new Entry(i - 1, value));
+                }
+                break;
+
+            default:
+                labels = new String[]{"1"};
+                entries.add(new Entry(0, 0));
         }
 
         LineDataSet dataSet = new LineDataSet(entries, "VNĐ");
@@ -201,39 +240,40 @@ public class AdHomeActivity extends AppCompatActivity {
         xAxis.setGranularity(1f);
         xAxis.setDrawGridLines(false);
         xAxis.setTextColor(Color.WHITE);
-        xAxis.setLabelRotationAngle(0f);
         xAxis.setValueFormatter(new ValueFormatter() {
             @Override
             public String getFormattedValue(float value) {
                 int i = (int) value;
-                if (i >= 0 && i < dayNames.length) {
-                    return dayNames[(int) value];
-                }
-                return "";
+                return i >= 0 && i < labels.length ? labels[i] : "";
             }
         });
 
-        YAxis leftAxis = lineChart.getAxisLeft();
-        leftAxis.setTextColor(Color.WHITE);
-        YAxis rightAxis = lineChart.getAxisRight();
-        rightAxis.setEnabled(false);
+        lineChart.getAxisLeft().setTextColor(Color.WHITE);
+        lineChart.getAxisRight().setEnabled(false);
+        lineChart.getLegend().setTextColor(Color.WHITE);
+        lineChart.getLegend().setTextSize(12f);
 
-        Legend legend = lineChart.getLegend();
-        legend.setTextColor(Color.WHITE);
-        legend.setTextSize(12f);
-
-        Calendar cal = Calendar.getInstance();
-        int year = cal.get(Calendar.YEAR);
-        int week = cal.get(Calendar.WEEK_OF_YEAR);
-        cal.set(Calendar.YEAR, year);
-        cal.set(Calendar.WEEK_OF_YEAR, week);
-        cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM");
-        String start = sdf.format(cal.getTime());
-        cal.add(Calendar.DAY_OF_MONTH, 6);
-        String end = sdf.format(cal.getTime());
         Description description = new Description();
-        description.setText("Tuần: " + start + " - " + end + "/" + year);
+        switch (type) {
+            case THIS_WEEK:
+                Calendar cal = Calendar.getInstance();
+                int year = cal.get(Calendar.YEAR);
+                int week = cal.get(Calendar.WEEK_OF_YEAR);
+                cal.set(Calendar.WEEK_OF_YEAR, week);
+                cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
+                String start = new SimpleDateFormat("dd/MM").format(cal.getTime());
+                cal.add(Calendar.DAY_OF_MONTH, 6);
+                String end = new SimpleDateFormat("dd/MM").format(cal.getTime());
+                description.setText("Tuần: " + start + " - " + end + "/" + year);
+                break;
+            case THIS_MONTH:
+                description.setText("Doanh thu theo ngày trong tháng");
+                break;
+            case ALL:
+                description.setText("Doanh thu theo tháng trong năm");
+                break;
+        }
+
         description.setTextColor(Color.WHITE);
         description.setTextSize(12f);
         lineChart.setDescription(description);
@@ -241,6 +281,8 @@ public class AdHomeActivity extends AppCompatActivity {
         lineChart.animateX(1000);
         lineChart.invalidate();
     }
+
+
 
     @Override
     protected void onResume() {

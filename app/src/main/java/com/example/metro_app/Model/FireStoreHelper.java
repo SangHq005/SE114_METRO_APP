@@ -190,6 +190,54 @@ public class FireStoreHelper {
 
 
 
+    public void sumByFilterForChart(TimeFilterType type, Integer day, Integer month, Integer year, Callback<Map<Integer, Double>> callback) {
+        db.collection("Transactions").get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    Map<Integer, Double> resultMap = new HashMap<>();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        Timestamp timestamp = doc.getTimestamp("timestamp");
+                        if (timestamp == null || !"SUCCESS".equals(doc.getString("status"))) continue;
+
+                        Calendar cal = Calendar.getInstance();
+                        cal.setTime(timestamp.toDate());
+                        int tYear = cal.get(Calendar.YEAR);
+                        int tMonth = cal.get(Calendar.MONTH) + 1;
+                        int tDay = cal.get(Calendar.DAY_OF_MONTH);
+                        int tWeek = cal.get(Calendar.WEEK_OF_YEAR);
+                        int tDayOfWeek = cal.get(Calendar.DAY_OF_WEEK); // 1=CN,...,7=Thứ 7
+
+                        boolean isValid = false;
+
+                        switch (type) {
+                            case THIS_WEEK:
+                                Calendar current = Calendar.getInstance();
+                                if (tYear == current.get(Calendar.YEAR) && tWeek == current.get(Calendar.WEEK_OF_YEAR)) {
+                                    isValid = true;
+                                    // Dùng tDayOfWeek làm key
+                                    resultMap.put(tDayOfWeek, resultMap.getOrDefault(tDayOfWeek, 0.0) + doc.getDouble("amount"));
+                                }
+                                break;
+
+                            case THIS_MONTH:
+                                if (tYear == year && tMonth == month) {
+                                    isValid = true;
+                                    resultMap.put(tDay, resultMap.getOrDefault(tDay, 0.0) + doc.getDouble("amount"));
+                                }
+                                break;
+
+                            case ALL:
+                                if (tYear == year) {
+                                    isValid = true;
+                                    resultMap.put(tMonth, resultMap.getOrDefault(tMonth, 0.0) + doc.getDouble("amount"));
+                                }
+                                break;
+                        }
+                    }
+
+                    callback.onSuccess(resultMap);
+                })
+                .addOnFailureListener(callback::onFailure);
+    }
 
     public void sumByDayOfWeek(int year, int weekOfYear, Callback<Map<Integer, Double>> callback) {
         Map<Integer, Double> sumByDay = new HashMap<>();
