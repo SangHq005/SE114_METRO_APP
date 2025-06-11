@@ -56,7 +56,6 @@ public class ScanQRActivity extends AppCompatActivity {
 
         // --- Ánh xạ các view từ layout mới ---
         barcodeView = findViewById(R.id.barcode_scanner);
-        btnBack = findViewById(R.id.btn_back);
         scannerLine = findViewById(R.id.scanner_line);
 
         // --- Thêm logic cho các thành phần UI mới ---
