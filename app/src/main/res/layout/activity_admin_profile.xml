@@ -123,6 +123,47 @@
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
+            <!-- Phone Number Card (Editable) -->
+            <com.google.android.material.card.MaterialCardView
+                style="@style/UserInfoCard">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            style="@style/UserInfoIcon"
+                            android:src="@drawable/phone" />
+
+                        <LinearLayout
+                            style="@style/UserInfoTextLayout">
+                            <TextView
+                                style="@style/UserInfoLabel"
+                                android:text="Số điện thoại" />
+
+                            <EditText
+                                android:id="@+id/et_profile_phone"
+                                style="@style/UserInfoValue"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:background="@android:color/transparent"
+                                android:hint="Chưa cập nhật (10 chữ số)"
+                                android:inputType="phone"
+                                android:maxLength="10"
+                                android:padding="0dp"
+                                android:textColor="@color/white"
+                                android:textColorHint="#A8A8A8"
+                                android:importantForAutofill="no" />
+                        </LinearLayout>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <View
                 android:layout_width="0dp"

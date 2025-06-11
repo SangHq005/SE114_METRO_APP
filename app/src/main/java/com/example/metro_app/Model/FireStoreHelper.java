@@ -239,29 +239,15 @@ public class FireStoreHelper {
                 .addOnFailureListener(callback::onFailure);
     }
 
-    public void sumByDayOfWeek(int year, int weekOfYear, Callback<Map<Integer, Double>> callback) {
-        Map<Integer, Double> sumByDay = new HashMap<>();
-        db.collection("Transactions").get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        Timestamp timestamp = doc.getTimestamp("timestamp");
-                        if (timestamp == null) continue;
-                        Calendar cal = Calendar.getInstance();
-                        cal.setTime(timestamp.toDate());
-                        int y = cal.get(Calendar.YEAR);
-                        int w = cal.get(Calendar.WEEK_OF_YEAR);
-                        if (y == year && w == weekOfYear) {
-                            int dayOfWeek = cal.get(Calendar.DAY_OF_WEEK); // 1=Sunday, 2=Monday,...
-                            Number amountNum = doc.getDouble("amount");
-                            if (amountNum == null) continue;
-                            double amount = amountNum.doubleValue();
-                            sumByDay.put(dayOfWeek, sumByDay.getOrDefault(dayOfWeek, 0.0) + amount);
-                        }
-                    }
-                    callback.onSuccess(sumByDay);
-                })
+    public void updateUserPhone(String uid, String newPhone, Callback<Void> callback) {
+        FirebaseFirestore.getInstance()
+                .collection("Account")
+                .document(uid)
+                .update("PhoneNumber", newPhone)
+                .addOnSuccessListener(aVoid -> callback.onSuccess(null))
                 .addOnFailureListener(callback::onFailure);
     }
+
     private Date[] getStartEnd(TimeFilterType type,
                                @Nullable Integer day,
                                @Nullable Integer month,

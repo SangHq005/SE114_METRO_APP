@@ -29,6 +29,7 @@ public class AdProfileActivity extends AppCompatActivity {
 
     private TextView tvProfileName, tvProfileEmail;
     private EditText etProfileCccd;
+    private EditText etProfilePhone;
     private ImageView profileImage;
     private Button btnLogout;
 
@@ -36,6 +37,8 @@ public class AdProfileActivity extends AppCompatActivity {
     private FireStoreHelper fireStoreHelper;
     private UserModel currentUserModel;
     private String originalCccd = ""; // Lưu lại CCCD ban đầu để so sánh
+    private String originalPhone = "";
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,6 +57,20 @@ public class AdProfileActivity extends AppCompatActivity {
                 autoSaveChanges(); // Khi mất focus
             }
         });
+        etProfilePhone.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                autoSavePhone(); // Gọi lưu khi mất focus
+            }
+        });
+
+        etProfilePhone.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+                    (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER && event.getAction() == android.view.KeyEvent.ACTION_DOWN)) {
+                autoSavePhone();
+                return true;
+            }
+            return false;
+        });
 
     }
 
@@ -62,6 +79,7 @@ public class AdProfileActivity extends AppCompatActivity {
         tvProfileName = findViewById(R.id.tv_profile_name);
         tvProfileEmail = findViewById(R.id.tv_profile_email);
         etProfileCccd = findViewById(R.id.et_profile_cccd);
+        etProfilePhone = findViewById(R.id.et_profile_phone);
         btnLogout = findViewById(R.id.btn_logout);
     }
 
@@ -95,6 +113,7 @@ public class AdProfileActivity extends AppCompatActivity {
 
         tvProfileName.setText(currentUserModel.getName());
         tvProfileEmail.setText(currentUserModel.getEmail());
+
         String avatarUrl = null;
         try {
             avatarUrl = currentUserModel.getClass().getMethod("getAvatarUrl") != null ? (String) currentUserModel.getClass().getMethod("getAvatarUrl").invoke(currentUserModel) : null;
@@ -120,6 +139,16 @@ public class AdProfileActivity extends AppCompatActivity {
             etProfileCccd.setText("");
             etProfileCccd.setHint("Chưa cập nhật (12 số)");
         }
+        // Hiển thị số điện thoại nếu có
+        String phone = currentUserModel.getPhone() != null ? currentUserModel.getPhone() : "";
+        if (!phone.isEmpty()) {
+            etProfilePhone.setText(phone);
+        } else {
+            etProfilePhone.setText("");
+            etProfilePhone.setHint("Chưa cập nhật (10 chữ số)");
+        }
+
+
     }
 
     private void setupListeners() {
@@ -192,6 +221,44 @@ public class AdProfileActivity extends AppCompatActivity {
             }
         });
     }
+    private void autoSavePhone() {
+        hideKeyboard();
+        String newPhone = etProfilePhone.getText().toString().trim();
+
+        if (newPhone.equals(originalPhone)) {
+            etProfilePhone.clearFocus();
+            return;
+        }
+
+        if (!newPhone.matches("0\\d{9}")) {
+            Toast.makeText(this, "Số điện thoại không hợp lệ. Phải bắt đầu bằng 0 và đủ 10 chữ số.", Toast.LENGTH_LONG).show();
+            etProfilePhone.setText(originalPhone);
+            etProfilePhone.clearFocus();
+            return;
+        }
+
+        Toast.makeText(this, "Đang cập nhật số điện thoại...", Toast.LENGTH_SHORT).show();
+
+        FirebaseUser firebaseUser = mAuth.getCurrentUser();
+        if (firebaseUser == null) return;
+
+        fireStoreHelper.updateUserPhone(firebaseUser.getUid(), newPhone, new FireStoreHelper.Callback<Void>() {
+            @Override
+            public void onSuccess(Void result) {
+                Toast.makeText(AdProfileActivity.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
+                originalPhone = newPhone;
+                etProfilePhone.clearFocus();
+            }
+
+            @Override
+            public void onFailure(Exception e) {
+                Toast.makeText(AdProfileActivity.this, "Cập nhật thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                etProfilePhone.setText(originalPhone);
+                etProfilePhone.clearFocus();
+            }
+        });
+    }
+
 
     private void showLogoutConfirmationDialog() {
         new AlertDialog.Builder(this, R.style.AlertDialogTheme)

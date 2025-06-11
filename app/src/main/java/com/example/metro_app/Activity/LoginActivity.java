@@ -163,7 +163,8 @@ public class LoginActivity extends AppCompatActivity {
                     CCCD =documentSnapshot.getString("CCCD");
                     SharedPreferences.Editor editor = prefs.edit();
                     editor.putString("UserID",user.getUid());
-                    editor.putString("phoneNumber", user.getPhoneNumber());
+                    editor.putString("phoneNumber", documentSnapshot.getString("PhoneNumber"));
+                    Log.d("SDT", "saveUserInfo: "+documentSnapshot.getString("PhoneNumber"));
                     editor.putString("name", user.getDisplayName());
                     editor.putString("email", user.getEmail());
                     editor.putString("photo", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
