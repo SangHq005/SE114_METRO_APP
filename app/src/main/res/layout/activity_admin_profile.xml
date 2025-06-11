@@ -101,7 +101,7 @@
 
                         <LinearLayout
                             style="@style/UserInfoTextLayout"
-                            android:layout_marginLeft="16dp">
+                            >
                             <TextView
                                 style="@style/UserInfoLabel"
                                 android:text="CCCD" />

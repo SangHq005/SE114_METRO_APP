@@ -114,21 +114,25 @@ public class LoginActivity extends AppCompatActivity {
                                                 Toast.makeText(LoginActivity.this, "Google Sign-In successful!", Toast.LENGTH_SHORT).show();
                                                 finish();
                                             } else {
-                                                // Nếu lần đầu đăng nhập, tạo user mặc định
                                                 Map<String, Object> data = new HashMap<>();
                                                 data.put("Name", user.getDisplayName());
                                                 data.put("Email", user.getEmail());
                                                 data.put("Role", "User"); // mặc định là user
-                                                data.put("CCCD","");
+                                                data.put("CCCD", "");
                                                 data.put("avatarUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+
+// Thêm dòng sau để lưu thời gian đăng nhập đầu tiên
+                                                data.put("firstTimeLogin", com.google.firebase.Timestamp.now());
+
                                                 db.collection("Account").document(uid).set(data)
                                                         .addOnSuccessListener(aVoid -> {
                                                             saveUserInfo(user);
                                                             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                                                            intent.putExtra("UUID", uid); // Truyền UUID sang HomeActivity
+                                                            intent.putExtra("UUID", uid);
                                                             startActivity(intent);
                                                             finish();
                                                         });
+
                                             }
                                         });
                             }

@@ -9,6 +9,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,6 +19,7 @@ import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.metro_app.Model.FireStoreHelper;
 import com.example.metro_app.Model.UserModel;
 import com.example.metro_app.R;
@@ -67,7 +69,22 @@ class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
         // Set user role (capitalize first letter for better look)
         String role = user.getRole() != null ? user.getRole() : "User";
         holder.userRole.setText(role.substring(0, 1).toUpperCase() + role.substring(1));
-
+        String avatarUrl = null;
+        try {
+            avatarUrl = user.getClass().getMethod("getAvatarUrl") != null ? (String) user.getClass().getMethod("getAvatarUrl").invoke(user) : null;
+        } catch (Exception e) {
+            // Method does not exist or error, ignore
+        }
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            Glide.with(holder.itemView.getContext())
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.userbtn) // fallback image
+                    .error(R.drawable.userbtn)
+                    .circleCrop()
+                    .into(holder.userAvatar);
+        } else {
+            holder.userAvatar.setImageResource(R.drawable.userbtn);
+        }
         // Set click listener
         holder.itemView.setOnClickListener(v -> listener.onItemClick(user));
     }
@@ -80,11 +97,13 @@ class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder> {
     static class UserViewHolder extends RecyclerView.ViewHolder {
         TextView userName;
         TextView userRole; // Add TextView for role
+        ImageView userAvatar;
 
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
             userName = itemView.findViewById(R.id.tv_user_name);
             userRole = itemView.findViewById(R.id.tv_user_role); // Initialize role TextView
+            userAvatar = itemView.findViewById(R.id.ivUserAvatar);
             if (userName == null || userRole == null) {
                 Log.e("UserAdapter", "A TextView is null, check item_user.xml IDs (tv_user_name, tv_user_role)");
             }

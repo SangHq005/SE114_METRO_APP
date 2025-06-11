@@ -123,135 +123,71 @@ public class FireStoreHelper {
                 })
                 .addOnFailureListener(callback::onFailure);
     }
-    public void getSumOfTransactionFiltered(Integer day, Integer month, Integer year, OnTransactionSumCallback callback) {
-        Calendar calStart = Calendar.getInstance();
-        Calendar calEnd = Calendar.getInstance();
+    public void getSumOfTransaction(TimeFilterType type,
+                                    @Nullable Integer day,
+                                    @Nullable Integer month,
+                                    @Nullable Integer year,
+                                    OnTransactionSumCallback cb) {
 
-        if (year == null) {
-            callback.onCallback(0.0);
-            return;
+        Date[] range = getStartEnd(type, day, month, year);
+
+        Query q = db.collection("Transactions");
+        if (range != null) {
+            q = q.whereGreaterThanOrEqualTo("timestamp", new Timestamp(range[0]))
+                    .whereLessThan("timestamp", new Timestamp(range[1]));
         }
 
-        // Thiết lập thời gian bắt đầu
-        calStart.set(Calendar.YEAR, year);
-        calStart.set(Calendar.MONTH, month != null ? month - 1 : 0);
-        calStart.set(Calendar.DAY_OF_MONTH, day != null ? day : 1);
-        calStart.set(Calendar.HOUR_OF_DAY, 0);
-        calStart.set(Calendar.MINUTE, 0);
-        calStart.set(Calendar.SECOND, 0);
-        calStart.set(Calendar.MILLISECOND, 0);
-
-        // Thiết lập thời gian kết thúc
-        if (day != null) {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.DATE, 1); // +1 ngày
-        } else if (month != null) {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.MONTH, 1); // +1 tháng
-        } else {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.YEAR, 1); // +1 năm
-        }
-
-        Date startDate = calStart.getTime();
-        Date endDate = calEnd.getTime();
-
-        db.collection("Transactions")
-                .whereGreaterThanOrEqualTo("timestamp", new Timestamp(startDate))
-                .whereLessThan("timestamp", new Timestamp(endDate))
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    double totalAmount = 0.0;
-                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
-                        String status = doc.getString("status");
-                        if ("SUCCESS".equals(status)) {
-                            Number amount = doc.getDouble("amount");
-                            if (amount != null) {
-                                totalAmount += amount.doubleValue();
-                            }
-                        }
-                    }
-                    callback.onCallback(totalAmount);
-                })
-                .addOnFailureListener(e -> callback.onCallback(0.0));
+        q.get().addOnSuccessListener(ss -> {
+            double sum = 0;
+            for (QueryDocumentSnapshot doc : ss) {
+                if ("SUCCESS".equals(doc.getString("status"))) {
+                    Double amt = doc.getDouble("amount");
+                    if (amt != null) sum += amt;
+                }
+            }
+            cb.onCallback(sum);
+        }).addOnFailureListener(e -> cb.onCallback(0));
     }
 
-    public void getTotalTicketsFiltered(Integer day, Integer month, Integer year, Callback<Long> callback) {
-        if (year == null) {
-            callback.onFailure(new IllegalArgumentException("Year must be provided"));
-            return;
+
+    public void getTotalTickets(TimeFilterType type,
+                                @Nullable Integer day,
+                                @Nullable Integer month,
+                                @Nullable Integer year,
+                                Callback<Long> cb) {
+
+        Date[] range = getStartEnd(type, day, month, year);
+
+        Query q = db.collection("Ticket");
+        if (range != null) {
+            q = q.whereGreaterThanOrEqualTo("timestamp", new Timestamp(range[0]))
+                    .whereLessThan("timestamp", new Timestamp(range[1]));
         }
 
-        Calendar calStart = Calendar.getInstance();
-        Calendar calEnd = Calendar.getInstance();
-
-        calStart.set(Calendar.YEAR, year);
-        calStart.set(Calendar.MONTH, month != null ? month - 1 : 0);
-        calStart.set(Calendar.DAY_OF_MONTH, day != null ? day : 1);
-        calStart.set(Calendar.HOUR_OF_DAY, 0);
-        calStart.set(Calendar.MINUTE, 0);
-        calStart.set(Calendar.SECOND, 0);
-        calStart.set(Calendar.MILLISECOND, 0);
-
-        if (day != null) {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.DATE, 1);
-        } else if (month != null) {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.MONTH, 1);
-        } else {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.YEAR, 1);
-        }
-
-        Date start = calStart.getTime();
-        Date end = calEnd.getTime();
-
-        db.collection("Ticket")
-                .whereGreaterThanOrEqualTo("timestamp", new Timestamp(start))
-                .whereLessThan("timestamp", new Timestamp(end))
-                .get()
-                .addOnSuccessListener(snapshots -> callback.onSuccess((long) snapshots.size()))
-                .addOnFailureListener(callback::onFailure);
+        q.get()
+                .addOnSuccessListener(snp -> cb.onSuccess((long) snp.size()))
+                .addOnFailureListener(cb::onFailure);
     }
-    public void getTotalUsersFiltered(Integer day, Integer month, Integer year, Callback<Long> callback) {
-        if (year == null) {
-            callback.onFailure(new IllegalArgumentException("Year must be provided"));
-            return;
+
+    public void getTotalUsers(TimeFilterType type,
+                              @Nullable Integer day,
+                              @Nullable Integer month,
+                              @Nullable Integer year,
+                              Callback<Long> cb) {
+
+        Date[] range = getStartEnd(type, day, month, year);
+
+        Query q = db.collection("Account");
+        if (range != null) {
+            q = q.whereGreaterThanOrEqualTo("firstTimeLogin", new Timestamp(range[0]))
+                    .whereLessThan("firstTimeLogin", new Timestamp(range[1]));
         }
 
-        Calendar calStart = Calendar.getInstance();
-        Calendar calEnd = Calendar.getInstance();
-
-        calStart.set(Calendar.YEAR, year);
-        calStart.set(Calendar.MONTH, month != null ? month - 1 : 0);
-        calStart.set(Calendar.DAY_OF_MONTH, day != null ? day : 1);
-        calStart.set(Calendar.HOUR_OF_DAY, 0);
-        calStart.set(Calendar.MINUTE, 0);
-        calStart.set(Calendar.SECOND, 0);
-        calStart.set(Calendar.MILLISECOND, 0);
-
-        if (day != null) {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.DATE, 1);
-        } else if (month != null) {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.MONTH, 1);
-        } else {
-            calEnd.setTime(calStart.getTime());
-            calEnd.add(Calendar.YEAR, 1);
-        }
-
-        Date start = calStart.getTime();
-        Date end = calEnd.getTime();
-
-        db.collection("Account")
-                .whereGreaterThanOrEqualTo("timestamp", new Timestamp(start))
-                .whereLessThan("timestamp", new Timestamp(end))
-                .get()
-                .addOnSuccessListener(snapshots -> callback.onSuccess((long) snapshots.size()))
-                .addOnFailureListener(callback::onFailure);
+        q.get()
+                .addOnSuccessListener(snp -> cb.onSuccess((long) snp.size()))
+                .addOnFailureListener(cb::onFailure);
     }
+
 
 
 
@@ -277,6 +213,69 @@ public class FireStoreHelper {
                     callback.onSuccess(sumByDay);
                 })
                 .addOnFailureListener(callback::onFailure);
+    }
+    private Date[] getStartEnd(TimeFilterType type,
+                               @Nullable Integer day,
+                               @Nullable Integer month,
+                               @Nullable Integer year) {
+
+        Calendar start = Calendar.getInstance();
+        Calendar end   = Calendar.getInstance();
+
+        switch (type) {
+            case TODAY:
+                start.set(Calendar.HOUR_OF_DAY, 0);
+                start.set(Calendar.MINUTE, 0);
+                start.set(Calendar.SECOND, 0);
+                start.set(Calendar.MILLISECOND, 0);
+
+                end.setTime(start.getTime());
+                end.add(Calendar.DATE, 1);
+                break;
+
+            case THIS_WEEK:
+                start.set(Calendar.DAY_OF_WEEK, start.getFirstDayOfWeek());
+                start.set(Calendar.HOUR_OF_DAY, 0);
+                start.set(Calendar.MINUTE, 0);
+                start.set(Calendar.SECOND, 0);
+                start.set(Calendar.MILLISECOND, 0);
+
+                end.setTime(start.getTime());
+                end.add(Calendar.WEEK_OF_YEAR, 1);
+                break;
+
+            case THIS_MONTH:
+                start.set(Calendar.DAY_OF_MONTH, 1);
+                start.set(Calendar.HOUR_OF_DAY, 0);
+                start.set(Calendar.MINUTE, 0);
+                start.set(Calendar.SECOND, 0);
+                start.set(Calendar.MILLISECOND, 0);
+
+                end.setTime(start.getTime());
+                end.add(Calendar.MONTH, 1);
+                break;
+
+            case CUSTOM_DATE:
+                if (year == null) throw new IllegalArgumentException("Year is required for CUSTOM_DATE");
+                start.set(Calendar.YEAR, year);
+                start.set(Calendar.MONTH, month != null ? month - 1 : 0);
+                start.set(Calendar.DAY_OF_MONTH, day != null ? day : 1);
+                start.set(Calendar.HOUR_OF_DAY, 0);
+                start.set(Calendar.MINUTE, 0);
+                start.set(Calendar.SECOND, 0);
+                start.set(Calendar.MILLISECOND, 0);
+
+                end.setTime(start.getTime());
+                if (day != null)       end.add(Calendar.DATE, 1);
+                else if (month != null) end.add(Calendar.MONTH, 1);
+                else                    end.add(Calendar.YEAR, 1);
+                break;
+
+            case ALL:
+            default:
+                return null; // báo hàm gọi biết là không cần whereGreater/Less
+        }
+        return new Date[]{ start.getTime(), end.getTime() };
     }
 
 

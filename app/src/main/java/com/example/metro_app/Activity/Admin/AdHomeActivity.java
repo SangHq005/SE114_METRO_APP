@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.metro_app.Model.FireStoreHelper;
+import com.example.metro_app.Model.TimeFilterType;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
@@ -40,7 +41,7 @@ public class AdHomeActivity extends AppCompatActivity {
     private Spinner spinnerTime;
     private BottomNavigationView bottomNavigationView;
     private TextView tvUser;
-    private  TextView tvRevenue;
+    private TextView tvRevenue;
     private TextView tvTicket;
     private FireStoreHelper fireStoreHelper;
     private Handler handler = new Handler();
@@ -64,101 +65,69 @@ public class AdHomeActivity extends AppCompatActivity {
         lineChart = findViewById(R.id.lineChart);
         btnWeekly = findViewById(R.id.btnWeekly);
         btnScanQR = findViewById(R.id.btnScanQR);
-        fireStoreHelper =new FireStoreHelper();
+        fireStoreHelper = new FireStoreHelper();
         spinnerTime.setAdapter(adapter);
-        // ...existing code...
+
         spinnerTime.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 Calendar cal = Calendar.getInstance();
                 int day = cal.get(Calendar.DAY_OF_MONTH);
-                int month = cal.get(Calendar.MONTH) + 1; // Calendar.MONTH is 0-based
+                int month = cal.get(Calendar.MONTH) + 1;
                 int year = cal.get(Calendar.YEAR);
 
+                TimeFilterType filterType;
                 switch (position) {
-                    case 0: // Per Day
-                        fireStoreHelper.getSumOfTransactionFiltered(day, month, year, sum ->
-                                tvRevenue.setText(String.format("%.2f đ", sum))
-                        );
-                        fireStoreHelper.getTotalTicketsFiltered(day, month, year, new FireStoreHelper.Callback<Long>() {
-                            @Override
-                            public void onSuccess(Long result) {
-                                tvTicket.setText(result.toString());
-                            }
-                            @Override
-                            public void onFailure(Exception e) {
-                                tvTicket.setText("0");
-                            }
-                        });
-                        fireStoreHelper.getTotalUsersFiltered(day, month, year, new FireStoreHelper.Callback<Long>() {
-                            @Override
-                            public void onSuccess(Long result) {
-                                tvUser.setText(result.toString());
-                            }
-                            @Override
-                            public void onFailure(Exception e) {
-                                tvUser.setText("0");
-                            }
-                        });
+                    case 0:
+                        filterType = TimeFilterType.TODAY;
                         break;
-                    case 1: // Per Month
-                        fireStoreHelper.getSumOfTransactionFiltered(null, month, year, sum ->
-                                tvRevenue.setText(String.format("%.2f đ", sum))
-                        );
-                        fireStoreHelper.getTotalTicketsFiltered(null, month, year, new FireStoreHelper.Callback<Long>() {
-                            @Override
-                            public void onSuccess(Long result) {
-                                tvTicket.setText(result.toString());
-                            }
-                            @Override
-                            public void onFailure(Exception e) {
-                                tvTicket.setText("0");
-                            }
-                        });
-                        fireStoreHelper.getTotalUsersFiltered(null, month, year, new FireStoreHelper.Callback<Long>() {
-                            @Override
-                            public void onSuccess(Long result) {
-                                tvUser.setText(result.toString());
-                            }
-                            @Override
-                            public void onFailure(Exception e) {
-                                tvUser.setText("0\n");
-                            }
-                        });
+                    case 1:
+                        filterType = TimeFilterType.THIS_WEEK;
                         break;
-                    case 2: // Per Year
-                        fireStoreHelper.getSumOfTransactionFiltered(null, null, year, sum ->
-                                tvRevenue.setText(String.format("%.2f đ", sum))
-                        );
-                        fireStoreHelper.getTotalTicketsFiltered(null, null, year, new FireStoreHelper.Callback<Long>() {
-                            @Override
-                            public void onSuccess(Long result) {
-                                tvTicket.setText(result.toString());
-                            }
-                            @Override
-                            public void onFailure(Exception e) {
-                                tvTicket.setText("0");
-                            }
-                        });
-                        fireStoreHelper.getTotalUsersFiltered(null, null, year, new FireStoreHelper.Callback<Long>() {
-                            @Override
-                            public void onSuccess(Long result) {
-                                tvUser.setText(result.toString());
-                            }
-                            @Override
-                            public void onFailure(Exception e) {
-                                tvUser.setText("0");
-                            }
-                        });
+                    case 2:
+                        filterType = TimeFilterType.THIS_MONTH;
                         break;
+                    case 3:
+                        filterType = TimeFilterType.ALL;
+                        break;
+                    default:
+                        filterType = TimeFilterType.ALL;
                 }
+
+                fireStoreHelper.getSumOfTransaction(filterType, day, month, year, sum ->
+                        tvRevenue.setText(String.format("%.2f đ", sum)));
+
+                fireStoreHelper.getTotalTickets(filterType, day, month, year, new FireStoreHelper.Callback<Long>() {
+                    @Override
+                    public void onSuccess(Long result) {
+                        tvTicket.setText(result.toString());
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        tvTicket.setText("0");
+                    }
+                });
+
+                fireStoreHelper.getTotalUsers(filterType, day, month, year, new FireStoreHelper.Callback<Long>() {
+                    @Override
+                    public void onSuccess(Long result) {
+                        tvUser.setText(result.toString());
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        tvUser.setText("0");
+                    }
+                });
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) { }
+            public void onNothingSelected(AdapterView<?> parent) {
+            }
         });
+
         btnWeekly.setOnClickListener(v -> {
-            // Get current week and year
             Calendar cal = Calendar.getInstance();
             int year = cal.get(Calendar.YEAR);
             int week = cal.get(Calendar.WEEK_OF_YEAR);
@@ -168,8 +137,10 @@ public class AdHomeActivity extends AppCompatActivity {
                 public void onSuccess(Map<Integer, Double> result) {
                     drawDayOfWeekChart(result);
                 }
+
                 @Override
-                public void onFailure(Exception e) { }
+                public void onFailure(Exception e) {
+                }
             });
         });
 
@@ -201,12 +172,12 @@ public class AdHomeActivity extends AppCompatActivity {
             }
             return false;
         });
+
         btnWeekly.performClick();
         btnWeekly.performClick();
     }
 
     private void drawDayOfWeekChart(Map<Integer, Double> dataMap) {
-        // Day names: 1=Sunday, 2=Monday, ..., 7=Saturday
         String[] dayNames = {"CN", "T2", "T3", "T4", "T5", "T6", "T7"};
         List<Entry> entries = new ArrayList<>();
         for (int i = 1; i <= 7; i++) {
@@ -251,14 +222,13 @@ public class AdHomeActivity extends AppCompatActivity {
         legend.setTextColor(Color.WHITE);
         legend.setTextSize(12f);
 
-        // Calculate week range (Monday - Sunday)
         Calendar cal = Calendar.getInstance();
         int year = cal.get(Calendar.YEAR);
         int week = cal.get(Calendar.WEEK_OF_YEAR);
         cal.set(Calendar.YEAR, year);
         cal.set(Calendar.WEEK_OF_YEAR, week);
         cal.set(Calendar.DAY_OF_WEEK, Calendar.MONDAY);
-        java.text.SimpleDateFormat sdf = new java.text.SimpleDateFormat("dd/MM");
+        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM");
         String start = sdf.format(cal.getTime());
         cal.add(Calendar.DAY_OF_MONTH, 6);
         String end = sdf.format(cal.getTime());

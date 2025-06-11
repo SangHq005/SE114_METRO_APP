@@ -9,11 +9,12 @@
 
     <!-- Icon for user -->
     <ImageView
+        android:id="@+id/ivUserAvatar"
         android:layout_width="40dp"
         android:layout_height="40dp"
-        android:src="@drawable/user_white"
         android:layout_marginEnd="16dp"
-        android:contentDescription="User Icon"/>
+        android:contentDescription="User Icon"
+        android:src="@drawable/user_white" />
 
     <!-- User Info Section -->
     <LinearLayout
