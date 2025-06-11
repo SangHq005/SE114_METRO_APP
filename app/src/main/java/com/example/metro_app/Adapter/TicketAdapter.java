@@ -49,10 +49,10 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
             holder.tvStatus.setText(ticket.getStatus() != null ? ticket.getStatus() : "Không có thông tin");
             String status = ticket.getStatus() != null ? ticket.getStatus().trim() : "";
             if ("Chưa kích hoạt".equals(status)) {
-                holder.tvStatus.setBackgroundResource(R.drawable.status_pending_gradient);
+                holder.tvStatus.setBackgroundResource(R.drawable.status_warning_gradient);
                 holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.pending_text));
             } else if ("Hết hạn".equals(status)) {
-                holder.tvStatus.setBackgroundResource(R.drawable.status_warning_gradient);
+                holder.tvStatus.setBackgroundResource(R.drawable.status_error_gradient);
                 holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.failed_text));
             } else {
                 holder.tvStatus.setBackgroundResource(R.drawable.status_success_gradient);
