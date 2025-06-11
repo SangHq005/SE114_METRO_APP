@@ -62,11 +62,12 @@ public class CreateTicketActivity extends AppCompatActivity {
     private String userId;
     private Spinner typeSpinner, validitySpinner, startStationSpinner, endStationSpinner;
     private TextView validityLabel, startStationLabel, endStationLabel;
-    private Button issueTicketButton;
+    private Button issueTicketButton, cancelButton;
     private RelativeLayout  validityContainer, startStationContainer, endStationContainer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_create_ticket);
@@ -92,6 +93,7 @@ public class CreateTicketActivity extends AppCompatActivity {
         startStationLabel = findViewById(R.id.startStationLabel);
         endStationLabel = findViewById(R.id.endStationLabel);
         issueTicketButton = findViewById(R.id.issueTicketButton);
+        cancelButton = findViewById(R.id.cancelButton);
         validityContainer = findViewById(R.id.validityContainer);
         startStationContainer = findViewById(R.id.startStationContainer);
         endStationContainer = findViewById(R.id.endStationContainer);
@@ -155,6 +157,11 @@ public class CreateTicketActivity extends AppCompatActivity {
                 // Không làm gì
             }
         });
+
+        cancelButton.setOnClickListener(v -> {
+            finish();
+        });
+
 
         // Sự kiện nút xuất vé
         issueTicketButton.setOnClickListener(v -> {

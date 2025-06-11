@@ -4,6 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+    <!-- Máy quét mã vạch, không thay đổi -->
     <com.journeyapps.barcodescanner.DecoratedBarcodeView
         android:id="@+id/barcode_scanner"
         android:layout_width="match_parent"
@@ -14,12 +15,6 @@
         app:zxing_preview_scaling_strategy="centerCrop"
         app:zxing_use_texture_view="true"
         />
-
-    <View
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:background="#A0000000" />
-
     <FrameLayout
         android:id="@+id/viewfinder_container"
         android:layout_width="280dp"
@@ -46,10 +41,9 @@
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="24dp"
         android:text="Đặt mã QR vào trong khung để quét"
-        android:textColor="@android:color/white"
+        android:textColor="@color/white"
         android:textSize="16sp"
-        android:padding="8dp"
-        android:background="#50000000"
+        android:padding="12dp"
         android:gravity="center"/>
 
     <ImageButton
@@ -61,6 +55,6 @@
         android:layout_margin="16dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:src="@drawable/back_white"
-        app:tint="@android:color/white" />
+        app:tint="#424242" />
 
 </RelativeLayout>

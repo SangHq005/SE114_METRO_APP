@@ -47,6 +47,10 @@ class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketViewHolder>
         this.listener = listener;
     }
 
+    public List<TicketType> getFilteredList() {
+        return filteredTicketList;
+    }
+
     @NonNull
     @Override
     public TicketViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
@@ -173,7 +177,25 @@ public class AdTicketActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         ticketList = new ArrayList<>();
 
+        // *** THÊM ĐIỀU HƯỚNG KHI NHẤN VÀO MỘT ITEM ***
         ticketAdapter = new TicketAdapter(this, new ArrayList<>(), position -> {
+            // Lấy đúng vé từ danh sách đã được lọc của adapter
+            TicketType selectedTicket = ticketAdapter.getFilteredList().get(position);
+
+            // Tìm vị trí của vé đó trong danh sách gốc để gửi đi, giúp việc cập nhật dễ dàng hơn
+            int originalPosition = -1;
+            for (int i = 0; i < ticketList.size(); i++) {
+                if (ticketList.get(i).getId().equals(selectedTicket.getId())) {
+                    originalPosition = i;
+                    break;
+                }
+            }
+
+            // Khởi động AdTicketDetails để chỉnh sửa
+            Intent intent = new Intent(AdTicketActivity.this, AdTicketDetails.class);
+            intent.putExtra("ticket", selectedTicket);
+            intent.putExtra("position", originalPosition);
+            editTicketLauncher.launch(intent);
         });
         recyclerView.setAdapter(ticketAdapter);
 
