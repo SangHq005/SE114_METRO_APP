@@ -102,26 +102,38 @@ public class LoginActivity extends AppCompatActivity {
                                         .addOnSuccessListener(documentSnapshot -> {
                                             if (documentSnapshot.exists()) {
                                                 String role = documentSnapshot.getString("Role");
-                                                if ("Admin".equals(role)) {
-                                                    saveUserInfo(user);
-                                                    startActivity(new Intent(LoginActivity.this, AdHomeActivity.class));
-                                                } else {
-                                                    saveUserInfo(user);
-                                                    Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
-                                                    intent.putExtra("UUID", uid); // Truyền UUID sang HomeActivity
-                                                    startActivity(intent);
-                                                }
-                                                Toast.makeText(LoginActivity.this, "Google Sign-In successful!", Toast.LENGTH_SHORT).show();
-                                                finish();
-                                            } else {
+
+                                                Map<String, Object> updates = new HashMap<>();
+                                                updates.put("Name", user.getDisplayName());
+                                                updates.put("Email", user.getEmail());
+                                                updates.put("avatarUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+
+                                                db.collection("Account").document(uid)
+                                                        .update(updates)
+                                                        .addOnSuccessListener(aVoid -> {
+                                                            Log.d("LOGGin", "Login: "+updates.get("Name"));
+                                                            saveUserInfo(user);
+                                                            if ("Admin".equals(role)) {
+                                                                startActivity(new Intent(LoginActivity.this, AdHomeActivity.class));
+                                                            } else {
+                                                                Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
+                                                                intent.putExtra("UUID", uid);
+                                                                startActivity(intent);
+                                                            }
+                                                            Toast.makeText(LoginActivity.this, "Google Sign-In successful!", Toast.LENGTH_SHORT).show();
+                                                            finish();
+                                                        })
+                                                        .addOnFailureListener(e -> {
+                                                            Toast.makeText(LoginActivity.this, "Lỗi cập nhật thông tin người dùng", Toast.LENGTH_SHORT).show();
+                                                        });
+
+                                        } else {
                                                 Map<String, Object> data = new HashMap<>();
                                                 data.put("Name", user.getDisplayName());
                                                 data.put("Email", user.getEmail());
                                                 data.put("Role", "User"); // mặc định là user
                                                 data.put("CCCD", "");
                                                 data.put("avatarUrl", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
-
-// Thêm dòng sau để lưu thời gian đăng nhập đầu tiên
                                                 data.put("firstTimeLogin", com.google.firebase.Timestamp.now());
 
                                                 db.collection("Account").document(uid).set(data)

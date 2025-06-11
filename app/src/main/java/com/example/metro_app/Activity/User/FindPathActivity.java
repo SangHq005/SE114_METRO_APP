@@ -33,6 +33,7 @@ import com.bumptech.glide.request.transition.Transition;
 import com.example.metro_app.Activity.MapBoxFragment;
 import com.example.metro_app.Model.BusDataHelper;
 import com.example.metro_app.Model.BusStop;
+import com.example.metro_app.Model.Detail;
 import com.example.metro_app.Model.RawCoor;
 import com.example.metro_app.Model.RouteResponse;
 import com.example.metro_app.Model.Stop;
@@ -50,6 +51,7 @@ import com.mapbox.maps.MapboxMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 public class FindPathActivity extends AppCompatActivity {
@@ -131,11 +133,16 @@ public class FindPathActivity extends AppCompatActivity {
         });
 
         btnMyLocation.setOnClickListener(v -> {
-            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-                if (currentLocation != null) {
-                    mapFragment.zoomToLocation(currentLocation);
-                }
-            }
+
+//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+//                if (currentLocation != null) {
+//                    mapFragment.zoomToLocation(currentLocation);
+//                }
+//            }
+                    pointFrom = Point.fromLngLat(106.70640854537282,10.776064339338353);
+            pointTo =Point.fromLngLat(106.69920319317951,10.775128418094525);
+            findAndDisplayRoute();
+
         });
 
 //        btnDirection.setOnClickListener(v -> {
@@ -263,19 +270,8 @@ public class FindPathActivity extends AppCompatActivity {
                                 Toast.makeText(FindPathActivity.this, "Không tìm thấy tuyến đường phù hợp", Toast.LENGTH_SHORT).show();
                                 return;
                             }
-
-                            // Show the first route by default and display route info card
-                            RouteResponse bestRoute = routes.get(0);
-                            currentSelectedRoute = bestRoute;
-                            drawRouteOnMap(bestRoute);
-                            showRouteInfoCard(bestRoute);
-
-                            // If there are multiple routes, allow user to choose
-                            if (routes.size() > 1) {
                                 showRouteSelectionDialog(routes);
                             }
-                        }
-
                         @Override
                         public void onError(Exception e) {
                             Toast.makeText(FindPathActivity.this, "Không tìm được đường", Toast.LENGTH_SHORT).show();
@@ -304,104 +300,68 @@ public class FindPathActivity extends AppCompatActivity {
 
     private void showRouteInfoCard(RouteResponse route) {
         routeInfoCard.setVisibility(View.VISIBLE);
-
-        // Set route title
-        tvRouteTitle.setText("Tuyến xe: " + route.Title);
-
-        // Find nearest stop
-        Stop nearestStop = findNearestStop(route.stops);
-        if (nearestStop != null) {
-            tvStationName.setText("Trạm: " + nearestStop.Name);
-
-            // Calculate distance to nearest stop
-            float distanceInMeters = calculateDistance(currentLocation, Point.fromLngLat(nearestStop.Lng, nearestStop.Lat));
-
-            // Format distance display
-            String distanceText;
-            if (distanceInMeters >= 1000) {
-                // Display in kilometers if >= 1km
-                double distanceInKm = distanceInMeters / 1000.0;
-                distanceText = String.format("%.1fkm", distanceInKm);
-            } else {
-                // Display in meters if < 1km
-                distanceText = String.format("%.0fm", distanceInMeters);
-            }
-
-            // Calculate walking time (average walking speed: 5 km/h = 83.33 m/min)
-            int walkingTimeMinutes = (int) Math.ceil(distanceInMeters / 83.33);
-            // Minimum 1 minute for very short distances
-            if (walkingTimeMinutes < 1) walkingTimeMinutes = 1;
-
-            tvDistanceTime.setText(String.format("Cách %s - ~%d phút đi bộ", distanceText, walkingTimeMinutes));
-        } else {
-            tvStationName.setText("Trạm: " + route.Title);
-            tvDistanceTime.setText("Thông tin khoảng cách không có sẵn");
+        if(route.Title != null){
+            tvRouteTitle.setText(route.Title);
+        }
+        if(route.Desc!=null){
+            tvDistanceTime.setText(route.Desc);
         }
     }
-
-    private Stop findNearestStop(List<Stop> stops) {
-        if (currentLocation == null || stops.isEmpty()) {
-            return null;
-        }
-
-        Stop nearestStop = null;
-        float minDistance = Float.MAX_VALUE;
-
-        for (Stop stop : stops) {
-            Point stopPoint = Point.fromLngLat(stop.Lng, stop.Lat);
-            float distance = calculateDistance(currentLocation, stopPoint);
-            if (distance < minDistance) {
-                minDistance = distance;
-                nearestStop = stop;
-            }
-        }
-
-        return nearestStop;
-    }
-
-    private float calculateDistance(Point point1, Point point2) {
-        float[] results = new float[1];
-        android.location.Location.distanceBetween(
-                point1.latitude(), point1.longitude(),
-                point2.latitude(), point2.longitude(),
-                results
-        );
-        return results[0];
-    }
-
-    private void showDirectionsToNearestStop() {
-        if (currentSelectedRoute == null) return;
-
-        Stop nearestStop = findNearestStop(currentSelectedRoute.stops);
-        if (nearestStop != null) {
-            Toast.makeText(this, "Chỉ đường đến trạm: " + nearestStop.Name, Toast.LENGTH_SHORT).show();
-        }
-    }
-
     private void showDetailedRouteInfo() {
-        if (currentSelectedRoute == null) return;
+        if (currentSelectedRoute == null || currentSelectedRoute.detail == null) return;
 
-        // Create a detailed route information dialog
-        StringBuilder routeInfo = new StringBuilder();
-        routeInfo.append("Tuyến: ").append(currentSelectedRoute.Title).append("\n");
-        routeInfo.append("Mô tả: ").append(currentSelectedRoute.Desc).append("\n\n");
-        routeInfo.append("Các trạm dừng:\n");
+        StringBuilder builder = new StringBuilder();
 
-        for (int i = 0; i < currentSelectedRoute.stops.size(); i++) {
-            Stop stop = currentSelectedRoute.stops.get(i);
-            routeInfo.append((i + 1)).append(". ").append(stop.Name).append("\n");
+        for (Detail d : currentSelectedRoute.detail) {
+            boolean isWalking = d.RouteNo == null;
+
+            if (isWalking) {
+                builder.append("🚶‍♂️ Đi bộ\n");
+            } else {
+                builder.append("🚌 Tuyến số ").append(d.RouteNo).append("\n");
+                builder.append("Hướng đi: ").append(d.EndStop != null ? d.EndStop : "").append("\n");
+            }
+
+            builder.append("Từ: ").append(d.GetIn).append("\n");
+            builder.append("Đến: ").append(d.GetOff).append("\n");
+
+            // Tính khoảng cách
+            double distanceMeters = 0;
+            try {
+                distanceMeters = Double.parseDouble(d.Distance);
+            } catch (Exception ignored) { }
+
+            String distanceStr = (distanceMeters >= 1000) ?
+                    String.format(Locale.US, "%.1f km", distanceMeters / 1000) :
+                    String.format(Locale.US, "%.0f m", distanceMeters);
+
+            // Ước lượng thời gian đi bộ / di chuyển
+            double minutes = 0;
+            try {
+                minutes = Double.parseDouble(d.Length) / 60;  // d.Length là giây
+            } catch (Exception ignored) { }
+            int minutesRounded = (int) Math.ceil(minutes);
+            if (minutesRounded < 1) minutesRounded = 1;
+
+            builder.append("➤ ").append(distanceStr).append(" – khoảng ").append(minutesRounded).append(" phút\n");
+
+            if (!isWalking && d.Fare > 0) {
+                builder.append("💵 Vé: ").append(String.format("%,d", d.Fare)).append("đ\n");
+            }
+
+            builder.append("\n");
         }
 
         new AlertDialog.Builder(this)
-                .setTitle("Thông tin chi tiết lộ trình")
-                .setMessage(routeInfo.toString())
+                .setTitle("Chi tiết lộ trình")
+                .setMessage(builder.toString())
                 .setPositiveButton("Đóng", null)
                 .show();
     }
 
+
     private void drawRouteOnMap(RouteResponse route) {
-        mapFragment.clearPolylines();
-        mapFragment.clearAllMarkers();
+        mapFragment.clearPolylines();        mapFragment.clearAllMarkers();
 
         // Draw route path
         for (Map.Entry<String, List<RawCoor>> entry : route.coordRoute.entrySet()) {
