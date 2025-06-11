@@ -1,7 +1,11 @@
 package com.example.metro_app.Activity.User;
 
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
+import android.graphics.Shader;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -140,6 +144,46 @@ public class MyTicketsActivity extends AppCompatActivity {
         }
 
         loadTickets();
+        TextView tvGreeting = findViewById(R.id.tvGreeting);
+        loadAnim(tvGreeting);
+        loadAnim(nameTxt);
+
+    }
+    private void loadAnim(TextView textView){
+        //hiệu ứng text
+        Shader shader = new LinearGradient(
+                0, 0, 0, textView.getTextSize(),
+                new int[]{
+                        Color.RED,
+                        Color.BLUE,
+                        Color.GREEN,
+                        Color.MAGENTA
+                },
+                null,
+                Shader.TileMode.CLAMP);
+
+        textView.getPaint().setShader(shader);
+
+        // Tạo hiệu ứng chạy màu bằng cách cập nhật shader liên tục
+        ValueAnimator animator = ValueAnimator.ofFloat(0, 1000);
+        animator.setDuration(4000);
+        animator.setRepeatCount(ValueAnimator.INFINITE);
+        animator.addUpdateListener(animation -> {
+            float translate = (float) animation.getAnimatedValue();
+            Shader movingShader = new LinearGradient(
+                    translate, 0, translate + textView.getWidth(), textView.getTextSize(),
+                    new int[]{
+                            Color.RED,
+                            Color.BLUE,
+                            Color.GREEN,
+                            Color.MAGENTA
+                    },
+                    null,
+                    Shader.TileMode.MIRROR);
+            textView.getPaint().setShader(movingShader);
+            textView.invalidate();
+        });
+        animator.start();
     }
 
     @Override

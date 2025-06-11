@@ -67,7 +67,7 @@
             android:layout_marginTop="16dp"
             android:text="Vé lượt - Đi từ ga Bến Thành"
             android:textColor="@color/black"
-            android:textSize="20sp"
+            android:textSize="18sp"
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.588"

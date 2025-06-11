@@ -23,23 +23,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
+            android:layout_marginTop="8dp"
             android:gravity="center_vertical">
-
-            <!-- Icon với gradient background -->
-            <FrameLayout
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:background="@drawable/icon_gradient_background">
-
                 <ImageView
                     android:id="@+id/iv_ticket_icon"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:layout_gravity="center"
-                    android:src="@drawable/ticket"
-                    android:contentDescription="Ticket Icon"
-                    app:tint="@color/primary_color" />
-            </FrameLayout>
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_gravity="center_vertical"
+                    android:src="@drawable/ticket_train"
+                    android:contentDescription="Ticket Icon" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -54,7 +47,7 @@
                     android:layout_height="wrap_content"
                     android:text="Vé 1 ngày"
                     android:textColor="@color/text_primary"
-                    android:textSize="18sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     android:fontFamily="sans-serif-medium" />
 
@@ -65,7 +58,7 @@
                     android:layout_marginTop="4dp"
                     android:text="40.000 đ"
                     android:textColor="@color/text_secondary"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:fontFamily="sans-serif" />
 
             </LinearLayout>

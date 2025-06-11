@@ -68,12 +68,25 @@
                 android:layout_width="100dp"
                 android:layout_height="100dp"
                 android:src="@drawable/profile_placeholder" />
-
+            <TextView
+                android:id="@+id/tvGreeting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Xin chào,"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:layout_marginTop="16dp"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:textColor="@android:color/black"
+                app:layout_constraintTop_toBottomOf="@id/Toolbar"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent" />
             <TextView
                 android:id="@+id/userName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
+                android:layout_marginTop="8dp"
                 android:text="Huynh Quoc Sang"
                 android:textColor="@color/text_primary"
                 android:textSize="20sp"
@@ -123,7 +136,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
-                        android:src="@drawable/userbtn" />
+                        android:src="@drawable/userbutton" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -167,7 +180,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
-                        android:src="@drawable/userbtn" />
+                        android:src="@drawable/emailbutton" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -211,7 +224,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
-                        android:src="@drawable/userbtn" />
+                        android:src="@drawable/idbutton" />
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -221,28 +234,23 @@
                         android:textColor="@color/text_primary" />
                     <TextView
                         android:id="@+id/nationalIdTxt"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="012345678901"
+                        android:text="Chưa cập nhật"
                         android:textColor="@color/text_primary" />
 
+                    <ImageView
+                        android:id="@+id/nationalID"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/mdtp_ic_chevron_right_black_24dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
             <!-- Payment Method -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/paymentMethodCard"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/stroke_color"
-                app:strokeWidth="1dp"/>
 
             <!-- Payment Management -->
             <com.google.android.material.card.MaterialCardView
@@ -268,26 +276,32 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center_vertical"
-                        android:src="@drawable/nganhangbtn" />
+                        android:src="@drawable/telephone" />
 
                     <TextView
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
                         android:layout_marginStart="16dp"
-                        android:layout_weight="1"
                         android:text="Số điện thoại:"
                         android:textColor="@color/text_primary" />
 
                     <TextView
                         android:id="@+id/tvPN"
-                        android:layout_width="0dp"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_vertical"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:text="0000000000"
+                        android:text="Chưa cập nhật"
                         android:textColor="@color/text_primary" />
+
+                    <ImageView
+                        android:id="@+id/SDTEdit"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center_vertical"
+                        android:src="@drawable/mdtp_ic_chevron_right_black_24dp" />
 
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

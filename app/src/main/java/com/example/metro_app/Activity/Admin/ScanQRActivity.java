@@ -30,38 +30,41 @@ import java.util.List;
 
 public class ScanQRActivity extends AppCompatActivity {
 
+    // --- Giữ nguyên các biến từ file cũ ---
     private static final String TAG = "ScanQRActivity";
     private static final int CAMERA_PERMISSION_CODE = 100;
     private DecoratedBarcodeView barcodeView;
     private FirebaseFirestore db;
     private String userId;
 
+    // --- Thêm các biến cho UI mới ---
     private ImageButton btnBack;
     private View scannerLine;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // Bỏ EdgeToEdge vì layout mới đã xử lý việc này
         setContentView(R.layout.activity_scan_qr);
 
+        // --- Giữ nguyên logic khởi tạo từ file cũ ---
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
         userId = prefs.getString("UserID", null);
         Log.d(TAG, "Retrieved userId from SharedPreferences: " + userId);
 
         db = FirebaseFirestore.getInstance();
 
+        // --- Ánh xạ các view từ layout mới ---
         barcodeView = findViewById(R.id.barcode_scanner);
+
         scannerLine = findViewById(R.id.scanner_line);
 
-        // 1. Xử lý nút quay lại
-        btnBack.setOnClickListener(v -> {
-            onBackPressed(); // Hoặc finish();
-        });
 
         // 2. Bắt đầu animation cho đường quét
         Animation animation = AnimationUtils.loadAnimation(this, R.anim.scanner_animation);
         scannerLine.startAnimation(animation);
 
+        // --- Giữ nguyên logic kiểm tra quyền camera ---
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(this,
@@ -93,6 +96,7 @@ public class ScanQRActivity extends AppCompatActivity {
         barcodeView.decodeContinuous(callback);
     }
 
+    // --- PHƯƠNG THỨC NÀY ĐƯỢC GIỮ NGUYÊN HOÀN TOÀN ---
     private void processTicketId(String ticketId) {
         if (ticketId == null || ticketId.isEmpty()) {
             Toast.makeText(this, "Mã QR không hợp lệ!", Toast.LENGTH_LONG).show();
@@ -194,6 +198,10 @@ public class ScanQRActivity extends AppCompatActivity {
                 });
     }
 
+    /**
+     * Cải tiến: Cho phép quét lại sau một khoảng trễ ngắn (ví dụ: 2 giây)
+     * để người dùng có thời gian đọc thông báo.
+     */
     private void resumeScanningAfterDelay() {
         new Handler(Looper.getMainLooper()).postDelayed(() -> {
             if (barcodeView != null) {
@@ -202,6 +210,7 @@ public class ScanQRActivity extends AppCompatActivity {
         }, 2000); // 2000 milliseconds = 2 seconds
     }
 
+    // --- PHẦN QUẢN LÝ QUYỀN VÀ VÒNG ĐỜI ACTIVITY ĐƯỢC GIỮ NGUYÊN ---
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -244,6 +253,7 @@ public class ScanQRActivity extends AppCompatActivity {
         }
     }
 
+    // Phương thức onDestroy được giữ nguyên, không cần thay đổi
     @Override
     protected void onDestroy() {
         super.onDestroy();
