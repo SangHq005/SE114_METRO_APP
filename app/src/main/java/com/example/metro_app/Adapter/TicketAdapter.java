@@ -18,7 +18,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
 
     private List<TicketModel> ticketList;
     private OnTicketClickListener onTicketClickListener;
-    private String userUUID; // Biến để lưu userUUID
+    private String userUUID;
 
     public interface OnTicketClickListener {
         void onTicketClick(TicketModel ticket);
@@ -47,6 +47,17 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
         }
         if (holder.tvStatus != null) {
             holder.tvStatus.setText(ticket.getStatus() != null ? ticket.getStatus() : "Không có thông tin");
+            String status = ticket.getStatus() != null ? ticket.getStatus().trim() : "";
+            if ("Chưa kích hoạt".equals(status)) {
+                holder.tvStatus.setBackgroundResource(R.drawable.status_pending_gradient);
+                holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.pending_text));
+            } else if ("Hết hạn".equals(status)) {
+                holder.tvStatus.setBackgroundResource(R.drawable.status_warning_gradient);
+                holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.failed_text));
+            } else {
+                holder.tvStatus.setBackgroundResource(R.drawable.status_success_gradient);
+                // Không thay đổi textColor nếu không phải "Chưa kích hoạt" hoặc "Hết hạn"
+            }
         } else {
             Log.e("TicketAdapter", "tvStatus is null at position " + position);
         }
@@ -70,11 +81,9 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
         holder.itemView.setOnClickListener(v -> {
             onTicketClickListener.onTicketClick(ticket);
 
-            // Log giá trị Status để kiểm tra
             String ticketStatus = ticket.getStatus() != null ? ticket.getStatus().trim() : null;
             Log.d("TicketAdapter", "Ticket Status onClick: " + ticketStatus);
 
-            // Chỉ không chuyển sang CreateQRActivity nếu Status là "Hết hạn"
             if (ticketStatus != null && !"Hết hạn".equals(ticketStatus)) {
                 Intent intent = new Intent(v.getContext(), CreateQRActivity.class);
                 intent.putExtra("ticketId", ticket.getTicketId());
@@ -84,7 +93,7 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
                 intent.putExtra("issueDate", ticket.getIssueDate() != null ? ticket.getIssueDate().getTime() : 0L);
                 intent.putExtra("userName", ticket.getUserName());
                 intent.putExtra("ticketCode", ticket.getTicketCode());
-                intent.putExtra("userId", userUUID); // Sử dụng userUUID thay vì ticket.getUserId()
+                intent.putExtra("userId", userUUID);
                 intent.putExtra("source", "YourTicketsActivity");
                 v.getContext().startActivity(intent);
             } else {
