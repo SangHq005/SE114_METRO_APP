@@ -15,6 +15,7 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />
+
      <!-- Thông tin hành trình (CardView nổi) -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardRouteInfo"
@@ -87,8 +88,8 @@
 
                         <ImageView
                             android:layout_width="24dp"
-                            android:layout_height="match_parent"
-                            android:src="@drawable/ic_home_address" />
+                            android:layout_height="24dp"
+                            android:src="@drawable/location_home" />
 
                         <TextView
                             android:id="@+id/tvStartStation"
@@ -118,7 +119,7 @@
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
-                            android:src="@drawable/ic_target_address" />
+                            android:src="@drawable/placeholder" />
 
                         <TextView
                             android:id="@+id/tvEndStation"
@@ -138,24 +139,24 @@
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_marginStart="12dp"
-                    android:src="@drawable/ic_swap" />
+                    android:src="@drawable/swap" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
 <com.google.android.material.card.MaterialCardView
-android:id="@+id/StationInfo"
-android:visibility="invisible"
-android:layout_width="match_parent"
-android:layout_height="wrap_content"
-android:layout_marginStart="16dp"
-android:layout_marginEnd="24dp"
-android:layout_marginBottom="10dp"
-app:cardCornerRadius="12dp"
-app:cardElevation="8dp"
-app:layout_constraintBottom_toBottomOf="parent"
-app:layout_constraintEnd_toEndOf="parent"
-app:layout_constraintStart_toStartOf="parent">
+    android:id="@+id/StationInfo"
+    android:visibility="invisible"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginEnd="24dp"
+    android:layout_marginBottom="10dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="8dp"
+    app:layout_constraintBottom_toBottomOf="parent"
+    app:layout_constraintEnd_toEndOf="parent"
+    app:layout_constraintStart_toStartOf="parent">
 
 <LinearLayout
     android:layout_width="match_parent"
@@ -228,6 +229,7 @@ app:layout_constraintStart_toStartOf="parent">
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:src="@drawable/ic_my_location"
+        app:backgroundTint="@color/lavender"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

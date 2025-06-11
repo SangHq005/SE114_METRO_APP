@@ -1,7 +1,11 @@
 package com.example.metro_app.Activity.User;
 
+import android.animation.ValueAnimator;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
+import android.graphics.LinearGradient;
+import android.graphics.Shader;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
@@ -67,14 +71,52 @@ public class InfoAcitivity extends AppCompatActivity {
         });
         loadUserInfo();
 
+
+        //hiệu ứng text
+        TextView tvGreeting = findViewById(R.id.tvGreeting);
+
+        Shader shader = new LinearGradient(
+                0, 0, 0, tvGreeting.getTextSize(),
+                new int[]{
+                        Color.RED,
+                        Color.BLUE,
+                        Color.GREEN,
+                        Color.MAGENTA
+                },
+                null,
+                Shader.TileMode.CLAMP);
+
+        tvGreeting.getPaint().setShader(shader);
+
+        // Tạo hiệu ứng chạy màu bằng cách cập nhật shader liên tục
+        ValueAnimator animator = ValueAnimator.ofFloat(0, 1000);
+        animator.setDuration(4000);
+        animator.setRepeatCount(ValueAnimator.INFINITE);
+        animator.addUpdateListener(animation -> {
+            float translate = (float) animation.getAnimatedValue();
+            Shader movingShader = new LinearGradient(
+                    translate, 0, translate + tvGreeting.getWidth(), tvGreeting.getTextSize(),
+                    new int[]{
+                            Color.RED,
+                            Color.BLUE,
+                            Color.GREEN,
+                            Color.MAGENTA
+                    },
+                    null,
+                    Shader.TileMode.MIRROR);
+            tvGreeting.getPaint().setShader(movingShader);
+            tvGreeting.invalidate();
+        });
+        animator.start();
+
     }
     private void loadUserInfo() {
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
         String name = prefs.getString("name", "");
         String email = prefs.getString("email", "");
-        String CCCD = prefs.getString("CCCD", "000000000000");
+        String CCCD = prefs.getString("CCCD", "Chưa cập nhật");
         String photoUrl = prefs.getString("photo", "");
-        String PhoneNumber = prefs.getString("phoneNumber","000000000");
+        String PhoneNumber = prefs.getString("phoneNumber","Chưa cập nhật");
         Log.d("SDT", "loadUserInfo: "+ PhoneNumber);
         TextView tvName = findViewById(R.id.nameTxt);
         TextView tvName2 = findViewById(R.id.userName);

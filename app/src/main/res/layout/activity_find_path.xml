@@ -80,7 +80,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:src="@drawable/ic_my_location"
-        app:backgroundTint="@color/purple_500"
+        app:backgroundTint="@color/lavender"
         app:elevation="6dp" />
 
     <!-- Bottom Card hiển thị thông tin tuyến -->

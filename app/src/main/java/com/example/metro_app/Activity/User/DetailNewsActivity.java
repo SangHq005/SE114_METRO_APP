@@ -1,6 +1,9 @@
 package com.example.metro_app.Activity.User;
 
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
+import android.text.Html;
+import android.text.Spanned;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -10,6 +13,9 @@ import com.example.metro_app.Domain.NewsModel;
 import com.example.metro_app.Domain.PopularModel;
 import com.example.metro_app.ViewModel.MainViewModel;
 import com.example.metro_app.databinding.ActivityDetailNewsBinding;
+
+import java.io.InputStream;
+import java.net.URL;
 
 public class DetailNewsActivity extends AppCompatActivity {
     ActivityDetailNewsBinding binding;
@@ -45,16 +51,30 @@ public class DetailNewsActivity extends AppCompatActivity {
         } else if (newsItem != null) {
             displayNewsItem();
         }
-
-//        // Xử lý nút back
-//        binding.backBtn.setOnClickListener(v -> finish());
+        
+         binding.backBtn.setOnClickListener(v -> finish());
     }
 
     private void displayPopularItem() {
         binding.title.setText(popularItem.getTitle());
-        binding.content.setText(popularItem.getContent()); // Sửa lại nếu dùng `getContent`
         binding.date.setText(popularItem.getDate());
 
+        Html.ImageGetter imageGetter = (source) -> {
+            Drawable drawable = null;
+            try {
+                InputStream is = (InputStream) new URL(source).getContent();
+                drawable = Drawable.createFromStream(is, "src");
+                drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return drawable;
+        };
+
+        Spanned htmlContent = Html.fromHtml(popularItem.getContent(), Html.FROM_HTML_MODE_COMPACT, imageGetter, null);
+        binding.content.setText(htmlContent);
+
+        // Load ảnh đại diện
         Glide.with(this)
                 .load(popularItem.getPic())
                 .into(binding.pic);
@@ -62,11 +82,28 @@ public class DetailNewsActivity extends AppCompatActivity {
 
     private void displayNewsItem() {
         binding.title.setText(newsItem.getTitle());
-        binding.content.setText(newsItem.getDescription());
         binding.date.setText(newsItem.getDate());
 
+        // Dùng Html.ImageGetter để load ảnh trong nội dung
+        Html.ImageGetter imageGetter = (source) -> {
+            Drawable drawable = null;
+            try {
+                InputStream is = (InputStream) new URL(source).getContent();
+                drawable = Drawable.createFromStream(is, "src");
+                drawable.setBounds(0, 0, drawable.getIntrinsicWidth(), drawable.getIntrinsicHeight());
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            return drawable;
+        };
+
+        Spanned htmlContent = Html.fromHtml(newsItem.getDescription(), Html.FROM_HTML_MODE_COMPACT, imageGetter, null);
+        binding.content.setText(htmlContent);
+
+        // Load ảnh đại diện
         Glide.with(this)
                 .load(newsItem.getPic())
                 .into(binding.pic);
     }
+
 }
