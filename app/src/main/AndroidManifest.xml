@@ -140,7 +140,8 @@
         <activity
             android:name=".Activity.User.ScanQRActivity"
             android:exported="true"/>
-
+<activity android:name=".Activity.User.ScanQRActivity"
+    android:exported="true"/>
         <uses-library android:name="org.osmdroid" android:required="false"/>
     </application>
 

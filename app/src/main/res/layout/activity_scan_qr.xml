@@ -4,7 +4,6 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
-    <!-- Máy quét mã vạch, không thay đổi -->
     <com.journeyapps.barcodescanner.DecoratedBarcodeView
         android:id="@+id/barcode_scanner"
         android:layout_width="match_parent"
@@ -15,6 +14,7 @@
         app:zxing_preview_scaling_strategy="centerCrop"
         app:zxing_use_texture_view="true"
         />
+
     <FrameLayout
         android:id="@+id/viewfinder_container"
         android:layout_width="280dp"
@@ -45,16 +45,5 @@
         android:textSize="16sp"
         android:padding="12dp"
         android:gravity="center"/>
-
-    <ImageButton
-        android:id="@+id/btn_back"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentTop="true"
-        android:layout_margin="16dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:src="@drawable/back_white"
-        app:tint="#424242" />
 
 </RelativeLayout>
