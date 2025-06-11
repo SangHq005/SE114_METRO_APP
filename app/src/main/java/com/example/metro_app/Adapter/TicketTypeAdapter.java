@@ -28,15 +28,19 @@ public class TicketTypeAdapter extends RecyclerView.Adapter<TicketTypeAdapter.Ti
     @NonNull
     @Override
     public TicketViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_ticket, parent, false);
+        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_user_ticket, parent, false);
         return new TicketViewHolder(view);
     }
 
     @Override
     public void onBindViewHolder(@NonNull TicketViewHolder holder, int position) {
         TicketType ticket = ticketList.get(position);
-        holder.tvTicketName.setText(ticket.getName());
-        holder.tvTicketPrice.setText(ticket.getPrice()); // Hiển thị giá
+        if (holder.tvTicketName != null) {
+            holder.tvTicketName.setText(ticket.getName() != null ? ticket.getName() : "Không có thông tin");
+        }
+        if (holder.tvTicketAutoActiveDate != null) {
+            holder.tvTicketAutoActiveDate.setText(ticket.getPrice() != null ? ticket.getPrice() : "0 VND");
+        }
         holder.itemView.setOnClickListener(v -> onTicketClickListener.onTicketClick(ticket));
     }
 
@@ -48,13 +52,13 @@ public class TicketTypeAdapter extends RecyclerView.Adapter<TicketTypeAdapter.Ti
     static class TicketViewHolder extends RecyclerView.ViewHolder {
         ImageView ivTicketIcon;
         TextView tvTicketName;
-        TextView tvTicketPrice;
+        TextView tvTicketAutoActiveDate;
 
         public TicketViewHolder(@NonNull View itemView) {
             super(itemView);
             ivTicketIcon = itemView.findViewById(R.id.iv_ticket_icon);
             tvTicketName = itemView.findViewById(R.id.tv_ticket_name);
-            tvTicketPrice = itemView.findViewById(R.id.tv_ticket_price);
+            tvTicketAutoActiveDate = itemView.findViewById(R.id.tv_ticket_auto_active_date);
         }
     }
 }

@@ -243,13 +243,18 @@ public class MyTicketsActivity extends AppCompatActivity {
                             String type = document.getString("Type");
                             String startStation = document.getString("StartStation");
                             String endStation = document.getString("EndStation");
+                            String status = document.getString("Status");
                             if (name == null) {
                                 Object nameObj = document.get("Name");
                                 if (nameObj != null) {
                                     name = String.valueOf(nameObj);
                                 }
                             }
-
+                            // Kiểm tra Status
+                            if (status == null || !status.equals("Hoạt động")) {
+                                Log.d("MyTicketsActivity", "Skipped ticket " + name + " due to Status: " + (status != null ? status : "null"));
+                                continue; // Bỏ qua nếu Status không phải "Hoạt động"
+                            }
                             String price = "0 VND";
                             Object priceObj = document.get("Price");
                             if (priceObj != null) {
