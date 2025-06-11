@@ -40,11 +40,12 @@
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent">
+                    android:layout_height="match_parent"
+                    android:paddingHorizontal="10dp">
 
                     <ImageView
                         android:id="@+id/imageView9"
-                        android:layout_width="wrap_content"
+                        android:layout_width="290dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="44dp"
                         app:layout_constraintEnd_toEndOf="parent"
@@ -57,7 +58,7 @@
                         android:id="@+id/loaiVeTxt"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
+                        android:layout_marginStart="30dp"
                         android:layout_marginTop="16dp"
                         android:text="Loại vé: Vé 1 ngày"
                         android:textColor="@color/black"
@@ -78,37 +79,25 @@
 
                     <TextView
                         android:id="@+id/luuYTxt"
-                        android:layout_width="wrap_content"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
-                        android:text="Lưu ý: Vé sử dụng một lần       "
+                        android:text="Lưu ý: Vé sử dụng một lần, không thể tái sử dụng dưới bất kỳ hình thức nào sau khi đã qua cổng soát vé."
                         android:textColor="@color/black"
                         app:layout_constraintStart_toStartOf="@+id/hsdTxt"
+                        app:layout_constraintEnd_toEndOf="@+id/hsdTxt"
                         app:layout_constraintTop_toBottomOf="@+id/hsdTxt" />
-
-                    <ImageView
-                        android:id="@+id/dashline"
-                        android:layout_width="299dp"
-                        android:layout_height="4dp"
-                        android:layout_marginTop="328dp"
-                        android:layout_marginEnd="-50dp"
-                        app:layout_constraintEnd_toEndOf="@+id/imageView9"
-                        app:layout_constraintHorizontal_bias="0.133"
-                        app:layout_constraintStart_toStartOf="@+id/imageView9"
-                        app:layout_constraintTop_toBottomOf="@+id/imageView9"
-                        app:srcCompat="@drawable/dash_line" />
 
                     <Button
                         android:id="@+id/muaBtn"
-                        android:layout_width="0dp"
+                        android:layout_width="250dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="340dp"
                         android:elevation="3dp"
                         android:text="Mua ngay"
-                        app:layout_constraintEnd_toEndOf="@+id/dashline"
-                        app:layout_constraintHorizontal_bias="0.0"
-                        app:layout_constraintStart_toStartOf="@+id/dashline"
-                        app:layout_constraintTop_toBottomOf="@+id/dashline" />
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toBottomOf="@+id/imageView9" />
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </LinearLayout>
