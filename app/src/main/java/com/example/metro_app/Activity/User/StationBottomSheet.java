@@ -32,7 +32,6 @@ public class StationBottomSheet extends BottomSheetDialogFragment {
         this.gotoClickListener = listener;
     }
 
-
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater,
@@ -46,10 +45,11 @@ public class StationBottomSheet extends BottomSheetDialogFragment {
         TextView txtWard = view.findViewById(R.id.txtWard);
         ImageView ivGoto = view.findViewById(R.id.ivGoto);
 
-        txtName.setText("Tên trạm: " + station.Name);
-        txtZone.setText("Khu vực: " + station.Zone);
-        txtStreet.setText("Đường: " + station.Street);
-        txtWard.setText("Phường: " + station.Ward);
+        txtName.setText("Tên trạm: " + safeText(station.Name));
+        txtZone.setText("Khu vực: " + safeText(station.Zone));
+        txtStreet.setText("Đường: " + safeText(station.Street));
+        txtWard.setText("Phường: " + safeText(station.Ward));
+
         ivGoto.setOnClickListener(v -> {
             Context context = getContext();
             if (context != null) {
@@ -62,8 +62,11 @@ public class StationBottomSheet extends BottomSheetDialogFragment {
             }
         });
 
-
         return view;
+    }
+
+    private String safeText(String value) {
+        return (value == null || value.trim().isEmpty()) ? "Đang cập nhật" : value;
     }
 
 }

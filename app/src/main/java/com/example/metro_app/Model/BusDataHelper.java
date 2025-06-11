@@ -28,19 +28,295 @@ import java.util.List;
 import java.util.Map;
 
 public class BusDataHelper {
+    public interface OnPathFetchedListener {
+        void onResult(List<Point> points);
+        void onError(Exception e);
+    }
+
 
     public interface OnStopsFetchedListener {
         void onResult(List<BusStop> stops);
 
         void onError(Exception e);
     }
+    public interface OnRouteVarsFetchedListener {
+        void onResult(List<RouteVariant> routeVars);
+        void onError(Exception e);
+    }
+
 
     public interface OnRouteListFetchedListener {
         void onResult(List<RouteResponse> routeList);
 
         void onError(Exception e);
     }
+    public interface OnStopsByRouteFetchedListener {
+        void onResult(List<BusStop> stops);
+        void onError(Exception e);
+    }
 
+    public interface OnAllRoutesFetchedListener {
+        void onResult(List<RawRoute> routes);
+        void onError(Exception e);
+    }
+    public interface OnPathsByRouteFetchedListener {
+        void onResult(List<RouteResponse> routeList);
+        void onError(Exception e);
+    }
+    public static void fetchAllRoutes(OnAllRoutesFetchedListener listener) {
+        String urlStr = "http://apicms.ebms.vn/businfo/getallroute";
+
+        new AsyncTask<Void, Void, List<RawRoute>>() {
+            Exception error = null;
+
+            @Override
+            protected List<RawRoute> doInBackground(Void... voids) {
+                List<RawRoute> routeList = new ArrayList<>();
+
+                try {
+                    URL url = new URL(urlStr);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(10000);
+                    conn.setReadTimeout(10000);
+                    conn.connect();
+
+                    InputStream in = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    String responseString = result.toString();
+                    Log.d("BusDataHelper", "All Routes: " + responseString);
+
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<List<RawRoute>>() {}.getType();
+                    routeList = gson.fromJson(responseString, listType);
+
+                    in.close();
+                    conn.disconnect();
+
+                } catch (Exception e) {
+                    error = e;
+                }
+
+                return routeList;
+            }
+
+            @Override
+            protected void onPostExecute(List<RawRoute> routes) {
+                if (error != null) {
+                    listener.onError(error);
+                } else {
+                    listener.onResult(routes);
+                }
+            }
+        }.execute();
+    }
+    public static void fetchRouteVars(int routeId, OnRouteVarsFetchedListener listener) {
+        String urlStr = "http://apicms.ebms.vn/businfo/getvarsbyroute/" + routeId;
+
+        new AsyncTask<Void, Void, List<RouteVariant>>() {
+            Exception error = null;
+
+            @Override
+            protected List<RouteVariant> doInBackground(Void... voids) {
+                List<RouteVariant> list = new ArrayList<>();
+
+                try {
+                    URL url = new URL(urlStr);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(10000);
+                    conn.setReadTimeout(10000);
+                    conn.connect();
+
+                    InputStream in = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    String responseString = result.toString();
+                    Log.d("BusDataHelper", "RouteVars: " + responseString);
+
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<List<RouteVariant>>() {}.getType();
+                    list = gson.fromJson(responseString, listType);
+
+                    in.close();
+                    conn.disconnect();
+                } catch (Exception e) {
+                    error = e;
+                }
+
+                return list;
+            }
+
+            @Override
+            protected void onPostExecute(List<RouteVariant> result) {
+                if (error != null) {
+                    listener.onError(error);
+                } else {
+                    listener.onResult(result);
+                }
+            }
+        }.execute();
+    }
+    public static void fetchStopsByRouteVar(int stopId, int routeVarId, OnStopsFetchedListener listener) {
+        String urlStr = "http://apicms.ebms.vn/businfo/getstopsbyvar/" + stopId + "/" + routeVarId;
+
+        new AsyncTask<Void, Void, List<BusStop>>() {
+            Exception error = null;
+
+            @Override
+            protected List<BusStop> doInBackground(Void... voids) {
+                List<BusStop> stops = new ArrayList<>();
+                try {
+                    URL url = new URL(urlStr);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(10000);
+                    conn.setReadTimeout(10000);
+                    conn.connect();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<List<BusStop>>() {}.getType();
+                    stops = gson.fromJson(result.toString(), listType);
+
+                    reader.close();
+                    conn.disconnect();
+                } catch (Exception e) {
+                    error = e;
+                }
+                return stops;
+            }
+
+            @Override
+            protected void onPostExecute(List<BusStop> stops) {
+                if (error != null) {
+                    listener.onError(error);
+                } else {
+                    listener.onResult(stops);
+                }
+            }
+        }.execute();
+    }
+
+
+    public static void fetchPathByStop(double oriLat, double oriLng, double desLat, double desLng, OnRouteListFetchedListener listener) {
+        String urlStr = "http://apicms.ebms.vn/pathfinding/getpathbystop/"
+                + oriLat + "," + oriLng + "/"
+                + desLat + "," + desLng + "/2";
+
+        new AsyncTask<Void, Void, List<RouteResponse>>() {
+            Exception error = null;
+
+            @Override
+            protected List<RouteResponse> doInBackground(Void... voids) {
+                try {
+                    URL url = new URL(urlStr);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(10000);
+                    conn.setReadTimeout(10000);
+                    conn.connect();
+
+                    InputStream in = conn.getInputStream();
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    String responseString = result.toString();
+                    Log.d("BusDataHelper", "Path JSON Response: " + responseString);
+
+                    Gson gson = new Gson();
+                    Type listType = new TypeToken<List<RouteResponse>>() {
+                    }.getType();
+                    List<RouteResponse> responseList = gson.fromJson(responseString, listType);
+                    in.close();
+                    conn.disconnect();
+
+                    return responseList;
+
+                } catch (Exception e) {
+                    error = e;
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(List<RouteResponse> routeList) {
+                if (error != null) {
+                    listener.onError(error);
+                } else {
+                    listener.onResult(routeList);
+                }
+            }
+        }.execute();
+    }
+    public static void fetchPathFromStopId(int stopId, int routeVarId, OnPathFetchedListener listener) {
+        String urlStr = "http://apicms.ebms.vn/businfo/getpathsbyvar/" + stopId + "/" + routeVarId;
+
+        new AsyncTask<Void, Void, List<Point>>() {
+            Exception error = null;
+
+            @Override
+            protected List<Point> doInBackground(Void... voids) {
+                try {
+                    URL url = new URL(urlStr);
+                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                    conn.setRequestMethod("GET");
+                    conn.setConnectTimeout(10000);
+                    conn.setReadTimeout(10000);
+                    conn.connect();
+
+                    BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                    StringBuilder result = new StringBuilder();
+                    String line;
+                    while ((line = reader.readLine()) != null) {
+                        result.append(line);
+                    }
+
+                    reader.close();
+                    conn.disconnect();
+
+                    return parsePointsFromJson(result.toString());
+
+                } catch (Exception e) {
+                    error = e;
+                    return null;
+                }
+            }
+
+            @Override
+            protected void onPostExecute(List<Point> result) {
+                if (error != null) {
+                    listener.onError(error);
+                } else {
+                    listener.onResult(result);
+                }
+            }
+        }.execute();
+    }
 
     public static void fetchStopsInBounds(double topLat, double topLng, double botLat, double botLng, OnStopsFetchedListener listener) {
         String urlStr = "http://apicms.ebms.vn/businfo/getstopsinbounds/"
@@ -94,62 +370,6 @@ public class BusDataHelper {
                     listener.onError(error);
                 } else {
                     listener.onResult(stops);
-                }
-            }
-        }.execute();
-    }
-
-    public static void fetchPathByStop(double oriLat, double oriLng, double desLat, double desLng, OnRouteListFetchedListener listener) {
-        String urlStr = "http://apicms.ebms.vn/pathfinding/getpathbystop/"
-                + oriLat + "," + oriLng + "/"
-                + desLat + "," + desLng + "/2";
-
-        new AsyncTask<Void, Void, List<RouteResponse>>() {
-            Exception error = null;
-
-            @Override
-            protected List<RouteResponse> doInBackground(Void... voids) {
-                try {
-                    URL url = new URL(urlStr);
-                    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                    conn.setRequestMethod("GET");
-                    conn.setConnectTimeout(10000);
-                    conn.setReadTimeout(10000);
-                    conn.connect();
-
-                    InputStream in = conn.getInputStream();
-                    BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-                    StringBuilder result = new StringBuilder();
-                    String line;
-
-                    while ((line = reader.readLine()) != null) {
-                        result.append(line);
-                    }
-
-                    String responseString = result.toString();
-                    Log.d("BusDataHelper", "Path JSON Response: " + responseString);
-
-                    Gson gson = new Gson();
-                    Type listType = new TypeToken<List<RouteResponse>>() {
-                    }.getType();
-                    List<RouteResponse> responseList = gson.fromJson(responseString, listType);
-                    in.close();
-                    conn.disconnect();
-
-                    return responseList;
-
-                } catch (Exception e) {
-                    error = e;
-                    return null;
-                }
-            }
-
-            @Override
-            protected void onPostExecute(List<RouteResponse> routeList) {
-                if (error != null) {
-                    listener.onError(error);
-                } else {
-                    listener.onResult(routeList);
                 }
             }
         }.execute();
@@ -271,9 +491,28 @@ public class BusDataHelper {
             e.printStackTrace();
         }
     }
+    public static List<Point> parsePointsFromJson(String json) {
+        List<Point> pointList = new ArrayList<>();
+        try {
+            JSONObject jsonObject = new JSONObject(json);
+            JSONArray latArray = jsonObject.getJSONArray("lat");
+            JSONArray lngArray = jsonObject.getJSONArray("lng");
 
+            int len = Math.min(latArray.length(), lngArray.length());
+            for (int i = 0; i < len; i++) {
+                double lat = latArray.getDouble(i);
+                double lng = lngArray.getDouble(i);
+                Point point = Point.fromLngLat(lng, lat);
+                pointList.add(point);
 
-
+                // Ghi log
+                Log.d("ParsePoint", "Point " + i + ": " + point.toString());
+            }
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return pointList;
+    }
 
 }
 
