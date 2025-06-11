@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.example.metro_app.Adapter.RouteListAdapter;
 import com.example.metro_app.Adapter.TicketTypeAdapter;
 import com.example.metro_app.Model.TicketType;
@@ -35,6 +36,7 @@ public class MyTicketsActivity extends AppCompatActivity {
     private List<TicketType> noiBatTickets, hssvTickets, routeTickets;
     private FirebaseFirestore db;
     private DecimalFormat decimalFormat;
+    private ImageView imgAvt;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -61,6 +63,7 @@ public class MyTicketsActivity extends AppCompatActivity {
             recyclerViewRouteList = findViewById(R.id.recyclerViewRouteList);
             tvNoTicketsNoiBat = findViewById(R.id.tv_no_tickets_noi_bat);
             tvNoTicketsHSSV = findViewById(R.id.tv_no_tickets_hssv);
+            imgAvt = findViewById(R.id.img);
             nameTxt = findViewById(R.id.nameTxt);
         } catch (Exception e) {
             Toast.makeText(this, "Lỗi khởi tạo giao diện: " + e.getMessage(), Toast.LENGTH_LONG).show();
@@ -70,6 +73,22 @@ public class MyTicketsActivity extends AppCompatActivity {
 
         // Hiển thị tên từ SharedPreferences
         nameTxt.setText(userName);
+        String avatarUrl = null;
+        try {
+            avatarUrl = prefs.getString("photo",null);
+        } catch (Exception e) {
+            // Method does not exist or error, ignore
+        }
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.userbtn) // fallback image
+                    .error(R.drawable.userbtn)
+                    .circleCrop()
+                    .into(imgAvt);
+        } else {
+            imgAvt.setImageResource(R.drawable.userbtn);
+        }
 
         recyclerViewTickets.setLayoutManager(new LinearLayoutManager(this));
         recyclerViewHSSV.setLayoutManager(new LinearLayoutManager(this));
