@@ -54,9 +54,12 @@ public class TicketAdapter extends RecyclerView.Adapter<TicketAdapter.TicketView
             } else if ("Hết hạn".equals(status)) {
                 holder.tvStatus.setBackgroundResource(R.drawable.status_error_gradient);
                 holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.failed_text));
+            } else if ("Đang kích hoạt".equals(status)) {
+                holder.tvStatus.setBackgroundResource(R.drawable.status_success_gradient);
+                holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.success_text)); // Thêm màu cho trạng thái "Đang kích hoạt"
             } else {
                 holder.tvStatus.setBackgroundResource(R.drawable.status_success_gradient);
-                // Không thay đổi textColor nếu không phải "Chưa kích hoạt" hoặc "Hết hạn"
+                holder.tvStatus.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.success_text)); // Màu mặc định cho các trạng thái khác
             }
         } else {
             Log.e("TicketAdapter", "tvStatus is null at position " + position);
