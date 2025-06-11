@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -60,6 +61,7 @@ public class FindPathActivity extends AppCompatActivity {
     private static final int REQUEST_SEARCH_TO = 2;
 
     private TextView tvSearchFrom, tvSearchTo;
+    private LinearLayout lnSearchFrom,lnSearchTo;
     private Point pointFrom, pointTo;
     private FloatingActionButton btnMyLocation;
     private MapBoxFragment mapFragment;
@@ -95,6 +97,8 @@ public class FindPathActivity extends AppCompatActivity {
         tvSearchFrom = findViewById(R.id.tvSearchFrom);
         tvSearchTo = findViewById(R.id.tvSearchTo);
         btnMyLocation = findViewById(R.id.btnMyLocation);
+        lnSearchFrom =findViewById(R.id.LnSearchFrom);
+        lnSearchTo = findViewById(R.id.LnSearchTo);
 
         // Bottom card views
         routeInfoCard = findViewById(R.id.routeInfoCard);
@@ -122,12 +126,12 @@ public class FindPathActivity extends AppCompatActivity {
     }
 
     private void setupClickListeners() {
-        tvSearchFrom.setOnClickListener(v -> {
+        lnSearchFrom.setOnClickListener(v -> {
             Intent intent = new Intent(this, SearchPlaceActivity.class);
             startActivityForResult(intent, REQUEST_SEARCH_FROM);
         });
 
-        tvSearchTo.setOnClickListener(v -> {
+        lnSearchTo.setOnClickListener(v -> {
             Intent intent = new Intent(this, SearchPlaceActivity.class);
             startActivityForResult(intent, REQUEST_SEARCH_TO);
         });
@@ -355,7 +359,8 @@ public class FindPathActivity extends AppCompatActivity {
 
 
     private void drawRouteOnMap(RouteResponse route) {
-        mapFragment.clearPolylines();        mapFragment.clearAllMarkers();
+        mapFragment.clearPolylines();
+        mapFragment.clearAllMarkers();
 
         // Draw route path
         for (Map.Entry<String, List<RawCoor>> entry : route.coordRoute.entrySet()) {
@@ -373,17 +378,20 @@ public class FindPathActivity extends AppCompatActivity {
         }
 
         // Add bus stop markers
-        for (Stop stop : route.stops) {
+        List<Stop> stops = route.stops;
+        for (int i = 1; i < stops.size() - 1; i++) {
+            Stop stop = stops.get(i);
             Point stopPoint = Point.fromLngLat(stop.Lng, stop.Lat);
             mapFragment.addMarkerAt(stopPoint, R.drawable.ic_bus_stop, 70);
         }
 
+
         // Add from and to markers
         if (pointFrom != null) {
-            mapFragment.addMarkerAt(pointFrom, R.drawable.location_pin, 50);
+            mapFragment.addMarkerAt(pointFrom, R.drawable.location_pin, 80);
         }
         if (pointTo != null) {
-            mapFragment.addMarkerAt(pointTo, R.drawable.location_pin, 50);
+            mapFragment.addMarkerAt(pointTo, R.drawable.location_pin, 80);
         }
     }
 
@@ -401,12 +409,12 @@ public class FindPathActivity extends AppCompatActivity {
             if (requestCode == REQUEST_SEARCH_FROM) {
                 tvSearchFrom.setText(name);
                 pointFrom = selectedPoint;
-                mapFragment.addMarkerAt(pointFrom, R.drawable.location_pin, 50);
+                mapFragment.addMarkerAt(pointFrom, R.drawable.location_pin, 80);
                 mapFragment.zoomToLocation(pointFrom);
             } else if (requestCode == REQUEST_SEARCH_TO) {
                 tvSearchTo.setText(name);
                 pointTo = selectedPoint;
-                mapFragment.addMarkerAt(pointTo, R.drawable.location_pin, 50);
+                mapFragment.addMarkerAt(pointTo, R.drawable.location_pin, 80);
                 mapFragment.zoomToLocation(pointTo);
             }
 

@@ -227,8 +227,6 @@ private final LocationObserver locationObserver= new LocationObserver() {
             onMapReadyCallback.onMapReady(mapboxMap);
         }
 
-
-
         return view;
     }
 
@@ -254,8 +252,6 @@ private final LocationObserver locationObserver= new LocationObserver() {
             mapboxMap.setCamera(cameraOptions);
         }
     }
-
-
 
     public void addMarkerAt(Point point, int drawableResId,int size) {
         if (pointAnnotationManager == null) return;
@@ -347,9 +343,6 @@ private final LocationObserver locationObserver= new LocationObserver() {
             currentUserMarker = pointAnnotationManager.create(options);
         }
     }
-
-
-
 
     @Override
     public void onStart() {

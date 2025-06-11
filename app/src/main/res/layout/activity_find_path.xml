@@ -24,13 +24,14 @@
 
         <!-- From -->
         <LinearLayout
+            android:id="@+id/LnSearchFrom"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="12dp"
             android:layout_marginBottom="8dp"
             android:background="@drawable/bg_search_box"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="12dp">
 
             <ImageView
                 android:layout_width="24dp"
@@ -43,18 +44,19 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Từ địa điểm"
-                android:textSize="16sp"
-                android:textColor="#333" />
+                android:textColor="#333"
+                android:textSize="16sp" />
         </LinearLayout>
 
         <!-- To -->
         <LinearLayout
+            android:id="@+id/LnSearchTo"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:padding="12dp"
             android:background="@drawable/bg_search_box"
-            android:gravity="center_vertical">
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:padding="12dp">
 
             <ImageView
                 android:layout_width="24dp"
@@ -67,8 +69,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="8dp"
                 android:text="Đến địa điểm"
-                android:textSize="16sp"
-                android:textColor="#333" />
+                android:textColor="#333"
+                android:textSize="16sp" />
         </LinearLayout>
     </LinearLayout>
 

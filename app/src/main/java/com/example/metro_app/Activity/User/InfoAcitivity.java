@@ -41,8 +41,7 @@ public class InfoAcitivity extends AppCompatActivity {
 
     ImageView backbtn;
     Button btnLogout;
-    TextView PN;
-    LinearLayout CCCDButton;
+    LinearLayout PN,CCCDButton;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         binding = ActivityInfoAcitivityBinding.inflate(getLayoutInflater());
@@ -51,7 +50,7 @@ public class InfoAcitivity extends AppCompatActivity {
         setContentView(binding.getRoot());
         backbtn = findViewById(R.id.backBtn);
         btnLogout =findViewById(R.id.btnLogout);
-        PN = findViewById(R.id.tvPN);
+        PN = findViewById(R.id.PNButton);
         backbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -122,6 +121,7 @@ public class InfoAcitivity extends AppCompatActivity {
         TextView tvName2 = findViewById(R.id.userName);
         TextView tvEmail = findViewById(R.id.tvEmail);
         TextView tvCCCD = findViewById(R.id.nationalIdTxt);
+        TextView tvPN =findViewById(R.id.tvPN);
         ImageView imgPhoto = findViewById(R.id.profileImage);
 
 
@@ -129,7 +129,7 @@ public class InfoAcitivity extends AppCompatActivity {
         tvName2.setText(name);
         tvEmail.setText(email);
         tvCCCD.setText(CCCD);
-        PN.setText(PhoneNumber);
+        tvPN.setText(PhoneNumber);
 
         if (!photoUrl.isEmpty()) {
             Glide.with(this).load(photoUrl).into(imgPhoto);
@@ -159,7 +159,7 @@ public class InfoAcitivity extends AppCompatActivity {
     }
     private void showEditPhoneNumberDialog() {
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
-        String currentPN = prefs.getString("PhoneNumber", "");
+        String currentPN = prefs.getString("phoneNumber", "");
 
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
