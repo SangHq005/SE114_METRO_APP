@@ -138,12 +138,42 @@ public class FindPathActivity extends AppCompatActivity {
             }
         });
 
+//        btnDirection.setOnClickListener(v -> {
+//            if (currentSelectedRoute != null) {
+//                // Show directions to the nearest bus stop
+//                showDirectionsToNearestStop();
+//            }
+//        });
         btnDirection.setOnClickListener(v -> {
-            if (currentSelectedRoute != null) {
-                // Show directions to the nearest bus stop
-                showDirectionsToNearestStop();
+            if (pointFrom != null && pointTo != null) {
+                BusDataHelper.fetchPathByStop(
+                        pointFrom.latitude(), pointFrom.longitude(),
+                        pointTo.latitude(), pointTo.longitude(),
+                        new BusDataHelper.OnRouteListFetchedListener() {
+                            @Override
+                            public void onResult(List<RouteResponse> routes) {
+                                if (routes.size() > 1) {
+                                    showRouteSelectionDialog(routes);
+                                } else if (!routes.isEmpty()) {
+                                    currentSelectedRoute = routes.get(0);
+                                    drawRouteOnMap(currentSelectedRoute);
+                                    showRouteInfoCard(currentSelectedRoute);
+                                } else {
+                                    Toast.makeText(FindPathActivity.this, "Không tìm thấy tuyến đường khác", Toast.LENGTH_SHORT).show();
+                                }
+                            }
+
+                            @Override
+                            public void onError(Exception e) {
+                                Toast.makeText(FindPathActivity.this, "Lỗi khi tìm tuyến đường", Toast.LENGTH_SHORT).show();
+                            }
+                        }
+                );
+            } else {
+                Toast.makeText(this, "Vui lòng chọn điểm bắt đầu và kết thúc", Toast.LENGTH_SHORT).show();
             }
         });
+
 
         btnRoute.setOnClickListener(v -> {
             if (currentSelectedRoute != null) {
@@ -344,13 +374,7 @@ public class FindPathActivity extends AppCompatActivity {
 
         Stop nearestStop = findNearestStop(currentSelectedRoute.stops);
         if (nearestStop != null) {
-            // You can integrate with Google Maps or other navigation apps
             Toast.makeText(this, "Chỉ đường đến trạm: " + nearestStop.Name, Toast.LENGTH_SHORT).show();
-
-            // Example: Open Google Maps for directions
-            // Intent intent = new Intent(Intent.ACTION_VIEW,
-            //     Uri.parse("http://maps.google.com/maps?daddr=" + nearestStop.Lat + "," + nearestStop.Lng));
-            // startActivity(intent);
         }
     }
 

@@ -9,13 +9,14 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
         <ImageView
             android:id="@+id/ivGoto"
             android:layout_width="39dp"
             android:layout_height="41dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            tools:src="@drawable/icons8_move_right_48" />
+            android:src="@drawable/icons8_move_right_48" />
 
         <TextView
             android:id="@+id/txtName"
