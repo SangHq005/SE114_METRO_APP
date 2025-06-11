@@ -3,6 +3,7 @@ package com.example.metro_app.Activity.Admin;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.inputmethod.InputMethodManager;
@@ -48,6 +49,12 @@ public class AdProfileActivity extends AppCompatActivity {
         setupListeners();
         setupBottomNavigation();
         loadUserProfile();
+        etProfileCccd.setOnFocusChangeListener((v, hasFocus) -> {
+            if (!hasFocus) {
+                autoSaveChanges(); // Khi mất focus
+            }
+        });
+
     }
 
     private void initViews() {
@@ -88,6 +95,22 @@ public class AdProfileActivity extends AppCompatActivity {
 
         tvProfileName.setText(currentUserModel.getName());
         tvProfileEmail.setText(currentUserModel.getEmail());
+        String avatarUrl = null;
+        try {
+            avatarUrl = currentUserModel.getClass().getMethod("getAvatarUrl") != null ? (String) currentUserModel.getClass().getMethod("getAvatarUrl").invoke(currentUserModel) : null;
+        } catch (Exception e) {
+            // Method does not exist or error, ignore
+        }
+        if (avatarUrl != null && !avatarUrl.isEmpty()) {
+            Glide.with(this)
+                    .load(avatarUrl)
+                    .placeholder(R.drawable.userbtn) // fallback image
+                    .error(R.drawable.userbtn)
+                    .circleCrop()
+                    .into(profileImage);
+        } else {
+            profileImage.setImageResource(R.drawable.userbtn);
+        }
 
         // Lưu lại CCCD gốc và hiển thị
         originalCccd = currentUserModel.getCCCD() != null ? currentUserModel.getCCCD() : "";
@@ -102,25 +125,38 @@ public class AdProfileActivity extends AppCompatActivity {
     private void setupListeners() {
         btnLogout.setOnClickListener(v -> showLogoutConfirmationDialog());
 
-        // Lắng nghe sự kiện chạm vào root layout để gửi CCCD khi chạm ngoài EditText
+        // Nhấn "Enter" trên bàn phím sẽ gọi autoSaveChanges()
+        etProfileCccd.setOnEditorActionListener((v, actionId, event) -> {
+            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
+                    (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER && event.getAction() == android.view.KeyEvent.ACTION_DOWN)) {
+
+                autoSaveChanges();
+                return true; // Đã xử lý
+            }
+            return false;
+        });
+
+        // Optional: nếu vẫn muốn chạm ngoài để đóng bàn phím
         View rootLayout = findViewById(android.R.id.content);
         rootLayout.setOnTouchListener((v, event) -> {
             if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                if (etProfileCccd.hasFocus()) {
-                    autoSaveChanges();
-                }
+                hideKeyboard();
             }
-            return false; // Cho phép các sự kiện chạm khác tiếp tục xử lý
+            return false;
         });
     }
+
+
 
     // Hàm tự động lưu thay đổi
     private void autoSaveChanges() {
         hideKeyboard();
         String newCccd = etProfileCccd.getText().toString().trim();
-
+        Log.d("CCCD_DEBUG", "autoSaveChanges() called");
+        Log.d("CCCD_DEBUG", "newCccd = " + newCccd + ", original = " + originalCccd);
         // **So sánh với giá trị gốc.** Nếu không có gì thay đổi thì không làm gì cả.
         if (newCccd.equals(originalCccd)) {
+            Log.d("CCCD_DEBUG", "CCCD không thay đổi, không cần cập nhật.");
             etProfileCccd.clearFocus(); // Clear focus if no changes
             return;
         }
@@ -202,11 +238,12 @@ public class AdProfileActivity extends AppCompatActivity {
         if (view != null) {
             InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
             imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-            // Set focus to the parent layout to ensure EditText loses focus
-            View parentLayout = findViewById(android.R.id.content);
-            if (parentLayout != null) {
-                parentLayout.requestFocus();
+
+            // Nếu là EditText đang focus → clear focus
+            if (view instanceof EditText) {
+                view.clearFocus(); // ← rất quan trọng để trigger autoSaveChanges
             }
         }
     }
+
 }
