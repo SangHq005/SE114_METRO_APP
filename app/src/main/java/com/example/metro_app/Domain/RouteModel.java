@@ -3,12 +3,12 @@ package com.example.metro_app.Domain;
 import java.io.Serializable;
 
 public class RouteModel implements Serializable {
-    private String id; // Added to store Firestore document ID
+    private String id;
     private String fromStation;
     private String toStation;
-    private String price;
+    private Double price;
 
-    public RouteModel(String id, String fromStation, String toStation, String price) {
+    public RouteModel(String id, String fromStation, String toStation, Double price) {
         this.id = id;
         this.fromStation = fromStation;
         this.toStation = toStation;
@@ -40,11 +40,11 @@ public class RouteModel implements Serializable {
         this.toStation = toStation;
     }
 
-    public String getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(String price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 }

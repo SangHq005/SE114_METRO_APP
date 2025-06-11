@@ -30,6 +30,7 @@ import com.google.firebase.firestore.QuerySnapshot;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 // Adapter for RecyclerView
 class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHolder> {
@@ -58,6 +59,16 @@ class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHolder> {
         RouteModel route = filteredRouteList.get(position);
         holder.routeName.setText(holder.itemView.getContext().getString(
                 R.string.route_name_format, route.getFromStation(), route.getToStation()));
+
+        // Định dạng giá vé để hiển thị (tùy chọn)
+        // Nếu bạn có một TextView cho giá vé, hãy thêm nó ở đây. Ví dụ:
+        // TextView routePrice = holder.itemView.findViewById(R.id.tv_route_price);
+        // if (route.getPrice() != null) {
+        //     DecimalFormat formatter = new DecimalFormat("#,###");
+        //     String formattedPrice = formatter.format(route.getPrice()) + " VND";
+        //     routePrice.setText(formattedPrice);
+        // }
+
         holder.itemView.setOnClickListener(v -> listener.onItemClick(position));
     }
 
@@ -78,11 +89,10 @@ class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHolder> {
 
     public void updateList(List<RouteModel> newList) {
         Log.d("RouteAdapter", "Updating list with " + newList.size() + " items");
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new RouteDiffCallback(filteredRouteList, newList));
-        filteredRouteList.clear();
-        filteredRouteList.addAll(newList);
+        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new RouteDiffCallback(this.filteredRouteList, newList));
+        this.filteredRouteList.clear();
+        this.filteredRouteList.addAll(newList);
         diffResult.dispatchUpdatesTo(this);
-        notifyDataSetChanged(); // Ensure UI refresh
     }
 
     static class RouteDiffCallback extends DiffUtil.Callback {
@@ -106,17 +116,18 @@ class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHolder> {
 
         @Override
         public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            return oldList.get(oldItemPosition).getFromStation().equals(newList.get(newItemPosition).getFromStation()) &&
-                    oldList.get(oldItemPosition).getToStation().equals(newList.get(newItemPosition).getToStation());
+            // So sánh dựa trên ID duy nhất của tuyến đường
+            return oldList.get(oldItemPosition).getId().equals(newList.get(newItemPosition).getId());
         }
 
         @Override
         public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
             RouteModel oldRoute = oldList.get(oldItemPosition);
             RouteModel newRoute = newList.get(newItemPosition);
+            // So sánh nội dung của các đối tượng
             return oldRoute.getFromStation().equals(newRoute.getFromStation()) &&
                     oldRoute.getToStation().equals(newRoute.getToStation()) &&
-                    oldRoute.getPrice().equals(newRoute.getPrice());
+                    Objects.equals(oldRoute.getPrice(), newRoute.getPrice());
         }
     }
 }
@@ -132,27 +143,18 @@ public class AdRouteActivity extends AppCompatActivity {
     private final ActivityResultLauncher<Intent> addRouteLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    RouteModel route = (RouteModel) result.getData().getSerializableExtra("route");
-                    if (route != null) {
-                        routeList.add(route);
-                        filterRoutes("");
-                    }
+                if (result.getResultCode() == RESULT_OK) {
+                    // Tải lại toàn bộ danh sách để đảm bảo tính nhất quán
+                    loadRoutesFromFirestore();
                 }
             });
 
     private final ActivityResultLauncher<Intent> editRouteLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
-                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    RouteModel route = (RouteModel) result.getData().getSerializableExtra("route");
-                    int position = result.getData().getIntExtra("position", -1);
-                    if (route != null && position != -1) {
-                        // Update local list
-                        routeList.set(position, route);
-                        // Reload from Firestore to ensure consistency
-                        loadRoutesFromFirestore();
-                    }
+                if (result.getResultCode() == RESULT_OK) {
+                    // Tải lại toàn bộ danh sách để đảm bảo tính nhất quán sau khi chỉnh sửa
+                    loadRoutesFromFirestore();
                 }
             });
 
@@ -178,8 +180,14 @@ public class AdRouteActivity extends AppCompatActivity {
         // Set up adapter
         routeAdapter = new RouteAdapter(filteredRouteList, position -> {
             Intent intent = new Intent(AdRouteActivity.this, AdRouteDetails.class);
-            intent.putExtra("route", filteredRouteList.get(position));
-            intent.putExtra("position", routeList.indexOf(filteredRouteList.get(position)));
+            // Lấy đúng đối tượng từ danh sách đã lọc
+            RouteModel selectedRoute = filteredRouteList.get(position);
+            intent.putExtra("route", selectedRoute);
+
+            // Tìm vị trí của đối tượng trong danh sách gốc để cập nhật
+            int originalPosition = routeList.indexOf(selectedRoute);
+            intent.putExtra("position", originalPosition);
+
             editRouteLauncher.launch(intent);
         });
         recyclerView.setAdapter(routeAdapter);
@@ -244,7 +252,6 @@ public class AdRouteActivity extends AppCompatActivity {
                 .addOnCompleteListener(task -> {
                     if (task.isSuccessful()) {
                         routeList.clear();
-                        filteredRouteList.clear();
                         QuerySnapshot querySnapshot = task.getResult();
                         if (querySnapshot != null && !querySnapshot.isEmpty()) {
                             for (var doc : querySnapshot.getDocuments()) {
@@ -252,19 +259,11 @@ public class AdRouteActivity extends AppCompatActivity {
                                     String id = doc.getId(); // Get document ID
                                     String fromStation = doc.getString("StartStation");
                                     String toStation = doc.getString("EndStation");
-                                    String price = null;
-                                    Object priceObj = doc.get("Price");
-                                    if (priceObj instanceof Number) {
-                                        DecimalFormat formatter = new DecimalFormat("#,###");
-                                        price = formatter.format(((Number) priceObj).longValue()) + " VND";
-                                    } else if (priceObj instanceof String) {
-                                        price = (String) priceObj;
-                                    }
+                                    Double price = doc.getDouble("Price"); // Lấy giá vé dưới dạng Double
 
                                     if (id != null && fromStation != null && toStation != null && price != null) {
                                         RouteModel route = new RouteModel(id, fromStation, toStation, price);
                                         routeList.add(route);
-                                        Log.d(TAG, "Added route: " + fromStation + " - " + toStation + ", Price: " + price);
                                     } else {
                                         Log.w(TAG, "Missing fields in document: " + doc.getId());
                                     }
@@ -272,11 +271,12 @@ public class AdRouteActivity extends AppCompatActivity {
                                     Log.e(TAG, "Error parsing document: " + doc.getId(), e);
                                 }
                             }
-                            filteredRouteList.addAll(routeList);
-                            Log.d(TAG, "Updating adapter with " + filteredRouteList.size() + " routes");
-                            routeAdapter.notifyDataSetChanged(); // Force UI refresh
+                            // Sau khi tải xong, cập nhật danh sách đã lọc
+                            filterRoutes(((EditText)findViewById(R.id.search_bar)).getText().toString());
                         } else {
                             Toast.makeText(AdRouteActivity.this, "Không tìm thấy vé lượt.", Toast.LENGTH_SHORT).show();
+                            routeList.clear();
+                            filterRoutes("");
                         }
                     } else {
                         Log.e(TAG, "Error loading routes: ", task.getException());
@@ -286,19 +286,19 @@ public class AdRouteActivity extends AppCompatActivity {
     }
 
     private void filterRoutes(String query) {
-        filteredRouteList.clear();
+        List<RouteModel> newFilteredList = new ArrayList<>();
         if (query.isEmpty()) {
-            filteredRouteList.addAll(routeList);
+            newFilteredList.addAll(routeList);
         } else {
             String lowerCaseQuery = query.toLowerCase();
             for (RouteModel route : routeList) {
                 if (route.getFromStation().toLowerCase().contains(lowerCaseQuery) ||
                         route.getToStation().toLowerCase().contains(lowerCaseQuery)) {
-                    filteredRouteList.add(route);
+                    newFilteredList.add(route);
                 }
             }
         }
-        Log.d(TAG, "Filtering routes, new size: " + filteredRouteList.size());
-        routeAdapter.updateList(filteredRouteList);
+        Log.d(TAG, "Filtering routes, new size: " + newFilteredList.size());
+        routeAdapter.updateList(newFilteredList);
     }
 }

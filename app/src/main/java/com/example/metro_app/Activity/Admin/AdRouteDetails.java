@@ -4,6 +4,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.EditText; // Import EditText
 import android.widget.Spinner;
 import android.widget.Toast;
 
@@ -24,6 +25,7 @@ public class AdRouteDetails extends AppCompatActivity {
     private FirebaseFirestore db;
     private List<String> stationNames;
     private final String[] statusOptions = {"Hoạt động", "Tạm dừng"};
+    private EditText editTextPrice; // Thêm biến cho EditText giá vé
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -37,6 +39,7 @@ public class AdRouteDetails extends AppCompatActivity {
         Spinner spinnerFromStation = findViewById(R.id.spinner_type_fromStation);
         Spinner spinnerToStation = findViewById(R.id.spinner_type_toStation);
         Spinner spinnerStatus = findViewById(R.id.spinnerStatus);
+        editTextPrice = findViewById(R.id.editTextPrice); // Khởi tạo EditText giá vé
         Button cancelButton = findViewById(R.id.button_cancel);
         Button saveButton = findViewById(R.id.button_save);
 
@@ -59,15 +62,23 @@ public class AdRouteDetails extends AppCompatActivity {
 
         // Set initial values
         if (route != null) {
-            // Load current route data
+            // Load current route data including price
             db.collection("TicketType")
                     .document(route.getId())
                     .get()
                     .addOnSuccessListener(documentSnapshot -> {
                         if (documentSnapshot.exists()) {
+                            // Load status
                             String status = documentSnapshot.getString("Status");
                             if (status != null) {
                                 spinnerStatus.setSelection(getIndexOfStatus(status));
+                            }
+
+                            // Load price
+                            Double price = documentSnapshot.getDouble("Price");
+                            if (price != null) {
+                                // Sử dụng String.format để tránh hiển thị ".0" cho số nguyên
+                                editTextPrice.setText(String.format("%.0f", price));
                             }
                         }
                     });
@@ -82,9 +93,10 @@ public class AdRouteDetails extends AppCompatActivity {
             String fromStation = spinnerFromStation.getSelectedItem() != null ? spinnerFromStation.getSelectedItem().toString() : "";
             String toStation = spinnerToStation.getSelectedItem() != null ? spinnerToStation.getSelectedItem().toString() : "";
             String status = spinnerStatus.getSelectedItem().toString();
+            String priceStr = editTextPrice.getText().toString();
 
             // Check for empty fields
-            if (fromStation.isEmpty() || toStation.isEmpty()) {
+            if (fromStation.isEmpty() || toStation.isEmpty() || priceStr.isEmpty()) {
                 Toast.makeText(AdRouteDetails.this, "Vui lòng điền đầy đủ thông tin.", Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -92,6 +104,15 @@ public class AdRouteDetails extends AppCompatActivity {
             // Check if fromStation and toStation are different
             if (fromStation.equals(toStation)) {
                 Toast.makeText(AdRouteDetails.this, "Ga đi và ga đến không được giống nhau.", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Parse the price
+            double price;
+            try {
+                price = Double.parseDouble(priceStr);
+            } catch (NumberFormatException e) {
+                Toast.makeText(AdRouteDetails.this, "Giá vé không hợp lệ.", Toast.LENGTH_SHORT).show();
                 return;
             }
 
@@ -103,13 +124,14 @@ public class AdRouteDetails extends AppCompatActivity {
                 ticketData.put("StartStation", fromStation);
                 ticketData.put("EndStation", toStation);
                 ticketData.put("Status", status);
+                ticketData.put("Price", price); // Thêm giá vé vào dữ liệu cập nhật
 
                 db.collection("TicketType")
                         .document(route.getId())
                         .update(ticketData)
                         .addOnSuccessListener(aVoid -> {
-                            // Create updated RouteModel
-                            RouteModel updatedRoute = new RouteModel(route.getId(), fromStation, toStation, route.getPrice());
+                            // Create updated RouteModel with the new price
+                            RouteModel updatedRoute = new RouteModel(route.getId(), fromStation, toStation, price);
                             Intent resultIntent = new Intent();
                             resultIntent.putExtra("route", updatedRoute);
                             resultIntent.putExtra("position", position);
