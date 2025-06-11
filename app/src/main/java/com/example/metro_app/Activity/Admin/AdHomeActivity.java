@@ -43,6 +43,8 @@ public class AdHomeActivity extends AppCompatActivity {
     private TextView tvUser;
     private TextView tvRevenue;
     private TextView tvTicket;
+
+    private TextView tvAccess;
     private FireStoreHelper fireStoreHelper;
     private Handler handler = new Handler();
     private Runnable dataUpdater;
