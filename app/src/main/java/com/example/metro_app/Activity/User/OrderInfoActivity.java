@@ -231,7 +231,8 @@ public class OrderInfoActivity extends AppCompatActivity {
             Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
             saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
             Intent successIntent = new Intent(this, YourTicketsActivity.class);
-            successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            successIntent.putExtra("UUID", userId);
+            successIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(successIntent);
             finish();
             Log.d("OrderInfo", "Navigated to YourTicketsActivity after payment success");
@@ -360,46 +361,42 @@ public class OrderInfoActivity extends AppCompatActivity {
         Log.d("VNPay", "onNewIntent called with intent: " + (intent != null ? intent.toString() : "null"));
         if (isPaymentProcessed) {
             Log.d("VNPay", "Payment already processed, ignoring new intent");
+            finish(); // Kết thúc nếu đã xử lý
             return;
         }
-        if (intent != null) {
+        if (intent != null && intent.getData() != null) {
             Log.d("VNPay", "Intent action: " + intent.getAction());
-            Log.d("VNPay", "Intent data: " + (intent.getData() != null ? intent.getData().toString() : "null"));
-            if (intent.getData() != null) {
-                Uri data = intent.getData();
-                Log.d("VNPay", "Return URL: " + data.toString());
-                String responseCode = data.getQueryParameter("vnp_ResponseCode");
-                String transactionNo = data.getQueryParameter("vnp_TransactionNo");
-                String orderId = data.getQueryParameter("vnp_TxnRef");
-                Log.d("VNPay", "ResponseCode: " + responseCode + ", TransactionNo: " + transactionNo + ", OrderId: " + orderId);
-                if (responseCode != null && transactionNo != null && orderId != null) {
-                    isPaymentProcessed = true;
-                    if ("00".equals(responseCode)) {
-                        Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
-                        saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
-                        Intent successIntent = new Intent(this, YourTicketsActivity.class);
-                        successIntent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                        startActivity(successIntent);
-                        finish();
-                        Log.d("OrderInfo", "Navigated to YourTicketsActivity after payment success");
-                    } else {
-                        Toast.makeText(this, "Thanh toán thất bại, mã lỗi: " + responseCode, Toast.LENGTH_LONG).show();
-                        Log.e("VNPay", "Payment failed with response code: " + responseCode);
-                        finish();
-                    }
+            Log.d("VNPay", "Intent data: " + intent.getData().toString());
+            Uri data = intent.getData();
+            Log.d("VNPay", "Return URL: " + data.toString());
+            String responseCode = data.getQueryParameter("vnp_ResponseCode");
+            String transactionNo = data.getQueryParameter("vnp_TransactionNo");
+            String orderId = data.getQueryParameter("vnp_TxnRef");
+            Log.d("VNPay", "ResponseCode: " + responseCode + ", TransactionNo: " + transactionNo + ", OrderId: " + orderId);
+            if (responseCode != null && transactionNo != null && orderId != null) {
+                isPaymentProcessed = true;
+                if ("00".equals(responseCode)) {
+                    Toast.makeText(this, "Thanh toán thành công! Mã giao dịch: " + transactionNo, Toast.LENGTH_LONG).show();
+                    saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice);
+                    Intent successIntent = new Intent(this, YourTicketsActivity.class);
+                    successIntent.putExtra("UUID", userId);
+                    successIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(successIntent);
+                    finish();
+                    Log.d("OrderInfo", "Navigated to YourTicketsActivity after payment success from onNewIntent");
                 } else {
-                    Log.e("VNPay", "Missing responseCode, transactionNo, or orderId in return URL");
-                    Toast.makeText(this, "Lỗi xử lý kết quả thanh toán: Thiếu tham số", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Thanh toán thất bại, mã lỗi: " + responseCode, Toast.LENGTH_LONG).show();
+                    Log.e("VNPay", "Payment failed with response code: " + responseCode);
                     finish();
                 }
             } else {
-                Log.e("VNPay", "No data in Intent");
-                Toast.makeText(this, "Không nhận được dữ liệu thanh toán", Toast.LENGTH_LONG).show();
+                Log.e("VNPay", "Missing responseCode, transactionNo, or orderId in return URL");
+                Toast.makeText(this, "Lỗi xử lý kết quả thanh toán: Thiếu tham số", Toast.LENGTH_LONG).show();
                 finish();
             }
         } else {
-            Log.e("VNPay", "Intent is null");
-            Toast.makeText(this, "Không nhận được kết quả thanh toán", Toast.LENGTH_LONG).show();
+            Log.e("VNPay", "No data in Intent or Intent is null");
+            Toast.makeText(this, "Không nhận được dữ liệu thanh toán", Toast.LENGTH_LONG).show();
             finish();
         }
     }
@@ -410,7 +407,7 @@ public class OrderInfoActivity extends AppCompatActivity {
         Log.d("OrderInfo", "onResume called");
         if (isPaymentProcessed) {
             Log.d("OrderInfo", "Payment processed, finishing OrderInfoActivity");
-            finish();
+            finish(); // Kết thúc nếu đã xử lý
         }
     }
 }
