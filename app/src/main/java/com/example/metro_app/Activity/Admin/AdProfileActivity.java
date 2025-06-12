@@ -283,20 +283,44 @@ public class AdProfileActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setSelectedItemId(R.id.nav_ad_profile);
 
+//        bottomNavigationView.setOnItemSelectedListener(item -> {
+//            int id = item.getItemId();
+//            if (id == R.id.nav_ad_home) {
+//                startActivity(new Intent(getApplicationContext(), AdHomeActivity.class));
+//            } else if (id == R.id.nav_ad_userlist) {
+//                startActivity(new Intent(getApplicationContext(), AdUserActivity.class));
+//            } else if (id == R.id.nav_ad_profile) {
+//                return true;
+//            }
+//
+//            if (id != R.id.nav_ad_profile) {
+//                overridePendingTransition(0, 0);
+//            }
+//            return true;
+//        });
+        bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
-            if (id == R.id.nav_ad_home) {
-                startActivity(new Intent(getApplicationContext(), AdHomeActivity.class));
+            if (id == R.id.nav_ad_profile) {
+                return true;
+            } else if (id == R.id.nav_ad_route) {
+                startActivity(new Intent(AdProfileActivity.this, AdRouteActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
+            } else if (id == R.id.nav_ad_wallet) {
+                startActivity(new Intent(AdProfileActivity.this, AdTicketActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
             } else if (id == R.id.nav_ad_userlist) {
-                startActivity(new Intent(getApplicationContext(), AdUserActivity.class));
-            } else if (id == R.id.nav_ad_profile) {
+                startActivity(new Intent(AdProfileActivity.this, AdUserActivity.class));
+                overridePendingTransition(0, 0);
+                return true;
+            } else if (id == R.id.nav_ad_home) {
+                startActivity(new Intent(AdProfileActivity.this, AdHomeActivity.class));
+                overridePendingTransition(0, 0);
                 return true;
             }
-
-            if (id != R.id.nav_ad_profile) {
-                overridePendingTransition(0, 0);
-            }
-            return true;
+            return false;
         });
     }
 
