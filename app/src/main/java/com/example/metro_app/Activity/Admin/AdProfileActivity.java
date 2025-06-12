@@ -140,7 +140,7 @@ public class AdProfileActivity extends AppCompatActivity {
             etProfileCccd.setHint("Chưa cập nhật (12 số)");
         }
         // Hiển thị số điện thoại nếu có
-        String phone = currentUserModel.getPhone() != null ? currentUserModel.getPhone() : "";
+        String phone = currentUserModel.getPhoneNumber() != null ? currentUserModel.getPhoneNumber() : "";
         if (!phone.isEmpty()) {
             etProfilePhone.setText(phone);
         } else {

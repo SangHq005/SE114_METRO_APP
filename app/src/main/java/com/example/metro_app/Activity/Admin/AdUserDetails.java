@@ -16,7 +16,7 @@ import com.example.metro_app.R;
 public class AdUserDetails extends AppCompatActivity {
     private static final String TAG = "AdUserDetails";
     private ImageView editImageUser;
-    private EditText editTextFullName, editTextEmail, editTextPhoneNumber;
+    private EditText editTextFullName, editTextEmail, editTextPhoneNumber,editTextCCCD;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -28,6 +28,7 @@ public class AdUserDetails extends AppCompatActivity {
         editTextFullName = findViewById(R.id.editTextFullName);
         editTextEmail = findViewById(R.id.editTextEmail);
         editTextPhoneNumber = findViewById(R.id.editTextPhoneNumber);
+        editTextCCCD = findViewById(R.id.editTextCCCD);
 
         // Get data from Intent
         Intent intent = getIntent();
@@ -38,12 +39,19 @@ public class AdUserDetails extends AppCompatActivity {
         if (user != null) {
             editTextFullName.setText(user.getName());
             editTextEmail.setText(user.getEmail());
-
-            if (user.getCCCD() != null && !user.getCCCD().isEmpty()) {
-                editTextPhoneNumber.setText(user.getCCCD());
+            Log.d("SDT", "onCreate: "+user.getPhoneNumber());
+            if (user.getPhoneNumber() != null && !user.getPhoneNumber().isEmpty()) {
+                editTextPhoneNumber.setText(user.getPhoneNumber());
             } else {
                 editTextPhoneNumber.setText("Chưa cập nhật");
             }
+
+            if (user.getCCCD() != null && !user.getCCCD().isEmpty()) {
+                editTextCCCD.setText(user.getCCCD());
+            } else {
+                editTextCCCD.setText("Chưa cập nhật");
+            }
+
 
             String avatarUrl = null;
             try {

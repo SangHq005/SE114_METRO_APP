@@ -8,7 +8,7 @@ public class UserModel implements Serializable {
     private String Name;
     private String Role;
     private String CCCD;
-    private String Phone;
+    private String PhoneNumber;
     private String avatarUrl;
 
     public UserModel() {}
@@ -22,8 +22,8 @@ public class UserModel implements Serializable {
 
     public String getEmail() { return Email; }
     public void setEmail(String email) { this.Email = email; }
-    public String getPhone() { return Phone; }
-    public void setPhone(String phone) { this.Phone = phone; }
+    public String getPhoneNumber() { return PhoneNumber; }
+    public void setPhoneNumber(String phone) { this.PhoneNumber = phone; }
 
     public String getRole() { return Role; }
     public void setRole(String role) { this.Role = role; }
