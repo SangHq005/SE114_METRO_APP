@@ -1,6 +1,15 @@
+import java.util.Properties
+import java.io.File
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.google.gms.google.services)
+}
+
+// Đọc gradle.properties từ thư mục gốc của dự án
+val gradleProps = Properties().apply {
+    val inputStream = File(project.rootDir, "gradle.properties").inputStream()
+    load(inputStream)
 }
 
 android {
@@ -15,6 +24,11 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        // Thêm các biến Cloudinary từ gradle.properties vào BuildConfig với ()
+        buildConfigField("String", "CLOUDINARY_CLOUD_NAME", "\"${gradleProps.getProperty("cloudinaryCloudName") ?: ""}\"")
+        buildConfigField("String", "CLOUDINARY_API_KEY", "\"${gradleProps.getProperty("cloudinaryApiKey") ?: ""}\"")
+        buildConfigField("String", "CLOUDINARY_API_SECRET", "\"${gradleProps.getProperty("cloudinaryApiSecret") ?: ""}\"")
     }
 
     buildTypes {
@@ -33,6 +47,7 @@ android {
     }
 
     buildFeatures {
+        buildConfig = true // Bật tính năng BuildConfig để hỗ trợ buildConfigField
         viewBinding = true
     }
 }
@@ -90,13 +105,15 @@ dependencies {
     implementation("com.squareup.okhttp3:okhttp:4.12.0")
     implementation(files("libs/merchant-1.0.25.aar"))
 
-    //QR
-    implementation ("com.google.zxing:core:3.5.2")
-    implementation ("com.journeyapps:zxing-android-embedded:4.3.0")
+    // QR
+    implementation("com.google.zxing:core:3.5.2")
+    implementation("com.journeyapps:zxing-android-embedded:4.3.0")
 
-    //Create pdf
-    implementation ("com.itextpdf:itext7-core:7.2.5")
+    // Create pdf
+    implementation("com.itextpdf:itext7-core:7.2.5")
 
+    // Cloudinary
+    implementation("com.cloudinary:cloudinary-android:2.2.0")
 
     implementation(libs.appcompat) // androidx.appcompat
     implementation(libs.activity) // androidx.activity

@@ -4,5 +4,40 @@
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="mapbox_access_token">sk.eyJ1IjoidGhpZW5uZ3V5ZW4yNTA0IiwiYSI6ImNtYWRsZ2RzdTA1OGcybnM4bnZkOXo2emsifQ.XJU0gRz1_tU_lc6ZsTAY7g</string>
+    <string name="media_t_p_nh_k_m"><![CDATA[Media & Tệp đính kèm]]></string>
 
+    <!-- Header -->
+    <string name="create_post_title">Tạo bài viết</string>
+    <string name="draft_status">Bản nháp</string>
+    <string name="back_button">Back</string>
+
+    <!-- Title Section -->
+    <string name="title_section_header">Tiêu đề bài viết</string>
+    <string name="title_hint">Nhập tiêu đề hấp dẫn...</string>
+    <string name="title_char_count">%1$d/100</string>
+
+    <!-- Content Section -->
+    <string name="content_section_header">Nội dung bài viết</string>
+    <string name="content_hint">Chia sẻ suy nghĩ của bạn...</string>
+    <string name="word_count">%1$d từ</string>
+
+    <!-- Media Section -->
+    <string name="media_section_header">Media &amp; Tệp đính kèm</string>
+    <string name="select_image">Chọn ảnh</string>
+    <string name="emoji_button">Emoji</string>
+    <string name="remove_image">Xoá ảnh</string>
+
+    <!-- Formatting Section -->
+    <string name="formatting_section_header">Định dạng văn bản</string>
+    <string name="format_bold">In đậm</string>
+    <string name="format_italic">In nghiêng</string>
+    <string name="format_underline">Gạch chân</string>
+
+    <!-- Actions -->
+    <string name="publish_post">Đăng bài viết</string>
+    <string name="publishing">Đang đăng...</string>
+
+    <!-- File names -->
+    <string name="default_image_name">image.jpg</string>
+    <string name="in_nghi_ng">In nghiêng</string>
 </resources>
