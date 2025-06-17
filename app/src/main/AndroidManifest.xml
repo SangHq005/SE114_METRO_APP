@@ -99,6 +99,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activity.SignupActivity"
+            android:exported="true" />
+        <activity android:name=".Activity.ForgotPasswordActivity"
+            android:exported="true" />
         <activity android:name=".Activity.Admin.AddNewsActivity"
             android:exported="true" />
         <activity android:name=".Activity.Admin.AdAddWayActivity"
