@@ -99,6 +99,10 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activity.Admin.AddNewsActivity"
+            android:exported="true" />
+        <activity android:name=".Activity.Admin.AdAddWayActivity"
+            android:exported="true" />
         <activity android:name=".Activity.Admin.AdHomeActivity"
             android:exported="true" />
         <activity android:name=".Activity.Admin.AdUserActivity"

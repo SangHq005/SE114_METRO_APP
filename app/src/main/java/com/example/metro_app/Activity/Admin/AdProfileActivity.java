@@ -2,42 +2,33 @@ package com.example.metro_app.Activity.Admin;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.util.Log;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.AppCompatButton;
 
 import com.bumptech.glide.Glide;
 import com.example.metro_app.Activity.LoginActivity;
-import com.example.metro_app.utils.FireStoreHelper;
 import com.example.metro_app.Model.UserModel;
 import com.example.metro_app.R;
+import com.example.metro_app.utils.FireStoreHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 public class AdProfileActivity extends AppCompatActivity {
 
-    private TextView tvProfileName, tvProfileEmail;
-    private EditText etProfileCccd;
-    private EditText etProfilePhone;
     private ImageView profileImage;
-    private Button btnLogout;
+    private TextView tvProfileName;
+    private AppCompatButton btnManageRoutes;
+    private AppCompatButton btnLogout; // Thêm nút đăng xuất
 
     private FirebaseAuth mAuth;
     private FireStoreHelper fireStoreHelper;
     private UserModel currentUserModel;
-    private String originalCccd = ""; // Lưu lại CCCD ban đầu để so sánh
-    private String originalPhone = "";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -51,35 +42,26 @@ public class AdProfileActivity extends AppCompatActivity {
         setupListeners();
         setupBottomNavigation();
         loadUserProfile();
-        etProfileCccd.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                autoSaveChanges(); // Khi mất focus
-            }
-        });
-        etProfilePhone.setOnFocusChangeListener((v, hasFocus) -> {
-            if (!hasFocus) {
-                autoSavePhone(); // Gọi lưu khi mất focus
-            }
-        });
-
-        etProfilePhone.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
-                    (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER && event.getAction() == android.view.KeyEvent.ACTION_DOWN)) {
-                autoSavePhone();
-                return true;
-            }
-            return false;
-        });
-
     }
 
     private void initViews() {
         profileImage = findViewById(R.id.profile_image);
         tvProfileName = findViewById(R.id.tv_profile_name);
-        tvProfileEmail = findViewById(R.id.tv_profile_email);
-        etProfileCccd = findViewById(R.id.et_profile_cccd);
-        etProfilePhone = findViewById(R.id.et_profile_phone);
-        btnLogout = findViewById(R.id.btn_logout);
+        btnManageRoutes = findViewById(R.id.btn_manage_routes);
+        btnLogout = findViewById(R.id.btn_logout); // Ánh xạ nút đăng xuất
+    }
+
+    private void setupListeners() {
+        // Sự kiện click cho nút quản lý tuyến đường
+        btnManageRoutes.setOnClickListener(v -> {
+            Intent intent = new Intent(AdProfileActivity.this, AdAddWayActivity.class);
+            startActivity(intent);
+        });
+
+        // Sự kiện click cho nút đăng xuất
+        btnLogout.setOnClickListener(v -> {
+            showLogoutConfirmationDialog(); // Gọi hộp thoại xác nhận
+        });
     }
 
     private void loadUserProfile() {
@@ -100,6 +82,7 @@ public class AdProfileActivity extends AppCompatActivity {
                     Toast.makeText(AdProfileActivity.this, "Không thể tải thông tin hồ sơ.", Toast.LENGTH_SHORT).show();
                 }
             }
+
             @Override
             public void onFailure(Exception e) {
                 Toast.makeText(AdProfileActivity.this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -111,7 +94,6 @@ public class AdProfileActivity extends AppCompatActivity {
         if (currentUserModel == null) return;
 
         tvProfileName.setText(currentUserModel.getName());
-        tvProfileEmail.setText(currentUserModel.getEmail());
 
         String avatarUrl = null;
         try {
@@ -122,143 +104,16 @@ public class AdProfileActivity extends AppCompatActivity {
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
             Glide.with(this)
                     .load(avatarUrl)
-                    .placeholder(R.drawable.userbtn) // fallback image
+                    .placeholder(R.drawable.userbtn)
                     .error(R.drawable.userbtn)
                     .circleCrop()
                     .into(profileImage);
         } else {
             profileImage.setImageResource(R.drawable.userbtn);
         }
-
-        // Lưu lại CCCD gốc và hiển thị
-        originalCccd = currentUserModel.getCCCD() != null ? currentUserModel.getCCCD() : "";
-        if (!originalCccd.isEmpty()) {
-            etProfileCccd.setText(originalCccd);
-        } else {
-            etProfileCccd.setText("");
-            etProfileCccd.setHint("Chưa cập nhật (12 số)");
-        }
-        // Hiển thị số điện thoại nếu có
-        String phone = currentUserModel.getPhoneNumber() != null ? currentUserModel.getPhoneNumber() : "";
-        if (!phone.isEmpty()) {
-            etProfilePhone.setText(phone);
-        } else {
-            etProfilePhone.setText("");
-            etProfilePhone.setHint("Chưa cập nhật (10 chữ số)");
-        }
-
-
     }
 
-    private void setupListeners() {
-        btnLogout.setOnClickListener(v -> showLogoutConfirmationDialog());
-
-        // Nhấn "Enter" trên bàn phím sẽ gọi autoSaveChanges()
-        etProfileCccd.setOnEditorActionListener((v, actionId, event) -> {
-            if (actionId == android.view.inputmethod.EditorInfo.IME_ACTION_DONE ||
-                    (event != null && event.getKeyCode() == android.view.KeyEvent.KEYCODE_ENTER && event.getAction() == android.view.KeyEvent.ACTION_DOWN)) {
-
-                autoSaveChanges();
-                return true; // Đã xử lý
-            }
-            return false;
-        });
-
-        // Optional: nếu vẫn muốn chạm ngoài để đóng bàn phím
-        View rootLayout = findViewById(android.R.id.content);
-        rootLayout.setOnTouchListener((v, event) -> {
-            if (event.getAction() == MotionEvent.ACTION_DOWN) {
-                hideKeyboard();
-            }
-            return false;
-        });
-    }
-
-
-
-    // Hàm tự động lưu thay đổi
-    private void autoSaveChanges() {
-        hideKeyboard();
-        String newCccd = etProfileCccd.getText().toString().trim();
-        Log.d("CCCD_DEBUG", "autoSaveChanges() called");
-        Log.d("CCCD_DEBUG", "newCccd = " + newCccd + ", original = " + originalCccd);
-        // **So sánh với giá trị gốc.** Nếu không có gì thay đổi thì không làm gì cả.
-        if (newCccd.equals(originalCccd)) {
-            Log.d("CCCD_DEBUG", "CCCD không thay đổi, không cần cập nhật.");
-            etProfileCccd.clearFocus(); // Clear focus if no changes
-            return;
-        }
-
-        // **Kiểm tra dữ liệu hợp lệ.** CCCD phải là 12 chữ số.
-        if (!newCccd.matches("\\d{12}")) {
-            Toast.makeText(this, "CCCD không hợp lệ. Phải là 12 chữ số.", Toast.LENGTH_LONG).show();
-            // Quay lại giá trị cũ để tránh lưu sai
-            etProfileCccd.setText(originalCccd);
-            etProfileCccd.clearFocus(); // Clear focus on invalid input
-            return;
-        }
-
-        // Nếu dữ liệu hợp lệ và có thay đổi -> Bắt đầu lưu
-        Toast.makeText(this, "Đang cập nhật CCCD...", Toast.LENGTH_SHORT).show();
-
-        FirebaseUser firebaseUser = mAuth.getCurrentUser();
-        if (firebaseUser == null) return;
-
-        fireStoreHelper.updateUserCccd(firebaseUser.getUid(), newCccd, new FireStoreHelper.Callback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                Toast.makeText(AdProfileActivity.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                originalCccd = newCccd; // Cập nhật lại giá trị gốc sau khi lưu thành công
-                etProfileCccd.clearFocus(); // Clear focus after successful save
-            }
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(AdProfileActivity.this, "Cập nhật thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                // Nếu thất bại, trả lại giá trị CCCD cũ
-                etProfileCccd.setText(originalCccd);
-                etProfileCccd.clearFocus(); // Clear focus on failure
-            }
-        });
-    }
-    private void autoSavePhone() {
-        hideKeyboard();
-        String newPhone = etProfilePhone.getText().toString().trim();
-
-        if (newPhone.equals(originalPhone)) {
-            etProfilePhone.clearFocus();
-            return;
-        }
-
-        if (!newPhone.matches("0\\d{9}")) {
-            Toast.makeText(this, "Số điện thoại không hợp lệ. Phải bắt đầu bằng 0 và đủ 10 chữ số.", Toast.LENGTH_LONG).show();
-            etProfilePhone.setText(originalPhone);
-            etProfilePhone.clearFocus();
-            return;
-        }
-
-        Toast.makeText(this, "Đang cập nhật số điện thoại...", Toast.LENGTH_SHORT).show();
-
-        FirebaseUser firebaseUser = mAuth.getCurrentUser();
-        if (firebaseUser == null) return;
-
-        fireStoreHelper.updateUserPhone(firebaseUser.getUid(), newPhone, new FireStoreHelper.Callback<Void>() {
-            @Override
-            public void onSuccess(Void result) {
-                Toast.makeText(AdProfileActivity.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                originalPhone = newPhone;
-                etProfilePhone.clearFocus();
-            }
-
-            @Override
-            public void onFailure(Exception e) {
-                Toast.makeText(AdProfileActivity.this, "Cập nhật thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                etProfilePhone.setText(originalPhone);
-                etProfilePhone.clearFocus();
-            }
-        });
-    }
-
-
+    // Hiển thị hộp thoại xác nhận đăng xuất
     private void showLogoutConfirmationDialog() {
         new AlertDialog.Builder(this, R.style.AlertDialogTheme)
                 .setTitle("Xác nhận Đăng xuất")
@@ -282,22 +137,6 @@ public class AdProfileActivity extends AppCompatActivity {
         BottomNavigationView bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setSelectedItemId(R.id.nav_ad_profile);
 
-//        bottomNavigationView.setOnItemSelectedListener(item -> {
-//            int id = item.getItemId();
-//            if (id == R.id.nav_ad_home) {
-//                startActivity(new Intent(getApplicationContext(), AdHomeActivity.class));
-//            } else if (id == R.id.nav_ad_userlist) {
-//                startActivity(new Intent(getApplicationContext(), AdUserActivity.class));
-//            } else if (id == R.id.nav_ad_profile) {
-//                return true;
-//            }
-//
-//            if (id != R.id.nav_ad_profile) {
-//                overridePendingTransition(0, 0);
-//            }
-//            return true;
-//        });
-        bottomNavigationView = findViewById(R.id.bottomNavigationView);
         bottomNavigationView.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             if (id == R.id.nav_ad_profile) {
@@ -322,18 +161,4 @@ public class AdProfileActivity extends AppCompatActivity {
             return false;
         });
     }
-
-    private void hideKeyboard() {
-        View view = this.getCurrentFocus();
-        if (view != null) {
-            InputMethodManager imm = (InputMethodManager) getSystemService(INPUT_METHOD_SERVICE);
-            imm.hideSoftInputFromWindow(view.getWindowToken(), 0);
-
-            // Nếu là EditText đang focus → clear focus
-            if (view instanceof EditText) {
-                view.clearFocus(); // ← rất quan trọng để trigger autoSaveChanges
-            }
-        }
-    }
-
 }
