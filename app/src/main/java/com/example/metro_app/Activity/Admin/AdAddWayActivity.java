@@ -1,0 +1,215 @@
+package com.example.metro_app.Activity.Admin;
+
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.FragmentManager;
+
+import com.example.metro_app.Activity.MapBoxFragment;
+import com.example.metro_app.Activity.User.JourneyActivity;
+import com.example.metro_app.Model.Station;
+import com.example.metro_app.R;
+import com.example.metro_app.utils.FireStoreHelper;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.firestore.GeoPoint;
+import com.google.gson.FieldAttributes;
+import com.google.gson.Gson;
+import com.google.gson.JsonParser;
+import com.mapbox.geojson.Point;
+import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class AdAddWayActivity extends AppCompatActivity implements AdStationBottomSheet.OnStationUpdatedListener{
+    private MapBoxFragment mapFragment;
+    private FloatingActionButton addStation,addLastRoute,addFirstRoute;
+    private ImageView btnSwap;
+    private TextView tvStart, tvEnd;
+    private Boolean isLuotDi = true ;
+    private  String docId = "LuotDi";
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_ad_add_way);
+        addStation = findViewById(R.id.fabAddStation);
+        addLastRoute = findViewById(R.id.fabAddLastRoute);
+        addFirstRoute = findViewById(R.id.fabAddFirstRoute);
+        tvStart = findViewById(R.id.tvStartStation);
+        tvEnd = findViewById(R.id.tvEndStation);
+        btnSwap = findViewById(R.id.btnSwap);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        mapFragment = new MapBoxFragment();
+        fragmentManager.beginTransaction()
+                .replace(R.id.fragmentContainer, mapFragment)
+                .commit();
+        mapFragment.setOnMapReadyCallback(mapboxMap ->  {
+            // Dùng Bundle
+            Bundle args = new Bundle();
+            args.putString("ROLE", "admin");
+            args.putString("DOC_ID", docId);
+            mapFragment.setArguments(args);
+            fetchAndDrawRoute("LuotDi");
+            mapFragment.zoomToLocation(Point.fromLngLat(106.81406,10.879499));
+        });
+        btnSwap.setOnClickListener(v -> {
+            isLuotDi = !isLuotDi;
+            docId = isLuotDi ? "LuotDi" : "LuotVe";
+            Bundle args = new Bundle();
+            args.putString("ROLE", "admin");
+            args.putString("DOC_ID", docId);
+            mapFragment.setArguments(args);
+            fetchAndDrawRoute(docId);
+        });
+        addLastRoute.setOnClickListener(v -> {
+            if(mapFragment != null){
+                Point center = mapFragment.getCenterPoint();
+                FireStoreHelper.insertPointAt(docId,center,99999, new FireStoreHelper.InsertCallback(){
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(AdAddWayActivity.this, "Add route point at" +center.longitude() + "," + center.latitude(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(String message) {
+
+                    }
+                });
+            }
+        });
+        addFirstRoute.setOnClickListener(v -> {
+            if(mapFragment != null){
+                Point center = mapFragment.getCenterPoint();
+                FireStoreHelper.insertPointAt(docId,center,-1, new FireStoreHelper.InsertCallback(){
+                    @Override
+                    public void onSuccess() {
+                        Toast.makeText(AdAddWayActivity.this, "Add route point at" +center.longitude() + "," + center.latitude(), Toast.LENGTH_SHORT).show();
+                    }
+
+                    @Override
+                    public void onFailure(String message) {
+
+                    }
+                });
+            }
+        });
+        addStation.setOnClickListener(v -> {
+            if (mapFragment != null) {
+                Point center = mapFragment.getCenterPoint(); // vị trí trung tâm bản đồ
+
+                Station newStation = new Station();
+                newStation.StopId = 0;
+                newStation.Lat = center.latitude();
+                newStation.Lng = center.longitude();
+                newStation.Name = "";
+                newStation.Ward = "";
+                newStation.Zone = "";
+
+                // Hiện BottomSheet để chỉnh sửa
+                AdStationBottomSheet sheet = new AdStationBottomSheet(newStation);
+                sheet.show(getSupportFragmentManager(), "AdStationBottomSheet");
+            }
+        });
+
+    }
+    public void fetchAndDrawRoute( String documentId) {
+        // Lấy danh sách trạm
+        FireStoreHelper.getAllStations(new FireStoreHelper.StationListCallback() {
+            @Override
+            public void onSuccess(List<Station> stationList) {
+                mapFragment.clearAllMarkers();
+
+                Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.metro_station);
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 80, 80, false);
+                Gson gson = new Gson();
+
+                for (Station station : stationList) {
+                    Point p = Point.fromLngLat(station.Lng, station.Lat);
+                    PointAnnotationOptions options = new PointAnnotationOptions()
+                            .withPoint(p)
+                            .withIconImage(resizedBitmap)
+                            .withIconSize(1.0f)
+                            .withData(JsonParser.parseString(gson.toJson(station)));
+                    mapFragment.createStationMarker(options);
+                }
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Toast.makeText(AdAddWayActivity.this, "Lỗi khi tải trạm dừng: " + message, Toast.LENGTH_SHORT).show();
+            }
+        });
+        // Lấy tuyến đường
+        FireStoreHelper.getMetroWay(documentId, new FireStoreHelper.MetroWayCallback() {
+            @Override
+            public void onSuccess(List<GeoPoint> geoPoints) {
+                List<Point> pointList = new ArrayList<>();
+                for (GeoPoint gp : geoPoints) {
+                    pointList.add(Point.fromLngLat(gp.getLongitude(), gp.getLatitude()));
+                }
+                Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.deletebtn);
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 40, 40, false);
+                Gson gson = new Gson();
+
+                for (Point point : pointList) {
+                    Station Route = new Station();
+                    Route.Lat = point.latitude();
+                    Route.Lng = point.longitude();
+                    PointAnnotationOptions options = new PointAnnotationOptions()
+                            .withPoint(point)
+                            .withIconImage(resizedBitmap)
+                            .withIconSize(1.0f)
+                            .withData(JsonParser.parseString(gson.toJson(Route)));
+                    Log.d("veeee", "onSuccess: "+docId);
+                    mapFragment.createStationMarker(options);
+                }
+                mapFragment.clearPolylines();
+                mapFragment.drawRouteFromPoints(pointList);
+
+                    FireStoreHelper.getStartEndStationNames(new FireStoreHelper.StationNameCallback() {
+                        @Override
+                        public void onNamesFetched(String startName, String endName) {
+                            if("LuotDi".equals(docId)){
+                            tvStart.setText(startName);
+                            tvEnd.setText(endName);
+                            }
+                            else {
+                                tvStart.setText(endName);
+                                tvEnd.setText(startName);
+                            }
+                        }
+
+                        @Override
+                        public void onFailure(String message) {
+                            tvStart.setText("?");
+                            tvEnd.setText("?");
+                        }
+                    });
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Log.e("FIREBASE_ROUTE", message);
+            }
+        });
+
+
+    }
+
+    @Override
+    public void onStationUpdated() {
+        fetchAndDrawRoute(docId);
+    }
+}

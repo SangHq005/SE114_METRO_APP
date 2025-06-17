@@ -31,6 +31,7 @@ import androidx.fragment.app.Fragment;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.request.target.CustomTarget;
 import com.bumptech.glide.request.transition.Transition;
+import com.example.metro_app.Activity.Admin.AdStationBottomSheet;
 import com.example.metro_app.Activity.User.StationBottomSheet;
 import com.example.metro_app.Model.Station;
 import com.example.metro_app.R;
@@ -99,6 +100,8 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
 public class MapBoxFragment extends Fragment {
+    private String role = "admin"; // default
+    private String docId;
     boolean isFirstRoute = true;
     private MapView mapView;
     private MapboxMap mapboxMap;
@@ -180,9 +183,12 @@ private final LocationObserver locationObserver= new LocationObserver() {
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map_box, container, false);
-
         mapView = view.findViewById(R.id.mapView);
         mapboxMap = mapView.getMapboxMap();
+        if (getArguments() != null) {
+            role = getArguments().getString("ROLE", "user");
+            docId = getArguments().getString("DOC_ID", "LuotDi");
+        }
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(requireContext())
                 .withRouteLineResources(new RouteLineResources.Builder().build()).withRouteLineBelowLayerId("road-label-navigation").build();
         routeLineView = new MapboxRouteLineView(options);
@@ -194,15 +200,11 @@ private final LocationObserver locationObserver= new LocationObserver() {
             mapboxNavigation.registerRoutesObserver(routesObserver);
             mapboxNavigation.registerLocationObserver(locationObserver);
         }
-
-
         LocationComponentPlugin locationComponentPlugin = getLocationComponent(mapView);
         getGestures(mapView).addOnMoveListener(onMoveListener);
-
         mapboxMap.loadStyleUri(
                 Style.MAPBOX_STREETS
         );
-
         AnnotationPlugin annotationPlugin = mapView.getPlugin(Plugin.MAPBOX_ANNOTATION_PLUGIN_ID);
         if (annotationPlugin != null) {
             AnnotationConfig config = new AnnotationConfig(); // có thể truyền context hoặc cấu hình nâng cao
@@ -212,10 +214,19 @@ private final LocationObserver locationObserver= new LocationObserver() {
             pointAnnotationManager.addClickListener(annotation -> {
                 JsonElement data = annotation.getData();
                 if (data != null && data.isJsonObject()) {
-                    Station station = new Gson().fromJson(data, Station.class);
-                    if (station != null) {
-                        StationBottomSheet sheet = new StationBottomSheet(station);
-                        sheet.show(getParentFragmentManager(), "station_sheet");
+                    if("user".equals(role)) {
+                        Station station = new Gson().fromJson(data, Station.class);
+                        if (station != null) {
+                            StationBottomSheet sheet = new StationBottomSheet(station);
+                            sheet.show(getParentFragmentManager(), "station_sheet");
+                        }
+                    }
+                    if("admin".equals(role)) {
+                        Station station = new Gson().fromJson(data, Station.class);
+                        if (station != null) {
+                            AdStationBottomSheet sheet = AdStationBottomSheet.newInstance(station, docId);
+                            sheet.show(getParentFragmentManager(), "station_sheet");
+                        }
                     }
                 }
                 return true;
@@ -253,6 +264,7 @@ private final LocationObserver locationObserver= new LocationObserver() {
         }
     }
 
+
     public void addMarkerAt(Point point, int drawableResId,int size) {
         if (pointAnnotationManager == null) return;
         Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), drawableResId);
@@ -273,11 +285,14 @@ private final LocationObserver locationObserver= new LocationObserver() {
 
     // Hàm vẽ đường từ danh sách các Point
     public void drawRouteFromPoints(List<Point> pointList) {
+        if (getArguments() != null) {
+            docId = getArguments().getString("DOC_ID", "LuotDi");
+        }
         String color1 = "#FF0000"; // Tuyến 1 - đỏ
         String color2 = "#0000FF"; // Tuyến 2 - xanh dương
         if (mapView == null || pointList == null || pointList.size() < 2) return;
         String color = isFirstRoute ? color1 : color2;
-        isFirstRoute = false; // Sau khi vẽ tuyến đầu, chuyển sang tuyến 2
+        isFirstRoute = !isFirstRoute; // Sau khi vẽ tuyến đầu, chuyển sang tuyến 2
         PolylineAnnotationOptions polylineOptions = new PolylineAnnotationOptions()
                 .withPoints(pointList)
                 .withLineColor(color)
@@ -342,6 +357,11 @@ private final LocationObserver locationObserver= new LocationObserver() {
                     .withIconSize(1.0f);
             currentUserMarker = pointAnnotationManager.create(options);
         }
+    }
+    @Nullable
+    public Point getCenterPoint() {
+        if (mapboxMap == null) return null;
+        return mapboxMap.getCameraState().getCenter();
     }
 
     @Override

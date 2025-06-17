@@ -14,13 +14,11 @@ import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
 
-import com.example.metro_app.Model.FireStoreHelper;
+import com.example.metro_app.utils.FireStoreHelper;
 import com.example.metro_app.Model.TimeFilterType;
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.Description;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -31,9 +29,7 @@ import com.example.metro_app.R;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Collections;
 import java.util.List;
-import java.util.Locale;
 import java.util.Map;
 
 public class AdHomeActivity extends AppCompatActivity {

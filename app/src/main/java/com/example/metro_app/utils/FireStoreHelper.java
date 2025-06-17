@@ -1,4 +1,4 @@
-package com.example.metro_app.Model;
+package com.example.metro_app.utils;
 
 import static android.content.ContentValues.TAG;
 
@@ -7,12 +7,18 @@ import android.util.Log;
 import androidx.annotation.Nullable;
 
 import com.example.metro_app.Domain.TicketModel;
+import com.example.metro_app.Model.Station;
+import com.example.metro_app.Model.TimeFilterType;
+import com.example.metro_app.Model.UserModel;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.Timestamp;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.mapbox.geojson.Point;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -21,12 +27,273 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class FireStoreHelper {
     private FirebaseFirestore db;
 
     public FireStoreHelper() {
         db = FirebaseFirestore.getInstance();
     }
+    public static void insertPointAt(String docName, Point newPoint, int index, InsertCallback callback) {
+        GeoPoint newGeoPoint = new GeoPoint(newPoint.latitude(),newPoint.longitude());
+
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("MetroWay").document(docName);
+
+        docRef.get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists() && snapshot.contains("points")) {
+                int finalIndex = 0;
+                List<GeoPoint> currentPoints = (List<GeoPoint>) snapshot.get("points");
+                if (index < 0) finalIndex = 0;
+                if (index > currentPoints.size()) finalIndex = currentPoints.size();
+
+                List<GeoPoint> updatedPoints = new ArrayList<>(currentPoints);
+                updatedPoints.add(finalIndex, newGeoPoint);
+
+                docRef.update("points", updatedPoints)
+                        .addOnSuccessListener(aVoid -> callback.onSuccess())
+                        .addOnFailureListener(e -> callback.onFailure("Lỗi khi cập nhật điểm: " + e.getMessage()));
+            } else {
+                callback.onFailure("Không tìm thấy dữ liệu hoặc field 'points'");
+            }
+        }).addOnFailureListener(e -> callback.onFailure("Lỗi khi truy cập Firestore: " + e.getMessage()));
+    }
+    public interface InsertCallback {
+        void onSuccess();
+        void onFailure(String message);
+    }
+    public static void addStation(Station station, OnCompleteListener<Void> listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("stations")
+                .orderBy("StopId", Query.Direction.DESCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int nextStopId = 1;
+
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        DocumentSnapshot lastDoc = queryDocumentSnapshots.getDocuments().get(0);
+                        Number lastStopId = lastDoc.getLong("StopId");
+                        if (lastStopId != null) {
+                            nextStopId = lastStopId.intValue() + 1;
+                        }
+                    }
+                    station.StopId = nextStopId;
+                    Map<String, Object> data = new HashMap<>();
+                    data.put("StopId", station.StopId);
+                    if (station.Code != null) data.put("Code", station.Code);
+                    if (station.Name != null) data.put("Name", station.Name);
+                    if (station.StopType != null) data.put("StopType", station.StopType);
+                    if (station.Zone != null) data.put("Zone", station.Zone);
+                    if (station.Ward != null) data.put("Ward", station.Ward);
+                    if (station.AddressNo != null) data.put("AddressNo", station.AddressNo);
+                    if (station.Street != null) data.put("Street", station.Street);
+                    if (station.SupportDisability != null) data.put("SupportDisability", station.SupportDisability);
+                    if (station.Status != null) data.put("Status", station.Status);
+                    if (station.Search != null) data.put("Search", station.Search);
+                    if (station.Routes != null) data.put("Routes", station.Routes);
+                    if (station.Lat != 0.0) data.put("Lat", station.Lat);
+                    if (station.Lng != 0.0) data.put("Lng", station.Lng);
+                    db.collection("stations")
+                            .document(String.valueOf(nextStopId))
+                            .set(data)
+                            .addOnCompleteListener(listener);
+
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("addStationAutoId", "Lỗi khi truy vấn StopId lớn nhất", e);
+                });
+    }
+    public static void getStartEndStationNames(StationNameCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        final String[] startName = {null};
+        final String[] endName = {null};
+
+        // Query trạm đầu (StopId nhỏ nhất)
+        db.collection("stations")
+                .orderBy("StopId", Query.Direction.ASCENDING)
+                .limit(1)
+                .get()
+                .addOnSuccessListener(startSnapshot -> {
+                    if (!startSnapshot.isEmpty()) {
+                        Station startStation = startSnapshot.getDocuments().get(0).toObject(Station.class);
+                        startName[0] = startStation != null ? startStation.Name : "Start";
+                    } else {
+                        startName[0] = "Start";
+                    }
+
+                    // Tiếp tục query trạm cuối (StopId lớn nhất)
+                    db.collection("stations")
+                            .orderBy("StopId", Query.Direction.DESCENDING)
+                            .limit(1)
+                            .get()
+                            .addOnSuccessListener(endSnapshot -> {
+                                if (!endSnapshot.isEmpty()) {
+                                    Station endStation = endSnapshot.getDocuments().get(0).toObject(Station.class);
+                                    endName[0] = endStation != null ? endStation.Name : "End";
+                                } else {
+                                    endName[0] = "End";
+                                }
+
+                                // Trả về kết quả qua callback
+                                callback.onNamesFetched(startName[0], endName[0]);
+                            })
+                            .addOnFailureListener(e -> {
+                                Log.e("Firestore", "Lỗi khi truy vấn trạm cuối", e);
+                                callback.onFailure("Lỗi truy vấn trạm cuối");
+                            });
+
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("Firestore", "Lỗi khi truy vấn trạm đầu", e);
+                    callback.onFailure("Lỗi truy vấn trạm đầu");
+                });
+    }
+
+
+    public interface StationNameCallback {
+        void onNamesFetched(String startName, String endName);
+        void onFailure(String message);
+    }
+
+    public static void getStationById(int stopId, StationCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("stations")
+                .document(String.valueOf(stopId))
+                .get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Station station = documentSnapshot.toObject(Station.class);
+                        callback.onSuccess(station);
+                    } else {
+                        callback.onFailure("Không tìm thấy trạm với StopId: " + stopId);
+                    }
+                })
+                .addOnFailureListener(e -> callback.onFailure("Lỗi truy cập Firestore: " + e.getMessage()));
+    }
+
+    public interface StationCallback {
+        void onSuccess(Station station);
+        void onFailure(String message);
+    }
+    public static void updateStation(Station station, OnCompleteListener<Void> listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Map<String, Object> data = new HashMap<>();
+
+        if (station.StopId != 0) data.put("StopId", station.StopId);
+        if (station.Code != null) data.put("Code", station.Code);
+        if (station.Name != null) data.put("Name", station.Name);
+        if (station.StopType != null) data.put("StopType", station.StopType);
+        if (station.Zone != null) data.put("Zone", station.Zone);
+        if (station.Ward != null) data.put("Ward", station.Ward);
+        if (station.AddressNo != null) data.put("AddressNo", station.AddressNo);
+        if (station.Street != null) data.put("Street", station.Street);
+        if (station.SupportDisability != null) data.put("SupportDisability", station.SupportDisability);
+        if (station.Status != null) data.put("Status", station.Status);
+        if (station.Search != null) data.put("Search", station.Search);
+        if (station.Routes != null) data.put("Routes", station.Routes);
+        if (station.Lat != 0.0) data.put("Lat", station.Lat);
+        if (station.Lng != 0.0) data.put("Lng", station.Lng);
+
+        db.collection("stations")
+                .document(String.valueOf(station.StopId))
+                .update(data)
+                .addOnCompleteListener(listener);
+    }
+    public static void deleteStation(int stopId, DeleteCallback callback) {
+        FirebaseFirestore.getInstance()
+                .collection("stations")
+                .document(String.valueOf(stopId))
+                .delete()
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+    public interface DeleteCallback {
+        void onSuccess();
+        void onFailure(String message);
+    }
+    public static void removePointFromRoute(String docName, double lat, double lng, DeleteCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("MetroWay").document(docName);
+
+        docRef.get().addOnSuccessListener(snapshot -> {
+            if (snapshot.exists() && snapshot.contains("points")) {
+                List<GeoPoint> points = (List<GeoPoint>) snapshot.get("points");
+
+                double threshold = 0.0001; // sai số chấp nhận
+                List<GeoPoint> updated = new ArrayList<>();
+
+                boolean found = false;
+                for (GeoPoint p : points) {
+                    if (Math.abs(p.getLatitude() - lat) < threshold &&
+                            Math.abs(p.getLongitude() - lng) < threshold &&
+                            !found) {
+                        found = true; // chỉ xóa điểm đầu tiên khớp
+                        continue;
+                    }
+                    updated.add(p);
+                }
+
+                if (!found) {
+                    callback.onFailure("Không tìm thấy điểm phù hợp để xoá");
+                    return;
+                }
+
+                docRef.update("points", updated)
+                        .addOnSuccessListener(aVoid -> callback.onSuccess())
+                        .addOnFailureListener(e -> callback.onFailure("Lỗi khi cập nhật: " + e.getMessage()));
+            } else {
+                callback.onFailure("Không tìm thấy document hoặc field 'points'");
+            }
+        }).addOnFailureListener(e -> {
+            callback.onFailure("Lỗi truy cập Firestore: " + e.getMessage());
+        });
+    }
+
+
+    public static void getAllStations(StationListCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("stations")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<Station> stationList = new ArrayList<>();
+                    for (QueryDocumentSnapshot doc : querySnapshot) {
+                        Station station = doc.toObject(Station.class);
+                        stationList.add(station);
+                    }
+                    callback.onSuccess(stationList);
+                })
+                .addOnFailureListener(e -> callback.onFailure("Lỗi khi truy cập Firestore: " + e.getMessage()));
+    }
+
+    public interface StationListCallback {
+        void onSuccess(List<Station> stationList);
+        void onFailure(String message);
+    }
+
+    public static void getMetroWay(String docName, MetroWayCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("MetroWay")
+                .document(docName)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    if (snapshot.exists() && snapshot.contains("points")) {
+                        List<GeoPoint> points = (List<GeoPoint>) snapshot.get("points");
+                        callback.onSuccess(points);
+                    } else {
+                        callback.onFailure("Không tìm thấy tài liệu hoặc không có field 'points'");
+                    }
+                })
+                .addOnFailureListener(e -> callback.onFailure("Lỗi khi truy cập Firestore: " + e.getMessage()));
+    }
+
+    public interface MetroWayCallback {
+        void onSuccess(List<GeoPoint> points);
+        void onFailure(String message);
+    }
+
 
     public void getUserById(String uid, Callback<UserModel> callback) {
         if (uid == null || uid.isEmpty()) {
@@ -103,14 +370,11 @@ public class FireStoreHelper {
                     callback.onFailure(e);
                 });
     }
-
-
     public void getTicketsByUserId(String userId, @Nullable String statusFilter, Callback<List<TicketModel>> callback) {
         Query query = db.collection("Ticket").whereEqualTo("UserID", userId);
         if (statusFilter != null) {
             query = query.whereEqualTo("Status", statusFilter);
         }
-
         query.get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     List<TicketModel> ticketList = new ArrayList<>();
@@ -187,9 +451,6 @@ public class FireStoreHelper {
                 .addOnSuccessListener(snp -> cb.onSuccess((long) snp.size()))
                 .addOnFailureListener(cb::onFailure);
     }
-
-
-
     public void sumByFilterForChart(TimeFilterType type, Integer day, Integer month, Integer year, Callback<Map<Integer, Double>> callback) {
         db.collection("Transactions").get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {

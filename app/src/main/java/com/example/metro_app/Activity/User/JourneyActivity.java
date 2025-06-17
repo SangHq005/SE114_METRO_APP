@@ -16,7 +16,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
@@ -25,22 +24,20 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.metro_app.Activity.MapBoxFragment;
 import com.example.metro_app.Adapter.RawRouteAdapter;
-import com.example.metro_app.Model.BusDataHelper;
+import com.example.metro_app.utils.BusDataHelper;
 import com.example.metro_app.Model.BusStop;
 import com.example.metro_app.Model.RawRoute;
-import com.example.metro_app.Model.RouteResponse;
 import com.example.metro_app.Model.RouteVariant;
 import com.example.metro_app.Model.Station;
 import com.example.metro_app.R;
+import com.example.metro_app.utils.FireStoreHelper;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
@@ -50,7 +47,6 @@ import com.mapbox.geojson.Point;
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 
@@ -98,6 +94,7 @@ public class JourneyActivity extends AppCompatActivity{
         Point startPoint =  Point.fromLngLat(106.7009,10.7769 ); // Vị trí trung tâm Sài Gòn
         mapFragment.setOnMapReadyCallback(mapboxMap -> {
             fetchAndDrawRoute("MetroWay","LuotDi");
+
 //            BusDataHelper busDataHelper = new BusDataHelper();
 //            busDataHelper.uploadStationsToFirestore(this);
 //            busDataHelper.uploadGeoPointListToFirestore(this);
@@ -139,59 +136,55 @@ public class JourneyActivity extends AppCompatActivity{
     }
 
     public void fetchAndDrawRoute(String collectionName, String documentId) {
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        // 1. Lấy tuyến đường
+        FireStoreHelper.getMetroWay(documentId, new FireStoreHelper.MetroWayCallback() {
+            @Override
+            public void onSuccess(List<GeoPoint> geoPoints) {
+                List<Point> pointList = new ArrayList<>();
+                for (GeoPoint gp : geoPoints) {
+                    pointList.add(Point.fromLngLat(gp.getLongitude(), gp.getLatitude()));
+                }
 
-        db.collection(collectionName)
-                .document(documentId)
-                .get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        List<GeoPoint> geoPoints = (List<GeoPoint>) documentSnapshot.get("points");
-                        if (geoPoints != null && geoPoints.size() >= 2) {
-                            List<Point> pointList = new ArrayList<>();
-                            for (GeoPoint gp : geoPoints) {
-                                Point point = Point.fromLngLat(gp.getLongitude(), gp.getLatitude());
-                                pointList.add(point);
-                            }
-                            mapFragment.clearPolylines();
-                            mapFragment.drawRouteFromPoints(pointList);
-                            mapFragment.zoomToFit(pointList);
-                        } else {
-                            Log.e("FIREBASE_ROUTE", "Không có đủ điểm để vẽ tuyến");
-                        }
-                    } else {
-                        Log.e("FIREBASE_ROUTE", "Document không tồn tại");
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Log.e("FIREBASE_ROUTE", "Lỗi khi lấy dữ liệu Firestore", e);
-                });
-        // 2. Lấy các trạm dừng và hiển thị marker
-        Gson gson = new Gson();
-        Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.metro_station);
-        Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 80, 80, false);
+                mapFragment.clearPolylines();
+                mapFragment.drawRouteFromPoints(pointList);
+                mapFragment.zoomToFit(pointList);
+            }
 
-        database.collection("stations")
-                .get()
-                .addOnSuccessListener(querySnapshot -> {
-                    mapFragment.clearAllMarkers();
-                    for (DocumentSnapshot doc : querySnapshot) {
-                        Station station = doc.toObject(Station.class);
-                        if (station != null) {
-                            Point p = Point.fromLngLat(station.Lng, station.Lat);
-                            PointAnnotationOptions options = new PointAnnotationOptions()
-                                    .withPoint(p)
-                                    .withIconImage(resizedBitmap)
-                                    .withIconSize(1.0f)
-                                    .withData(JsonParser.parseString(gson.toJson(station))); // Gắn dữ liệu
-                            mapFragment.createStationMarker(options);
-                        }
-                    }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Lỗi khi tải trạm dừng", Toast.LENGTH_SHORT).show();
-                });
+            @Override
+            public void onFailure(String message) {
+                Log.e("FIREBASE_ROUTE", message);
+            }
+        });
+
+        // 2. Lấy danh sách trạm
+        FireStoreHelper.getAllStations(new FireStoreHelper.StationListCallback() {
+            @Override
+            public void onSuccess(List<Station> stationList) {
+                mapFragment.clearAllMarkers();
+
+                Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.metro_station);
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 80, 80, false);
+                Gson gson = new Gson();
+
+                for (Station station : stationList) {
+                    Point p = Point.fromLngLat(station.Lng, station.Lat);
+                    PointAnnotationOptions options = new PointAnnotationOptions()
+                            .withPoint(p)
+                            .withIconImage(resizedBitmap)
+                            .withIconSize(1.0f)
+                            .withData(JsonParser.parseString(gson.toJson(station)));
+                    mapFragment.createStationMarker(options);
+                }
+            }
+
+            @Override
+            public void onFailure(String message) {
+                Toast.makeText(JourneyActivity.this, "Lỗi khi tải trạm dừng: " + message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
+
+
     private void showRouteSelectionDialog() {
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_route_selection, null);
         recyclerViewRoutes = view.findViewById(R.id.recyclerViewRoutes);

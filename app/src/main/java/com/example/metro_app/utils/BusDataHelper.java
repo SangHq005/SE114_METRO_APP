@@ -1,9 +1,14 @@
-package com.example.metro_app.Model;
+package com.example.metro_app.utils;
 
 import android.content.Context;
 import android.os.AsyncTask;
 import android.util.Log;
 
+import com.example.metro_app.Model.BusStop;
+import com.example.metro_app.Model.RawRoute;
+import com.example.metro_app.Model.RouteResponse;
+import com.example.metro_app.Model.RouteVariant;
+import com.example.metro_app.Model.Station;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.gson.Gson;
@@ -216,8 +221,6 @@ public class BusDataHelper {
             }
         }.execute();
     }
-
-
     public static void fetchPathByStop(double oriLat, double oriLng, double desLat, double desLng, OnRouteListFetchedListener listener) {
         String urlStr = "http://apicms.ebms.vn/pathfinding/getpathbystop/"
                 + oriLat + "," + oriLng + "/"
@@ -317,7 +320,6 @@ public class BusDataHelper {
             }
         }.execute();
     }
-
     public static void fetchStopsInBounds(double topLat, double topLng, double botLat, double botLng, OnStopsFetchedListener listener) {
         String urlStr = "http://apicms.ebms.vn/businfo/getstopsinbounds/"
                 + botLng + "/" + botLat + "/" + topLng + "/" + topLat;

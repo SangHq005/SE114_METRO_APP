@@ -1,6 +1,5 @@
 package com.example.metro_app.Activity.Admin;
 
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
@@ -18,7 +17,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
 import com.example.metro_app.Activity.LoginActivity;
-import com.example.metro_app.Model.FireStoreHelper;
+import com.example.metro_app.utils.FireStoreHelper;
 import com.example.metro_app.Model.UserModel;
 import com.example.metro_app.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;

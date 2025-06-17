@@ -1,6 +1,8 @@
 package com.example.metro_app.Model;
 
-public class Station {
+import java.io.Serializable;
+
+public class Station implements Serializable {
     public int StopId;
     public String Code;
     public String Name;

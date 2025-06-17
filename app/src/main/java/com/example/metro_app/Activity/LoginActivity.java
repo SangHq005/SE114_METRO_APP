@@ -13,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.metro_app.Activity.Admin.AdHomeActivity;
 import com.example.metro_app.Activity.User.HomeActivity;
+import com.example.metro_app.Model.UserModel;
 import com.example.metro_app.R;
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInAccount;
@@ -112,7 +113,17 @@ public class LoginActivity extends AppCompatActivity {
                                                         .update(updates)
                                                         .addOnSuccessListener(aVoid -> {
                                                             Log.d("LOGGin", "Login: "+updates.get("Name"));
-                                                            saveUserInfo(user);
+                                                            UserModel userModel = new UserModel();
+                                                            userModel.setUid(uid);
+                                                            userModel.setName(user.getDisplayName());
+                                                            userModel.setEmail(user.getEmail());
+                                                            userModel.setAvatarUrl(user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+                                                            userModel.setPhoneNumber(documentSnapshot.getString("PhoneNumber"));
+                                                            userModel.setCCCD(documentSnapshot.getString("CCCD"));
+                                                            userModel.setRole(documentSnapshot.getString("Role"));
+
+                                                            saveUserInfo(userModel);
+
                                                             if ("Admin".equals(role)) {
                                                                 startActivity(new Intent(LoginActivity.this, AdHomeActivity.class));
                                                             } else {
@@ -138,7 +149,17 @@ public class LoginActivity extends AppCompatActivity {
 
                                                 db.collection("Account").document(uid).set(data)
                                                         .addOnSuccessListener(aVoid -> {
-                                                            saveUserInfo(user);
+                                                            UserModel userModel = new UserModel();
+                                                            userModel.setUid(uid);
+                                                            userModel.setName(user.getDisplayName());
+                                                            userModel.setEmail(user.getEmail());
+                                                            userModel.setAvatarUrl(user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+                                                            userModel.setPhoneNumber(documentSnapshot.getString("PhoneNumber"));
+                                                            userModel.setCCCD(documentSnapshot.getString("CCCD"));
+                                                            userModel.setRole(documentSnapshot.getString("Role"));
+
+                                                            saveUserInfo(userModel);
+
                                                             Intent intent = new Intent(LoginActivity.this, HomeActivity.class);
                                                             intent.putExtra("UUID", uid);
                                                             startActivity(intent);
@@ -155,24 +176,21 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void saveUserInfo(FirebaseUser user) {
+    private void saveUserInfo(UserModel user) {
         if (user != null) {
             SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
-            db.collection("Account").document(user.getUid().toString()).get().addOnSuccessListener(documentSnapshot -> {
-                if(documentSnapshot.exists()){
-                    CCCD =documentSnapshot.getString("CCCD");
-                    SharedPreferences.Editor editor = prefs.edit();
-                    editor.putString("UserID",user.getUid());
-                    editor.putString("phoneNumber", documentSnapshot.getString("PhoneNumber"));
-                    Log.d("SDT", "saveUserInfo: "+documentSnapshot.getString("PhoneNumber"));
-                    editor.putString("name", user.getDisplayName());
-                    editor.putString("email", user.getEmail());
-                    editor.putString("photo", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
-                    editor.putString("CCCD",CCCD);
-                    editor.apply();
-                }
-            });
+            SharedPreferences.Editor editor = prefs.edit();
 
+            editor.putString("UserID", user.getUid());
+            editor.putString("name", user.getName());
+            editor.putString("email", user.getEmail());
+            editor.putString("photo", user.getAvatarUrl());
+            editor.putString("phoneNumber", user.getPhoneNumber());
+            editor.putString("CCCD", user.getCCCD());
+            editor.putString("role", user.getRole());
+
+            editor.apply();
         }
     }
+
 }

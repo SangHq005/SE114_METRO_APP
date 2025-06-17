@@ -20,7 +20,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.example.metro_app.Model.FireStoreHelper;
+import com.example.metro_app.utils.FireStoreHelper;
 import com.example.metro_app.Model.UserModel;
 import com.example.metro_app.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
