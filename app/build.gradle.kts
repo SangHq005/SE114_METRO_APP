@@ -118,6 +118,7 @@ dependencies {
     implementation(libs.appcompat) // androidx.appcompat
     implementation(libs.activity) // androidx.activity
     implementation(libs.constraintlayout) // androidx.constraintlayout
+    implementation("io.github.chaosleung:pinview:1.4.4")
 }
 
 configurations.all {
