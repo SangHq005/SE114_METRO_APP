@@ -10,19 +10,15 @@ import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.metro_app.Activity.MapBoxFragment;
-import com.example.metro_app.Activity.User.JourneyActivity;
 import com.example.metro_app.Model.Station;
 import com.example.metro_app.R;
 import com.example.metro_app.utils.FireStoreHelper;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton; // Import kiểu mới
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.firebase.firestore.GeoPoint;
-import com.google.gson.FieldAttributes;
 import com.google.gson.Gson;
 import com.google.gson.JsonParser;
 import com.mapbox.geojson.Point;
@@ -31,18 +27,23 @@ import com.mapbox.maps.plugin.annotation.generated.PointAnnotationOptions;
 import java.util.ArrayList;
 import java.util.List;
 
-public class AdAddWayActivity extends AppCompatActivity implements AdStationBottomSheet.OnStationUpdatedListener{
+public class AdAddWayActivity extends AppCompatActivity implements AdStationBottomSheet.OnStationUpdatedListener {
     private MapBoxFragment mapFragment;
-    private FloatingActionButton addStation,addLastRoute,addFirstRoute;
+
+    private ExtendedFloatingActionButton addStation;
+    private FloatingActionButton addLastRoute, addFirstRoute;
+
     private ImageView btnSwap;
     private TextView tvStart, tvEnd;
-    private Boolean isLuotDi = true ;
-    private  String docId = "LuotDi";
+    private Boolean isLuotDi = true;
+    private String docId = "LuotDi";
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_ad_add_way);
+
         addStation = findViewById(R.id.fabAddStation);
         addLastRoute = findViewById(R.id.fabAddLastRoute);
         addFirstRoute = findViewById(R.id.fabAddFirstRoute);
@@ -55,15 +56,17 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, mapFragment)
                 .commit();
-        mapFragment.setOnMapReadyCallback(mapboxMap ->  {
+
+        mapFragment.setOnMapReadyCallback(mapboxMap -> {
             // Dùng Bundle
             Bundle args = new Bundle();
             args.putString("ROLE", "admin");
             args.putString("DOC_ID", docId);
             mapFragment.setArguments(args);
             fetchAndDrawRoute("LuotDi");
-            mapFragment.zoomToLocation(Point.fromLngLat(106.81406,10.879499));
+            mapFragment.zoomToLocation(Point.fromLngLat(106.81406, 10.879499));
         });
+
         btnSwap.setOnClickListener(v -> {
             isLuotDi = !isLuotDi;
             docId = isLuotDi ? "LuotDi" : "LuotVe";
@@ -73,41 +76,44 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
             mapFragment.setArguments(args);
             fetchAndDrawRoute(docId);
         });
+
         addLastRoute.setOnClickListener(v -> {
-            if(mapFragment != null){
+            if (mapFragment != null) {
                 Point center = mapFragment.getCenterPoint();
-                FireStoreHelper.insertPointAt(docId,center,99999, new FireStoreHelper.InsertCallback(){
+                FireStoreHelper.insertPointAt(docId, center, 99999, new FireStoreHelper.InsertCallback() {
                     @Override
                     public void onSuccess() {
-                        Toast.makeText(AdAddWayActivity.this, "Add route point at" +center.longitude() + "," + center.latitude(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AdAddWayActivity.this, "Đã thêm điểm cuối tại " + center.longitude() + "," + center.latitude(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onFailure(String message) {
-
+                        Toast.makeText(AdAddWayActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
+
         addFirstRoute.setOnClickListener(v -> {
-            if(mapFragment != null){
+            if (mapFragment != null) {
                 Point center = mapFragment.getCenterPoint();
-                FireStoreHelper.insertPointAt(docId,center,-1, new FireStoreHelper.InsertCallback(){
+                FireStoreHelper.insertPointAt(docId, center, -1, new FireStoreHelper.InsertCallback() {
                     @Override
                     public void onSuccess() {
-                        Toast.makeText(AdAddWayActivity.this, "Add route point at" +center.longitude() + "," + center.latitude(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AdAddWayActivity.this, "Đã thêm điểm đầu tại " + center.longitude() + "," + center.latitude(), Toast.LENGTH_SHORT).show();
                     }
 
                     @Override
                     public void onFailure(String message) {
-
+                        Toast.makeText(AdAddWayActivity.this, "Lỗi: " + message, Toast.LENGTH_SHORT).show();
                     }
                 });
             }
         });
+
         addStation.setOnClickListener(v -> {
             if (mapFragment != null) {
-                Point center = mapFragment.getCenterPoint(); // vị trí trung tâm bản đồ
+                Point center = mapFragment.getCenterPoint();
 
                 Station newStation = new Station();
                 newStation.StopId = 0;
@@ -117,15 +123,13 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
                 newStation.Ward = "";
                 newStation.Zone = "";
 
-                // Hiện BottomSheet để chỉnh sửa
                 AdStationBottomSheet sheet = new AdStationBottomSheet(newStation);
                 sheet.show(getSupportFragmentManager(), "AdStationBottomSheet");
             }
         });
-
     }
-    public void fetchAndDrawRoute( String documentId) {
-        // Lấy danh sách trạm
+
+    public void fetchAndDrawRoute(String documentId) {
         FireStoreHelper.getAllStations(new FireStoreHelper.StationListCallback() {
             @Override
             public void onSuccess(List<Station> stationList) {
@@ -172,31 +176,30 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
                             .withIconImage(resizedBitmap)
                             .withIconSize(1.0f)
                             .withData(JsonParser.parseString(gson.toJson(Route)));
-                    Log.d("veeee", "onSuccess: "+docId);
+                    Log.d("veeee", "onSuccess: " + docId);
                     mapFragment.createStationMarker(options);
                 }
                 mapFragment.clearPolylines();
                 mapFragment.drawRouteFromPoints(pointList);
 
-                    FireStoreHelper.getStartEndStationNames(new FireStoreHelper.StationNameCallback() {
-                        @Override
-                        public void onNamesFetched(String startName, String endName) {
-                            if("LuotDi".equals(docId)){
+                FireStoreHelper.getStartEndStationNames(new FireStoreHelper.StationNameCallback() {
+                    @Override
+                    public void onNamesFetched(String startName, String endName) {
+                        if ("LuotDi".equals(docId)) {
                             tvStart.setText(startName);
                             tvEnd.setText(endName);
-                            }
-                            else {
-                                tvStart.setText(endName);
-                                tvEnd.setText(startName);
-                            }
+                        } else {
+                            tvStart.setText(endName);
+                            tvEnd.setText(startName);
                         }
+                    }
 
-                        @Override
-                        public void onFailure(String message) {
-                            tvStart.setText("?");
-                            tvEnd.setText("?");
-                        }
-                    });
+                    @Override
+                    public void onFailure(String message) {
+                        tvStart.setText("?");
+                        tvEnd.setText("?");
+                    }
+                });
             }
 
             @Override
@@ -204,8 +207,6 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
                 Log.e("FIREBASE_ROUTE", message);
             }
         });
-
-
     }
 
     @Override
