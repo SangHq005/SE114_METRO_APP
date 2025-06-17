@@ -104,7 +104,10 @@
         <activity android:name=".Activity.ForgotPasswordActivity"
             android:exported="true" />
         <activity android:name=".Activity.Admin.AddNewsActivity"
-            android:exported="true" />
+            android:exported="true" >
+
+
+        </activity>
         <activity android:name=".Activity.Admin.AdAddWayActivity"
             android:exported="true" />
         <activity android:name=".Activity.Admin.AdHomeActivity"
