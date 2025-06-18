@@ -75,7 +75,7 @@
 
     <!-- RecyclerView for Routes -->
     <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/recycler_view_news"
+        android:id="@+id/recycler_view_news_list"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="20dp"
