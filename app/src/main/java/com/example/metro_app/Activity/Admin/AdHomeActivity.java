@@ -155,7 +155,7 @@ public class AdHomeActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_ad_profile) {
-                startActivity(new Intent(AdHomeActivity.this, AdProfileActivity.class));
+                startActivity(new Intent(AdHomeActivity.this, AdDashboardActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
             }

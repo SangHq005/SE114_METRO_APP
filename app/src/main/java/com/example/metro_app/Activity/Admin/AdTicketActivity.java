@@ -250,7 +250,7 @@ public class AdTicketActivity extends AppCompatActivity {
                 finish();
                 return true;
             } else if (id == R.id.nav_ad_profile) {
-                startActivity(new Intent(AdTicketActivity.this, AdProfileActivity.class));
+                startActivity(new Intent(AdTicketActivity.this, AdDashboardActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
             }

@@ -128,7 +128,7 @@
             android:exported="true" />
         <activity android:name=".Activity.Admin.AddRouteActivity"
             android:exported="true" />
-        <activity android:name=".Activity.Admin.AdProfileActivity"
+        <activity android:name=".Activity.Admin.AdDashboardActivity"
             android:exported="true" />
         <activity
             android:name=".Activity.Admin.ScanQRActivity"
