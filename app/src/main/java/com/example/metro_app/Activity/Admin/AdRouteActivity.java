@@ -27,7 +27,6 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QuerySnapshot;
 
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -237,7 +236,7 @@ public class AdRouteActivity extends AppCompatActivity {
                 overridePendingTransition(0, 0);
                 return true;
             } else if (id == R.id.nav_ad_profile) {
-                startActivity(new Intent(AdRouteActivity.this, AdProfileActivity.class));
+                startActivity(new Intent(AdRouteActivity.this, AdDashboardActivity.class));
                 overridePendingTransition(0, 0);
                 return true;
             }
