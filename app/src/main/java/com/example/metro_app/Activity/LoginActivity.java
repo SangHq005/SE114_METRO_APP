@@ -159,6 +159,19 @@ public class LoginActivity extends AppCompatActivity {
     private void onLoginSuccess(FirebaseUser user) {
         if (user == null) return;
 
+        if (!user.isEmailVerified()) {
+            Toast.makeText(this, "Vui lòng xác minh địa chỉ email trước khi đăng nhập.", Toast.LENGTH_LONG).show();
+
+            // Gợi ý gửi lại email xác minh
+            user.sendEmailVerification()
+                    .addOnSuccessListener(aVoid -> Toast.makeText(this, "Đã gửi email xác minh.", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(this, "Gửi email xác minh thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
+            mAuth.signOut(); // đăng xuất khỏi phiên
+            return;
+        }
+
+        // Đã xác minh email
         String uid = user.getUid();
         db.collection("Account").document(uid)
                 .get()
@@ -173,6 +186,7 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(this, "Lỗi khi lấy thông tin người dùng.", Toast.LENGTH_SHORT).show();
                 });
     }
+
 
     private void handleExistingUser(FirebaseUser user, DocumentSnapshot documentSnapshot) {
         String uid = user.getUid();

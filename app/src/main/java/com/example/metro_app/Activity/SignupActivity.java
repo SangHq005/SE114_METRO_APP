@@ -17,12 +17,14 @@ import com.example.metro_app.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
 public class SignupActivity extends AppCompatActivity {
 
-    private TextInputEditText etEmail, etPhone, etPassword, etConfirmPassword;
+    private TextInputEditText etFullName,etEmail, etPhone, etPassword, etConfirmPassword;
     private Button btnSignup;
     private TextView tvLoginNow;
 
@@ -41,7 +43,7 @@ public class SignupActivity extends AppCompatActivity {
         setContentView(R.layout.activity_signup);
 
         mAuth = FirebaseAuth.getInstance();
-
+        etFullName = findViewById(R.id.etSignupFullName);
         etEmail = findViewById(R.id.etSignupEmail);
         etPhone = findViewById(R.id.etSignupPhone);
         etPassword = findViewById(R.id.etSignupPassword);
@@ -79,10 +81,16 @@ public class SignupActivity extends AppCompatActivity {
     }
 
     private void validateAndProceed() {
+        String fullName = etFullName.getText().toString().trim();
         String email = etEmail.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
         String password = etPassword.getText().toString().trim();
         String confirmPassword = etConfirmPassword.getText().toString().trim();
+
+        if (TextUtils.isEmpty(fullName)) {
+            etFullName.setError("Vui lòng nhập họ và tên");
+            return;
+        }
 
         if (TextUtils.isEmpty(email) || !Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
             etEmail.setError("Email không hợp lệ");
@@ -101,10 +109,33 @@ public class SignupActivity extends AppCompatActivity {
             return;
         }
 
-        // TODO: Bắt đầu luồng gửi OTP ở đây
-
-        showPasscodeView();
+        mAuth.createUserWithEmailAndPassword(email, password)
+                .addOnCompleteListener(this, task -> {
+                    if (task.isSuccessful()) {
+                        // Gửi email xác minh
+                        mAuth.getCurrentUser().sendEmailVerification()
+                                .addOnCompleteListener(verifyTask -> {
+                                    if (verifyTask.isSuccessful()) {
+                                        saveUserToFirestore(email, phone, String.valueOf(etFullName.getText()));
+                                        Toast.makeText(this,
+                                                "Đăng ký thành công. Vui lòng xác minh email trước khi đăng nhập.",
+                                                Toast.LENGTH_LONG).show();
+                                        mAuth.signOut(); // Bắt buộc đăng xuất ngay sau khi đăng ký
+                                        finish(); // Quay về màn hình đăng nhập
+                                    } else {
+                                        Toast.makeText(this,
+                                                "Không thể gửi email xác minh: " + verifyTask.getException().getMessage(),
+                                                Toast.LENGTH_SHORT).show();
+                                    }
+                                });
+                    } else {
+                        Toast.makeText(this,
+                                "Đăng ký thất bại: " + task.getException().getMessage(),
+                                Toast.LENGTH_LONG).show();
+                    }
+                });
     }
+
 
     private void showPasscodeView() {
         passcodeView.setVisibility(View.VISIBLE);
@@ -129,6 +160,30 @@ public class SignupActivity extends AppCompatActivity {
                     } else {
                         Toast.makeText(SignupActivity.this, "Đăng ký thất bại: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
+                });
+    }
+    private void saveUserToFirestore(String email, String phone,String name) {
+        String uid = mAuth.getCurrentUser().getUid();
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("Email", email);
+        data.put("PhoneNumber", phone);
+        data.put("Role", "User");
+        data.put("Name", name);
+        data.put("CCCD", "");
+        data.put("avatarUrl", "");
+        data.put("firstTimeLogin", com.google.firebase.Timestamp.now());
+
+        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("Account")
+                .document(uid)
+                .set(data)
+                .addOnSuccessListener(aVoid -> {
+                    // Optional log
+                    android.util.Log.d("SignupActivity", "Thông tin người dùng đã được lưu.");
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Lưu thông tin lên Firestore thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 

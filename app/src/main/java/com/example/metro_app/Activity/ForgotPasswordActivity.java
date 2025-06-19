@@ -87,10 +87,16 @@ public class ForgotPasswordActivity extends AppCompatActivity {
             userEmail = email;
 
             // TODO: Gửi mã OTP/link reset đến email ở đây
-            Toast.makeText(this, "Đang gửi mã đến " + email, Toast.LENGTH_SHORT).show();
-
-            currentStep = 2;
-            updateUiForStep(currentStep);
+            FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+                    .addOnCompleteListener(task -> {
+                        if (task.isSuccessful()) {
+                            Toast.makeText(this, "Hướng dẫn đặt lại mật khẩu đã được gửi đến email của bạn", Toast.LENGTH_LONG).show();
+                        } else {
+                            Toast.makeText(this, "Không thể gửi email: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        }
+                    });
+//            currentStep = 2;
+//            updateUiForStep(currentStep);
         });
 
         btnVerifyCode.setOnClickListener(v -> {
