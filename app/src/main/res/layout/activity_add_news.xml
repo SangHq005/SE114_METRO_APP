@@ -378,16 +378,6 @@
                             app:iconGravity="textStart"
                             style="@style/Widget.MaterialComponents.Button" />
 
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/emojiBtn"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
-                            app:cornerRadius="12dp"
-                            app:icon="@drawable/ic_emoji"
-                            app:iconTint="@android:color/white"
-                            android:contentDescription="Emoji"
-                            style="@style/Widget.MaterialComponents.Button" />
-
                     </LinearLayout>
 
                 </LinearLayout>

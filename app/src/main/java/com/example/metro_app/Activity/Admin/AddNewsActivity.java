@@ -2,17 +2,18 @@ package com.example.metro_app.Activity.Admin;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.Html;
 import android.text.SpannableString;
 import android.text.Spanned;
-import android.text.TextWatcher;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
 import android.util.Log;
 import android.view.View;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -38,10 +39,6 @@ public class AddNewsActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private FirebaseFirestore db;
     private boolean isUploading = false;
-    private boolean isBoldEnabled = false;
-    private boolean isItalicEnabled = false;
-    private boolean isUnderlineEnabled = false;
-    private boolean isTextChanging = false;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -69,7 +66,6 @@ public class AddNewsActivity extends AppCompatActivity {
         }
 
         setupListeners();
-        setupTextWatcher();
     }
 
     private void setupListeners() {
@@ -79,28 +75,19 @@ public class AddNewsActivity extends AppCompatActivity {
             imagePickerLauncher.launch(intent);
         });
 
-        // Toggle Button Đậm
+        // Bold Button
         binding.boldBtn.setOnClickListener(v -> {
-            isBoldEnabled = !isBoldEnabled;
-            updateButtonState(binding.boldBtn, isBoldEnabled);
-            applySelectedOrNewStyles();
-            Log.d(TAG, "Bold toggled to: " + isBoldEnabled);
+            toggleStyle(new StyleSpan(android.graphics.Typeface.BOLD), StyleSpan.class, android.graphics.Typeface.BOLD);
         });
 
-        // Toggle Button Nghiêng
+        // Italic Button
         binding.italicBtn.setOnClickListener(v -> {
-            isItalicEnabled = !isItalicEnabled;
-            updateButtonState(binding.italicBtn, isItalicEnabled);
-            applySelectedOrNewStyles();
-            Log.d(TAG, "Italic toggled to: " + isItalicEnabled);
+            toggleStyle(new StyleSpan(android.graphics.Typeface.ITALIC), StyleSpan.class, android.graphics.Typeface.ITALIC);
         });
 
-        // Toggle Button Gạch chân
+        // Underline Button
         binding.underlineBtn.setOnClickListener(v -> {
-            isUnderlineEnabled = !isUnderlineEnabled;
-            updateButtonState(binding.underlineBtn, isUnderlineEnabled);
-            applySelectedOrNewStyles();
-            Log.d(TAG, "Underline toggled to: " + isUnderlineEnabled);
+            toggleStyle(new UnderlineSpan(), UnderlineSpan.class, 0);
         });
 
         binding.saveBtn.setOnClickListener(v -> {
@@ -112,95 +99,42 @@ public class AddNewsActivity extends AppCompatActivity {
         binding.backBtn.setOnClickListener(v -> finish());
     }
 
-    private void setupTextWatcher() {
-        binding.contentEditText.addTextChangedListener(new TextWatcher() {
-            @Override
-            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+    private void toggleStyle(Object style, Class<?> styleClass, int styleType) {
+        int start = binding.contentEditText.getSelectionStart();
+        int end = binding.contentEditText.getSelectionEnd();
 
-            @Override
-            public void onTextChanged(CharSequence s, int start, int before, int count) {
-                if (count > 0 && !isTextChanging) {
-                    isTextChanging = true;
-                    applyCurrentStylesToNewText(start, count);
-                    isTextChanging = false;
+        if (start >= 0 && end > start) {
+            SpannableString spannable = new SpannableString(binding.contentEditText.getText());
+            boolean hasStyle = false;
+
+            // Kiểm tra xem vùng chọn đã có định dạng hay chưa
+            Object[] spans = spannable.getSpans(start, end, styleClass);
+            for (Object span : spans) {
+                if (styleClass == StyleSpan.class) {
+                    if (((StyleSpan) span).getStyle() == styleType &&
+                            spannable.getSpanStart(span) <= start &&
+                            spannable.getSpanEnd(span) >= end) {
+                        hasStyle = true;
+                        spannable.removeSpan(span);
+                    }
+                } else if (styleClass == UnderlineSpan.class) {
+                    if (spannable.getSpanStart(span) <= start &&
+                            spannable.getSpanEnd(span) >= end) {
+                        hasStyle = true;
+                        spannable.removeSpan(span);
+                    }
                 }
             }
 
-            @Override
-            public void afterTextChanged(Editable s) {}
-        });
-    }
-
-    private void updateButtonState(Button button, boolean isEnabled) {
-        button.setEnabled(!isEnabled);
-        button.setBackgroundColor(isEnabled ? getResources().getColor(android.R.color.holo_blue_light) : getResources().getColor(android.R.color.white));
-        button.setTextColor(isEnabled ? getResources().getColor(android.R.color.white) : getResources().getColor(android.R.color.black));
-    }
-
-    private void applySelectedOrNewStyles() {
-        int start = binding.contentEditText.getSelectionStart();
-        int end = binding.contentEditText.getSelectionEnd();
-        int length = binding.contentEditText.getText().length();
-        if (start == end) { // Không có văn bản được chọn, áp dụng từ con trỏ
-            isTextChanging = true;
-            SpannableString spannable = new SpannableString(binding.contentEditText.getText());
-            if (!isBoldEnabled && !isItalicEnabled && !isUnderlineEnabled) {
-                // Khi toggle off tất cả, xóa định dạng từ con trỏ đến cuối
-                applyStyles(spannable, start, length);
-            } else {
-                applyStyles(spannable, start, length);
+            // Nếu không có định dạng, áp dụng định dạng mới
+            if (!hasStyle) {
+                spannable.setSpan(style, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
             }
+
             binding.contentEditText.setText(spannable);
-            binding.contentEditText.setSelection(start); // Giữ con trỏ tại vị trí hiện tại
-            isTextChanging = false;
-        } else if (start >= 0 && end > start) { // Có văn bản được chọn
-            isTextChanging = true;
-            SpannableString spannable = new SpannableString(binding.contentEditText.getText());
-            applyStyles(spannable, start, end);
-            binding.contentEditText.setText(spannable);
-            binding.contentEditText.setSelection(end);
-            isTextChanging = false;
-        }
-    }
-
-    private void applyCurrentStyles() {
-        int start = binding.contentEditText.getSelectionStart();
-        int end = binding.contentEditText.getSelectionEnd();
-        if (start >= 0 && end > start) {
-            isTextChanging = true;
-            SpannableString spannable = new SpannableString(binding.contentEditText.getText());
-            applyStyles(spannable, start, end);
-            binding.contentEditText.setText(spannable);
-            binding.contentEditText.setSelection(end);
-            isTextChanging = false;
-        }
-    }
-
-    private void applyCurrentStylesToNewText(int start, int count) {
-        int end = start + count;
-        SpannableString spannable = new SpannableString(binding.contentEditText.getText());
-        applyStyles(spannable, start, end);
-        binding.contentEditText.setText(spannable);
-        binding.contentEditText.setSelection(end);
-    }
-
-    private void applyStyles(SpannableString spannable, int start, int end) {
-        Log.d(TAG, "Applying styles: start=" + start + ", end=" + end + ", bold=" + isBoldEnabled + ", italic=" + isItalicEnabled + ", underline=" + isUnderlineEnabled);
-        // Xóa định dạng cũ trong phạm vi từ start đến end
-        StyleSpan[] boldSpans = spannable.getSpans(start, end, StyleSpan.class);
-        for (StyleSpan span : boldSpans) spannable.removeSpan(span);
-        UnderlineSpan[] underlineSpans = spannable.getSpans(start, end, UnderlineSpan.class);
-        for (UnderlineSpan span : underlineSpans) spannable.removeSpan(span);
-
-        // Áp dụng hoặc hủy định dạng dựa trên trạng thái toggle
-        if (isBoldEnabled) {
-            spannable.setSpan(new StyleSpan(android.graphics.Typeface.BOLD), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-        if (isItalicEnabled) {
-            spannable.setSpan(new StyleSpan(android.graphics.Typeface.ITALIC), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
-        }
-        if (isUnderlineEnabled) {
-            spannable.setSpan(new UnderlineSpan(), start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+            binding.contentEditText.setSelection(start, end);
+        } else {
+            Toast.makeText(this, "Vui lòng chọn văn bản để áp dụng định dạng", Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -229,7 +163,6 @@ public class AddNewsActivity extends AppCompatActivity {
 
     private void uploadImageAndSaveNews() {
         isUploading = true;
-       // binding.progressBar.setVisibility(View.VISIBLE);
         binding.saveBtn.setEnabled(false);
 
         MediaManager.get().upload(selectedImageUri)
@@ -265,11 +198,22 @@ public class AddNewsActivity extends AppCompatActivity {
 
         String date = new SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(new Date());
 
+        // Lấy userid từ SharedPreferences
+        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+        String userid = prefs.getString("UserID", null);
+
+        if (userid == null) {
+            Toast.makeText(this, "Không tìm thấy thông tin người dùng, vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
+            resetUploadState();
+            return;
+        }
+
         Map<String, Object> news = new HashMap<>();
         news.put("title", title);
         news.put("date", date);
         news.put("pic", imageUrl);
         news.put("description", contentHtml);
+        news.put("userid", userid);
 
         db.collection("news")
                 .add(news)
@@ -286,7 +230,6 @@ public class AddNewsActivity extends AppCompatActivity {
 
     private void resetUploadState() {
         isUploading = false;
-        //binding.progressBar.setVisibility(View.GONE);
         binding.saveBtn.setEnabled(true);
     }
 }

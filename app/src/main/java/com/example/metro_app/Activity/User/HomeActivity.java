@@ -1,7 +1,6 @@
 package com.example.metro_app.Activity.User;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,8 +38,6 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void initPopular() {
-
-
         // Thiết lập LayoutManager
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.recyclerViewPopular.setLayoutManager(layoutManager);
@@ -52,12 +49,9 @@ public class HomeActivity extends AppCompatActivity {
                 binding.recyclerViewPopular.setAdapter(adapter);
             }
         });
-
     }
 
     private void initNews() {
-
-
         // Thiết lập LayoutManager
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false);
         binding.recyclerViewNews.setLayoutManager(layoutManager);
@@ -71,13 +65,12 @@ public class HomeActivity extends AppCompatActivity {
         binding.viewAllNewsBtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(HomeActivity.this,AllNewsActivity.class));
+                startActivity(new Intent(HomeActivity.this, AllNewsActivity.class));
             }
         });
     }
 
     private void initCategory() {
-
         GridLayoutManager layoutManager = new GridLayoutManager(HomeActivity.this, 3);
         binding.recyclerViewCategory.setLayoutManager(layoutManager);
 
@@ -114,7 +107,6 @@ public class HomeActivity extends AppCompatActivity {
                 }
             });
             binding.recyclerViewCategory.setAdapter(adapter);
-
         });
     }
 }

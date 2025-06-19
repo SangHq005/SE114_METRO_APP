@@ -51,8 +51,8 @@ public class DetailNewsActivity extends AppCompatActivity {
         } else if (newsItem != null) {
             displayNewsItem();
         }
-        
-         binding.backBtn.setOnClickListener(v -> finish());
+
+        binding.backBtn.setOnClickListener(v -> finish());
     }
 
     private void displayPopularItem() {
@@ -105,5 +105,4 @@ public class DetailNewsActivity extends AppCompatActivity {
                 .load(newsItem.getPic())
                 .into(binding.pic);
     }
-
 }

@@ -2,6 +2,8 @@ package com.example.metro_app.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.text.Html;
+import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
 
@@ -36,7 +38,11 @@ public class AllNewsAdapter extends RecyclerView.Adapter<AllNewsAdapter.Viewhold
     public void onBindViewHolder(@NonNull Viewholder holder, int position) {
         NewsModel item = newsModel.get(position);
         holder.binding.title.setText(item.getTitle());
-        holder.binding.description.setText(item.getDescription());
+
+        // Hiển thị description chứa HTML
+        Spanned htmlContent = Html.fromHtml(item.getDescription(), Html.FROM_HTML_MODE_COMPACT, null, null);
+        holder.binding.description.setText(htmlContent);
+
         holder.binding.date.setText(item.getDate());
 
         Glide.with(holder.itemView.getContext())
