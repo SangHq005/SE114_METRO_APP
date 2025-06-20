@@ -105,9 +105,10 @@
             android:exported="true" />
         <activity android:name=".Activity.Admin.AddNewsActivity"
             android:exported="true" >
-
-
         </activity>
+        <activity android:name=".Activity.Admin.AdNewsListActivity"
+            android:exported="true" />
+
         <activity android:name=".Activity.Admin.AdAddWayActivity"
             android:exported="true" />
         <activity android:name=".Activity.Admin.AdHomeActivity"
@@ -152,6 +153,9 @@
         </activity>
         <activity
             android:name=".Activity.User.ScanQRActivity"
+            android:exported="true"/>
+        <activity
+            android:name=".Activity.Admin.AdEditNewsActivity"
             android:exported="true"/>
         <uses-library android:name="org.osmdroid" android:required="false"/>
     </application>

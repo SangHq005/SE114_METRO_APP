@@ -156,7 +156,7 @@ public class AdDashboardActivity extends AppCompatActivity {
             // News Management
             if (cardManageNews != null) {
                 cardManageNews.setOnClickListener(v -> {
-                    safeNavigate(AddNewsActivity.class); // Assuming you'll create this
+                    safeNavigate(AdNewsListActivity.class); // Assuming you'll create this
                 });
             }
 

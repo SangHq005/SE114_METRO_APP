@@ -10,11 +10,9 @@ import android.text.SpannableString;
 import android.text.Spanned;
 import android.text.style.StyleSpan;
 import android.text.style.UnderlineSpan;
-import android.util.Log;
 import android.view.View;
-import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
-import android.widget.Button;
+import android.widget.ArrayAdapter;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -25,6 +23,7 @@ import com.bumptech.glide.Glide;
 import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
+import com.example.metro_app.Domain.NewsModel;
 import com.example.metro_app.databinding.ActivityAddNewsBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -33,12 +32,14 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-public class AddNewsActivity extends AppCompatActivity {
-    private static final String TAG = "AddNewsActivity";
+public class AdEditNewsActivity extends AppCompatActivity {
+    private static final String TAG = "AdEditNewsActivity";
     private ActivityAddNewsBinding binding;
     private Uri selectedImageUri;
     private FirebaseFirestore db;
     private boolean isUploading = false;
+    private NewsModel news;
+    private String documentId;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -65,10 +66,40 @@ public class AddNewsActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
-        // Ẩn CardView chứa Spinner status
-        binding.statusCardView.setVisibility(View.GONE);
+        // Nhận dữ liệu từ Intent
+        news = (NewsModel) getIntent().getSerializableExtra("news");
+        documentId = getIntent().getStringExtra("documentId");
+
+        if (news == null || documentId == null) {
+            Toast.makeText(this, "Không tìm thấy thông tin tin tức", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Thiết lập Spinner cho status
+        ArrayAdapter<String> statusAdapter = new ArrayAdapter<>(this,
+                android.R.layout.simple_spinner_item,
+                new String[]{"Đã xuất bản", "Tạm dừng xuất bản"});
+        statusAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        binding.statusSpinner.setAdapter(statusAdapter);
+
+        // Load dữ liệu tin tức
+        loadNewsData();
 
         setupListeners();
+    }
+
+    private void loadNewsData() {
+        binding.titleEditText.setText(news.getTitle());
+        binding.contentEditText.setText(Html.fromHtml(news.getDescription(), Html.FROM_HTML_MODE_COMPACT));
+        binding.statusSpinner.setSelection(news.getStatus().equals("Đang xuất bản") ? 0 : 1);
+        if (news.getPic() != null) {
+            binding.selectedImageView.setVisibility(View.VISIBLE);
+            Glide.with(this).load(news.getPic()).into(binding.selectedImageView);
+            binding.selectImageBtn.setText("Thay đổi ảnh");
+            selectedImageUri = Uri.parse(news.getPic());
+        }
+        binding.saveBtn.setText("Lưu chỉnh sửa");
     }
 
     private void setupListeners() {
@@ -95,7 +126,11 @@ public class AddNewsActivity extends AppCompatActivity {
 
         binding.saveBtn.setOnClickListener(v -> {
             if (validateInput()) {
-                uploadImageAndSaveNews();
+                if (selectedImageUri != null && !selectedImageUri.toString().equals(news.getPic())) {
+                    uploadImageAndUpdateNews();
+                } else {
+                    updateNewsToFirestore(news.getPic());
+                }
             }
         });
 
@@ -151,10 +186,6 @@ public class AddNewsActivity extends AppCompatActivity {
             Toast.makeText(this, "Vui lòng nhập nội dung", Toast.LENGTH_SHORT).show();
             return false;
         }
-        if (selectedImageUri == null) {
-            Toast.makeText(this, "Vui lòng chọn ảnh", Toast.LENGTH_SHORT).show();
-            return false;
-        }
         if (isUploading) {
             Toast.makeText(this, "Đang tải ảnh, vui lòng chờ", Toast.LENGTH_SHORT).show();
             return false;
@@ -162,7 +193,7 @@ public class AddNewsActivity extends AppCompatActivity {
         return true;
     }
 
-    private void uploadImageAndSaveNews() {
+    private void uploadImageAndUpdateNews() {
         isUploading = true;
         binding.loadingOverlay.setVisibility(View.VISIBLE);
         binding.saveBtn.setEnabled(false);
@@ -178,12 +209,12 @@ public class AddNewsActivity extends AppCompatActivity {
                     @Override
                     public void onSuccess(String requestId, Map resultData) {
                         String imageUrl = resultData.get("secure_url").toString();
-                        saveNewsToFirestore(imageUrl);
+                        updateNewsToFirestore(imageUrl);
                     }
 
                     @Override
                     public void onError(String requestId, ErrorInfo error) {
-                        Toast.makeText(AddNewsActivity.this, "Tải ảnh thất bại: " + error.getDescription(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(AdEditNewsActivity.this, "Tải ảnh thất bại: " + error.getDescription(), Toast.LENGTH_SHORT).show();
                         resetUploadState();
                     }
 
@@ -193,7 +224,7 @@ public class AddNewsActivity extends AppCompatActivity {
                 .dispatch();
     }
 
-    private void saveNewsToFirestore(String imageUrl) {
+    private void updateNewsToFirestore(String imageUrl) {
         String title = binding.titleEditText.getText().toString().trim();
         SpannableString contentSpannable = new SpannableString(binding.contentEditText.getText());
         String contentHtml = Html.toHtml(contentSpannable, Html.TO_HTML_PARAGRAPH_LINES_CONSECUTIVE);
@@ -209,24 +240,25 @@ public class AddNewsActivity extends AppCompatActivity {
             return;
         }
 
+        String status = binding.statusSpinner.getSelectedItem().toString();
+
         Map<String, Object> news = new HashMap<>();
         news.put("title", title);
         news.put("date", date);
         news.put("pic", imageUrl);
         news.put("description", contentHtml);
         news.put("userid", userid);
-        news.put("status", "Đã xuất bản");
+        news.put("status", status);
 
-        db.collection("news")
-                .add(news)
-                .addOnSuccessListener(documentReference -> {
-                    Toast.makeText(AddNewsActivity.this, "Thêm tin tức thành công", Toast.LENGTH_SHORT).show();
-                    setResult(RESULT_OK);
+        db.collection("news").document(documentId)
+                .set(news)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(AdEditNewsActivity.this, "Cập nhật tin tức thành công", Toast.LENGTH_SHORT).show();
                     resetUploadState();
                     finish();
                 })
                 .addOnFailureListener(e -> {
-                    Toast.makeText(AddNewsActivity.this, "Lưu tin tức thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(AdEditNewsActivity.this, "Cập nhật tin tức thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     resetUploadState();
                 });
     }
