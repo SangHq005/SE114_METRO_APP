@@ -124,6 +124,14 @@ public class AdminNewsAdapter extends RecyclerView.Adapter<AdminNewsAdapter.View
             });
             popupMenu.show();
         });
+
+        // Xử lý sự kiện nhấn vào item để chỉnh sửa
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, AdEditNewsActivity.class);
+            intent.putExtra("news", item);
+            intent.putExtra("documentId", documentId);
+            ((AppCompatActivity) context).startActivityForResult(intent, 2); // Request code 2
+        });
     }
 
     @Override

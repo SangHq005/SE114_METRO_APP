@@ -195,7 +195,7 @@ public class AdEditNewsActivity extends AppCompatActivity {
 
     private void uploadImageAndUpdateNews() {
         isUploading = true;
-        binding.loadingOverlay.setVisibility(View.VISIBLE);
+        //binding.loadingOverlay.setVisibility(View.VISIBLE);
         binding.saveBtn.setEnabled(false);
 
         MediaManager.get().upload(selectedImageUri)
@@ -265,7 +265,7 @@ public class AdEditNewsActivity extends AppCompatActivity {
 
     private void resetUploadState() {
         isUploading = false;
-        binding.loadingOverlay.setVisibility(View.GONE);
+       // binding.loadingOverlay.setVisibility(View.GONE);
         binding.saveBtn.setEnabled(true);
     }
 }

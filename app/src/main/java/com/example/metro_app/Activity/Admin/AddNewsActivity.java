@@ -26,6 +26,8 @@ import com.cloudinary.android.MediaManager;
 import com.cloudinary.android.callback.ErrorInfo;
 import com.cloudinary.android.callback.UploadCallback;
 import com.example.metro_app.databinding.ActivityAddNewsBinding;
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.progressindicator.CircularProgressIndicator;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 import java.text.SimpleDateFormat;
@@ -39,6 +41,7 @@ public class AddNewsActivity extends AppCompatActivity {
     private Uri selectedImageUri;
     private FirebaseFirestore db;
     private boolean isUploading = false;
+    private MaterialButton saveBtn;
 
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
@@ -56,8 +59,9 @@ public class AddNewsActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         binding = ActivityAddNewsBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
-
         db = FirebaseFirestore.getInstance();
+        saveBtn = (MaterialButton) binding.saveBtn;
+        // Remove: private CircularProgressIndicator progressIndicator;
 
         try {
             MediaManager.init(this);
@@ -162,31 +166,38 @@ public class AddNewsActivity extends AppCompatActivity {
         return true;
     }
 
+    private void showLoadingOnButton(boolean show) {
+        if (show) {
+            saveBtn.setText("Đang đăng...");
+            saveBtn.setIcon(null); // Hide icon while loading
+            saveBtn.setEnabled(false);
+        } else {
+            saveBtn.setText("Đăng bài viết");
+            saveBtn.setIconResource(com.example.metro_app.R.drawable.ic_publish);
+            saveBtn.setIconGravity(MaterialButton.ICON_GRAVITY_TEXT_START);
+            saveBtn.setEnabled(true);
+        }
+    }
+
     private void uploadImageAndSaveNews() {
         isUploading = true;
-        binding.loadingOverlay.setVisibility(View.VISIBLE);
-        binding.saveBtn.setEnabled(false);
-
+        showLoadingOnButton(true);
         MediaManager.get().upload(selectedImageUri)
                 .callback(new UploadCallback() {
                     @Override
                     public void onStart(String requestId) {}
-
                     @Override
                     public void onProgress(String requestId, long bytes, long totalBytes) {}
-
                     @Override
                     public void onSuccess(String requestId, Map resultData) {
                         String imageUrl = resultData.get("secure_url").toString();
                         saveNewsToFirestore(imageUrl);
                     }
-
                     @Override
                     public void onError(String requestId, ErrorInfo error) {
                         Toast.makeText(AddNewsActivity.this, "Tải ảnh thất bại: " + error.getDescription(), Toast.LENGTH_SHORT).show();
                         resetUploadState();
                     }
-
                     @Override
                     public void onReschedule(String requestId, ErrorInfo error) {}
                 })
@@ -233,7 +244,6 @@ public class AddNewsActivity extends AppCompatActivity {
 
     private void resetUploadState() {
         isUploading = false;
-        binding.loadingOverlay.setVisibility(View.GONE);
-        binding.saveBtn.setEnabled(true);
+        showLoadingOnButton(false);
     }
 }
