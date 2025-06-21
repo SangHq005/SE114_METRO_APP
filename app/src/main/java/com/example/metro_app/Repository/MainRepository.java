@@ -56,6 +56,7 @@ public class MainRepository {
         final MutableLiveData<List<NewsModel>> livedata = new MutableLiveData<>();
 
         firestore.collection("news")
+                .whereEqualTo("status", "Đã xuất bản")
                 .orderBy("date", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -65,8 +66,12 @@ public class MainRepository {
                         String title = document.getString("title");
                         String pic = document.getString("pic");
                         String description = document.getString("description");
+                        String userid = document.getString("userid");
+                        String status = document.getString("status");
+                        String documentId = document.getId();
 
-                        NewsModel item = new NewsModel(date, description, pic, title);
+                        NewsModel item = new NewsModel(date, description, pic, title, userid, status);
+                        item.setDocumentId(documentId);
                         lists.add(item);
                         Log.d("Firebase", "News: " + lists.size());
                     }
