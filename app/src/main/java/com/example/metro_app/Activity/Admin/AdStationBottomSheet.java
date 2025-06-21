@@ -76,24 +76,54 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.admin_bottom_sheet_station, container, false);
 
+        // Khai báo label TextView (đảm bảo ID đúng với XML)
+        TextView tvLabelName = view.findViewById(R.id.tvStationName);
+        TextView tvLabelWard = view.findViewById(R.id.tvStationWard);
+        TextView tvLabelZone = view.findViewById(R.id.tvStationZone);
+
+        // Khai báo EditText
         EditText etName = view.findViewById(R.id.etAdminStationName);
         EditText etLat = view.findViewById(R.id.etAdminStationLat);
         EditText etLng = view.findViewById(R.id.etAdminStationLng);
         EditText etWard = view.findViewById(R.id.etAdminStationWard);
         EditText etZone = view.findViewById(R.id.etAdminStationZone);
+
         Button btnDelete = view.findViewById(R.id.btnDelete);
 
         if (station != null) {
-            etName.setText(station.Name != null ? station.Name : "");
-            etLat.setText(String.valueOf(station.Lat));
-            etLng.setText(String.valueOf(station.Lng));
-            etWard.setText(station.Ward != null ? station.Ward : "");
-            etZone.setText(station.Zone != null ? station.Zone : "");
+            // Tên trạm
+            if (station.Name != null && !station.Name.isEmpty()) {
+                etName.setText(station.Name);
+            } else {
+                tvLabelName.setVisibility(View.GONE);
+                etName.setVisibility(View.GONE);
+            }
+
+            // Vĩ độ
+                etLat.setText(String.valueOf(station.Lat));
+            // Kinh độ
+                etLng.setText(String.valueOf(station.Lng));
+
+            // Phường
+            if (station.Ward != null && !station.Ward.isEmpty()) {
+                etWard.setText(station.Ward);
+            } else {
+                tvLabelWard.setVisibility(View.GONE);
+                etWard.setVisibility(View.GONE);
+            }
+
+            // Khu vực
+            if (station.Zone != null && !station.Zone.isEmpty()) {
+                etZone.setText(station.Zone);
+            } else {
+                tvLabelZone.setVisibility(View.GONE);
+                etZone.setVisibility(View.GONE);
+            }
+
         } else {
             Toast.makeText(getContext(), "Không có dữ liệu trạm!", Toast.LENGTH_SHORT).show();
             dismiss();
         }
-
         btnDelete.setOnClickListener(v -> {
             if (station.StopId != 0) {
                 FireStoreHelper.deleteStation(station.StopId, new FireStoreHelper.DeleteCallback() {

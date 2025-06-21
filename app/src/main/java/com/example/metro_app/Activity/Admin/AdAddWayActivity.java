@@ -53,16 +53,16 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         mapFragment = new MapBoxFragment();
+        // Dùng Bundle
+        Bundle args = new Bundle();
+        args.putString("ROLE", "admin");
+        args.putString("DOC_ID", docId);
+        mapFragment.setArguments(args);
         fragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, mapFragment)
                 .commit();
 
         mapFragment.setOnMapReadyCallback(mapboxMap -> {
-            // Dùng Bundle
-            Bundle args = new Bundle();
-            args.putString("ROLE", "admin");
-            args.putString("DOC_ID", docId);
-            mapFragment.setArguments(args);
             fetchAndDrawRoute("LuotDi");
             mapFragment.zoomToLocation(Point.fromLngLat(106.81406, 10.879499));
         });
@@ -70,10 +70,10 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
         btnSwap.setOnClickListener(v -> {
             isLuotDi = !isLuotDi;
             docId = isLuotDi ? "LuotDi" : "LuotVe";
-            Bundle args = new Bundle();
-            args.putString("ROLE", "admin");
-            args.putString("DOC_ID", docId);
-            mapFragment.setArguments(args);
+            Bundle args1 = new Bundle();
+            args1.putString("ROLE", "admin");
+            args1.putString("DOC_ID", docId);
+            mapFragment.setArguments(args1);
             fetchAndDrawRoute(docId);
         });
 

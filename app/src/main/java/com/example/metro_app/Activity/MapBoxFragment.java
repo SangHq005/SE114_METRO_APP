@@ -100,7 +100,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
 public class MapBoxFragment extends Fragment {
-    private String role = "admin"; // default
+    private String role; // default
     private String docId;
     boolean isFirstRoute = true;
     private MapView mapView;
@@ -178,6 +178,14 @@ private final LocationObserver locationObserver= new LocationObserver() {
         this.onMapReadyCallback = callback;
     }
 
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            String role = getArguments().getString("ROLE");
+            String docId = getArguments().getString("DOC_ID");
+        }
+    }
 
     @Nullable
     @Override
@@ -189,6 +197,7 @@ private final LocationObserver locationObserver= new LocationObserver() {
             role = getArguments().getString("ROLE", "user");
             docId = getArguments().getString("DOC_ID", "LuotDi");
         }
+        Log.d("args", "onCreateView: "+ role);
         MapboxRouteLineOptions options = new MapboxRouteLineOptions.Builder(requireContext())
                 .withRouteLineResources(new RouteLineResources.Builder().build()).withRouteLineBelowLayerId("road-label-navigation").build();
         routeLineView = new MapboxRouteLineView(options);
@@ -287,6 +296,7 @@ private final LocationObserver locationObserver= new LocationObserver() {
     public void drawRouteFromPoints(List<Point> pointList) {
         if (getArguments() != null) {
             docId = getArguments().getString("DOC_ID", "LuotDi");
+            Log.d("args", "drawRouteFromPoints: "+ docId);
         }
         String color1 = "#FF0000"; // Tuyến 1 - đỏ
         String color2 = "#0000FF"; // Tuyến 2 - xanh dương

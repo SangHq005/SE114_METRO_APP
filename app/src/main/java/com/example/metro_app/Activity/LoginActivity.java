@@ -112,12 +112,27 @@ public class LoginActivity extends AppCompatActivity {
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser user = mAuth.getCurrentUser();
+
+                        //Chỉ kiểm tra email verificatisEmailVerifiedion nếu login bằng email/password
+                        if (user != null && !user.isEmailVerified()) {
+                            Toast.makeText(this, "Vui lòng xác minh email trước khi đăng nhập.", Toast.LENGTH_LONG).show();
+
+                            user.sendEmailVerification()
+                                    .addOnSuccessListener(aVoid -> Toast.makeText(this, "Đã gửi lại email xác minh.", Toast.LENGTH_SHORT).show())
+                                    .addOnFailureListener(e -> Toast.makeText(this, "Không thể gửi email xác minh: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+
+                            mAuth.signOut();
+                            return;
+                        }
+
+                        // Nếu đã xác minh, tiếp tục như bình thường
                         Toast.makeText(LoginActivity.this, "Đăng nhập thành công.", Toast.LENGTH_SHORT).show();
                         onLoginSuccess(user);
                     } else {
                         Toast.makeText(LoginActivity.this, "Sai email hoặc mật khẩu.", Toast.LENGTH_SHORT).show();
                     }
                 });
+
     }
 
     private void signInWithGoogle() {
@@ -158,20 +173,6 @@ public class LoginActivity extends AppCompatActivity {
 
     private void onLoginSuccess(FirebaseUser user) {
         if (user == null) return;
-
-        if (!user.isEmailVerified()) {
-            Toast.makeText(this, "Vui lòng xác minh địa chỉ email trước khi đăng nhập.", Toast.LENGTH_LONG).show();
-
-            // Gợi ý gửi lại email xác minh
-            user.sendEmailVerification()
-                    .addOnSuccessListener(aVoid -> Toast.makeText(this, "Đã gửi email xác minh.", Toast.LENGTH_SHORT).show())
-                    .addOnFailureListener(e -> Toast.makeText(this, "Gửi email xác minh thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-
-            mAuth.signOut(); // đăng xuất khỏi phiên
-            return;
-        }
-
-        // Đã xác minh email
         String uid = user.getUid();
         db.collection("Account").document(uid)
                 .get()
