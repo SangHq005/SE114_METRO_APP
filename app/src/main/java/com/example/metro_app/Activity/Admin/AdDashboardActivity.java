@@ -7,7 +7,6 @@ import android.os.Looper;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -21,6 +20,7 @@ import com.example.metro_app.Model.UserModel;
 import com.example.metro_app.R;
 import com.example.metro_app.utils.FireStoreHelper;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
+import com.google.android.material.button.MaterialButton; // THAY ĐỔI 1: Import MaterialButton
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -36,12 +36,10 @@ public class AdDashboardActivity extends AppCompatActivity {
 
     // Management Cards
     private CardView cardManageRoutes;
-    private CardView cardManageBuses;
-    private CardView cardManageUsers;
     private CardView cardManageNews;
 
     // Logout Button
-    private LinearLayout btnLogout;
+    private MaterialButton btnLogout;
     private BottomNavigationView bottomNavigationView;
 
     // Firebase
@@ -91,22 +89,12 @@ public class AdDashboardActivity extends AppCompatActivity {
 
             // Management cards
             cardManageRoutes = findViewById(R.id.card_manage_routes);
-            cardManageBuses = findViewById(R.id.card_manage_buses);
-            cardManageUsers = findViewById(R.id.card_manage_users);
             cardManageNews = findViewById(R.id.card_manage_news);
 
             // Logout button
+            // THAY ĐỔI 3: Việc gán giá trị bây giờ đã chính xác vì kiểu dữ liệu đã khớp
             btnLogout = findViewById(R.id.btn_logout);
             bottomNavigationView = findViewById(R.id.bottomNavigationView);
-
-            // Check if all views are found
-            if (profileImage == null || tvAdminName == null ||
-                    cardManageRoutes == null || cardManageBuses == null ||
-                    cardManageUsers == null || btnLogout == null ||
-                    bottomNavigationView == null) {
-                Log.e(TAG, "Some views are null");
-                return false;
-            }
 
             // Set default values
             tvAdminName.setText("Admin");
@@ -139,20 +127,6 @@ public class AdDashboardActivity extends AppCompatActivity {
                 });
             }
 
-            // Routes Management
-            if (cardManageBuses != null) {
-                cardManageBuses.setOnClickListener(v -> {
-                    safeNavigate(AdRouteActivity.class);
-                });
-            }
-
-            // Users Management
-            if (cardManageUsers != null) {
-                cardManageUsers.setOnClickListener(v -> {
-                    safeNavigate(AdUserActivity.class);
-                });
-            }
-
             // News Management
             if (cardManageNews != null) {
                 cardManageNews.setOnClickListener(v -> {
@@ -161,6 +135,7 @@ public class AdDashboardActivity extends AppCompatActivity {
             }
 
             // Logout
+            // THAY ĐỔI 4: Không cần thay đổi ở đây, setOnClickListener hoạt động tốt trên MaterialButton
             if (btnLogout != null) {
                 btnLogout.setOnClickListener(v -> showLogoutConfirmationDialog());
             }
@@ -490,7 +465,7 @@ public class AdDashboardActivity extends AppCompatActivity {
                     .setTitle("Thoát ứng dụng")
                     .setMessage("Bạn có muốn thoát khỏi ứng dụng quản trị?")
                     .setPositiveButton("Thoát", (dialog, which) -> {
-                        super.onBackPressed();
+                        finishAffinity(); // Thoát hoàn toàn ứng dụng
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
