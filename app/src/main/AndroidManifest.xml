@@ -106,6 +106,8 @@
         <activity android:name=".Activity.Admin.AddNewsActivity"
             android:exported="true" >
         </activity>
+        <activity android:name=".Activity.User.ForumActivity"
+            android:exported="true" />
         <activity android:name=".Activity.Admin.AdNewsListActivity"
             android:exported="true" />
 
