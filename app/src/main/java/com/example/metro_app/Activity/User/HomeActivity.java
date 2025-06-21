@@ -71,7 +71,7 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void initCategory() {
-        GridLayoutManager layoutManager = new GridLayoutManager(HomeActivity.this, 3);
+        GridLayoutManager layoutManager = new GridLayoutManager(HomeActivity.this, 4);
         binding.recyclerViewCategory.setLayoutManager(layoutManager);
 
         viewModel.loadCategory().observe(this, categoryModels -> {
@@ -102,8 +102,11 @@ public class HomeActivity extends AppCompatActivity {
                 if ("Hành trình".equals(category.getName())) {
                     startActivity(new Intent(HomeActivity.this, JourneyActivity.class));
                 }
-                if ("Tài khoản".equals(category.getName())) {
+                if ("Tài Khoản".equals(category.getName())) {
                     startActivity(new Intent(HomeActivity.this, InfoAcitivity.class));
+                }
+                if ("Diễn Đàn".equals(category.getName())) {
+                    startActivity(new Intent(HomeActivity.this, ForumActivity.class));
                 }
             });
             binding.recyclerViewCategory.setAdapter(adapter);
