@@ -112,9 +112,6 @@ public class AdNewsListActivity extends AppCompatActivity {
             startActivityForResult(intent, ADD_NEWS_REQUEST);
         });
 
-        binding.bottomNavigationView.setOnItemSelectedListener(item -> {
-            return true;
-        });
     }
 
     @Override
