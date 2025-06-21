@@ -70,4 +70,16 @@
         <item name="android:background">@android:color/white</item>
     </style>
 
+
+    <style name="ExpandedTitleStyle" parent="@android:style/TextAppearance.Material.Title">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">24sp</item>
+        <item name="android:letterSpacing">0.02</item>
+    </style>
+
+    <style name="CollapsedTitleStyle" parent="@android:style/TextAppearance.Material.Title">
+        <item name="android:textColor">@android:color/white</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:letterSpacing">0.01</item>
+    </style>
 </resources>

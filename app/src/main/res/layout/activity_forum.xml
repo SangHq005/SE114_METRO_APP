@@ -1,0 +1,141 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.coordinatorlayout.widget.CoordinatorLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/lightGray"
+    tools:context=".Activity.User.ForumActivity"
+    >
+
+    <!-- App Bar với hiệu ứng cuộn -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/transparent"
+        android:elevation="0dp">
+
+        <com.google.android.material.appbar.CollapsingToolbarLayout
+            android:layout_width="match_parent"
+            android:layout_height="220dp"
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:expandedTitleMarginBottom="16dp"
+            app:expandedTitleTextAppearance="@style/ExpandedTitleStyle"
+            app:collapsedTitleTextAppearance="@style/CollapsedTitleStyle">
+
+            <androidx.appcompat.widget.Toolbar
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:layout_collapseMode="pin"
+                android:background="@android:color/transparent">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Cộng đồng Metro"
+                        android:textColor="@android:color/black"
+                        android:textSize="18sp"
+                        android:textStyle="bold"
+                        android:layout_centerInParent="true"/>
+                </RelativeLayout>
+            </androidx.appcompat.widget.Toolbar>
+
+            <!-- Card tạo bài viết -->
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginBottom="16dp"
+                android:layout_marginTop="?attr/actionBarSize"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:cardBackgroundColor="@android:color/white"
+                app:layout_collapseMode="parallax">
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="12dp">
+
+                    <!-- Avatar -->
+                    <de.hdodenhof.circleimageview.CircleImageView
+                        android:id="@+id/profileImage"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        app:civ_border_color="@color/primary"
+                        app:civ_border_width="2dp"
+                        android:src="@drawable/profile_placeholder"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintBottom_toBottomOf="parent"/>
+
+                    <!-- EditText nhập bài -->
+                    <EditText
+                        android:id="@+id/editPost"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:hint="Chia sẻ trải nghiệm Metro..."
+                        android:textColorHint="#999999"
+                        android:textColor="@color/text_primary"
+                        android:background="@null"
+                        android:paddingStart="8dp"
+                        android:paddingEnd="8dp"
+                        android:maxLines="3"
+                        android:minHeight="40dp"
+                        android:textSize="14sp"
+                        app:layout_constraintStart_toEndOf="@id/profileImage"
+                        app:layout_constraintEnd_toStartOf="@id/btnPost"
+                        app:layout_constraintTop_toTopOf="@id/profileImage"
+                        app:layout_constraintBottom_toBottomOf="@id/profileImage"/>
+
+                    <!-- ImageButton gửi -->
+                    <ImageButton
+                        android:id="@+id/btnPost"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
+                        android:background="@drawable/gradient_blue_light_btn"
+                        android:src="@drawable/ic_send"
+                        android:scaleType="centerInside"
+                        android:padding="8dp"
+                        android:contentDescription="@string/g_i"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="@id/profileImage"
+                        app:layout_constraintBottom_toBottomOf="@id/profileImage"
+                       />
+                </androidx.constraintlayout.widget.ConstraintLayout>
+            </androidx.cardview.widget.CardView>
+
+
+        </com.google.android.material.appbar.CollapsingToolbarLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Danh sách bài viết -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/recyclerViewPosts"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:paddingTop="180dp"
+        android:clipToPadding="false"
+        android:padding="8dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior"/>
+
+<!--    &lt;!&ndash; Bottom Navigation &ndash;&gt;-->
+<!--    <com.google.android.material.bottomnavigation.BottomNavigationView-->
+<!--        android:id="@+id/bottomNav"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_gravity="bottom"-->
+<!--        android:background="@drawable/bottom_nav_background"-->
+<!--        app:elevation="8dp"-->
+<!--        app:itemIconTint="@drawable/bottom_nav_color"-->
+<!--        app:itemTextColor="@drawable/bottom_nav_color"-->
+<!--        app:labelVisibilityMode="labeled"-->
+<!--        app:menu="@menu/menu_bottom_nav_metro" />-->
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

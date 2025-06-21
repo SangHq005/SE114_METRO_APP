@@ -40,4 +40,5 @@
     <!-- File names -->
     <string name="default_image_name">image.jpg</string>
     <string name="in_nghi_ng">In nghiêng</string>
+    <string name="g_i">Gửi</string>
 </resources>

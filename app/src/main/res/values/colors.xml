@@ -102,4 +102,9 @@
     <color name="gradient_end_orange">#FF5722</color>
     <color name="gradient_start_purple">#9C27B0</color>
     <color name="gradient_end_purple">#E91E63</color>
+
+
+    <color name="metro_pink">#FF4081</color>
+    <color name="metro_pink_dark">#C60055</color>
+
 </resources>

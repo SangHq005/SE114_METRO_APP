@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@android:color/transparent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Header với thông tin người đăng -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <de.hdodenhof.circleimageview.CircleImageView
+                android:id="@+id/imgUserAvatar"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:src="@drawable/ic_person"
+                app:civ_border_width="1dp"
+                app:civ_border_color="@color/colorPrimary" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:layout_marginStart="12dp"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvUserName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:textColor="@color/colorPrimaryDark"
+                    tools:text="Nguyễn Văn A" />
+
+                <TextView
+                    android:id="@+id/tvUserRole"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/textSecondary"
+                    tools:text="Người dùng" />
+
+                <TextView
+                    android:id="@+id/tvPostTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="12sp"
+                    android:textColor="@color/textSecondary"
+                    tools:text="2 giờ trước" />
+
+            </LinearLayout>
+
+            <ImageButton
+                android:id="@+id/btnPostMenu"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_more_vert"
+                android:padding="8dp" />
+
+        </LinearLayout>
+
+        <!-- Nội dung bài đăng -->
+        <TextView
+            android:id="@+id/tvPostContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:textSize="16sp"
+            android:textColor="@color/textPrimary"
+            android:lineSpacingExtra="4dp"
+            tools:text="Mình cần mua 2 vé metro tuyến 1 từ Bến Thành đến Suối Tiên. Ai có thể bán giúp mình không? Giá thỏa thuận." />
+
+        <!-- Tags -->
+
+        <!-- Divider -->
+
+        <!-- Action buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:id="@+id/layoutComment"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="horizontal"
+                android:gravity="end"
+                android:padding="8dp"
+                android:background="?attr/selectableItemBackground">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/comment"
+                    app:tint="@color/textSecondary" />
+
+                <TextView
+                    android:id="@+id/tvCommentCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="4dp"
+                    android:text="Bình luận"
+                    android:textSize="14sp"
+                    android:textColor="@color/textSecondary" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+<!--        <LinearLayout-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:orientation="horizontal"-->
+<!--            android:padding="4dp"-->
+<!--            android:background="@android:color/transparent"-->
+<!--            android:elevation="8dp"-->
+<!--            android:gravity="center_vertical">-->
+
+<!--            <de.hdodenhof.circleimageview.CircleImageView-->
+<!--                android:layout_width="32dp"-->
+<!--                android:layout_height="32dp"-->
+<!--                android:src="@drawable/ic_person"-->
+<!--                app:civ_border_width="1dp"-->
+<!--                app:civ_border_color="@color/colorPrimary" />-->
+
+<!--            <com.google.android.material.textfield.TextInputLayout-->
+<!--                android:layout_width="0dp"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:layout_weight="1"-->
+<!--                android:layout_marginStart="12dp"-->
+<!--                android:layout_marginEnd="8dp"-->
+<!--                app:boxStrokeWidth="0dp"-->
+<!--                app:boxStrokeWidthFocused="0dp">-->
+
+<!--                <com.google.android.material.textfield.TextInputEditText-->
+<!--                    android:id="@+id/etComment"-->
+<!--                    android:layout_width="match_parent"-->
+<!--                    android:layout_height="wrap_content"-->
+<!--                    android:hint="Viết bình luận..."-->
+<!--                    android:background="@android:color/transparent"-->
+<!--                    android:padding="12dp"-->
+<!--                    android:maxLines="3" />-->
+
+<!--            </com.google.android.material.textfield.TextInputLayout>-->
+
+<!--            <ImageButton-->
+<!--                android:id="@+id/btnSendComment"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:src="@drawable/ic_send"-->
+<!--                android:background="?attr/selectableItemBackgroundBorderless"-->
+<!--                android:padding="8dp"-->
+<!--                app:tint="@color/colorPrimary" />-->
+
+<!--        </LinearLayout>-->
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

@@ -94,10 +94,10 @@
         <activity
             android:name=".Activity.LoginActivity"
             android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+<!--            <intent-filter>-->
+<!--                <action android:name="android.intent.action.MAIN" />-->
+<!--                <category android:name="android.intent.category.LAUNCHER" />-->
+<!--            </intent-filter>-->
         </activity>
         <activity android:name=".Activity.SignupActivity"
             android:exported="true" />
@@ -105,8 +105,6 @@
             android:exported="true" />
         <activity android:name=".Activity.Admin.AddNewsActivity"
             android:exported="true" >
-
-
         </activity>
         <activity android:name=".Activity.Admin.AdAddWayActivity"
             android:exported="true" />
@@ -153,6 +151,17 @@
         <activity
             android:name=".Activity.User.ScanQRActivity"
             android:exported="true"/>
+
+        <activity
+            android:name=".Activity.User.ForumActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+
+
         <uses-library android:name="org.osmdroid" android:required="false"/>
     </application>
 
