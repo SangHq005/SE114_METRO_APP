@@ -1,16 +1,21 @@
 package com.example.metro_app.Adapter;
 
 import android.content.Context;
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.metro_app.Activity.PostDetailActivity;
 import com.example.metro_app.Domain.PostModel;
+import com.example.metro_app.Model.CommentModel;
 import com.example.metro_app.R;
 import com.example.metro_app.databinding.ItemPostForumBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -122,7 +127,11 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         // Placeholder cho nút bình luận
         holder.binding.layoutComment.setOnClickListener(v -> {
             // TODO: Thêm logic hiển thị bình luận nếu cần
+            Intent intent = new Intent(context, PostDetailActivity.class);
+            intent.putExtra("post", post);
+            context.startActivity(intent);
         });
+
     }
 
     @Override

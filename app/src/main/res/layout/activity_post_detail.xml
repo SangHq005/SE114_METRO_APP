@@ -72,11 +72,12 @@
         android:gravity="center_vertical">
 
         <de.hdodenhof.circleimageview.CircleImageView
+            android:id="@+id/postdetailUserAvt"
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:src="@drawable/ic_person"
-            app:civ_border_width="1dp"
-            app:civ_border_color="@color/colorPrimary" />
+            app:civ_border_color="@color/colorPrimary"
+            app:civ_border_width="1dp" />
 
         <com.google.android.material.textfield.TextInputLayout
             android:layout_width="0dp"
