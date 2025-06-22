@@ -159,6 +159,10 @@
         <activity
             android:name=".Activity.Admin.AdEditNewsActivity"
             android:exported="true"/>
+        <activity
+            android:name=".Activity.PostDetailActivity"
+            android:exported="false">
+        </activity>
         <uses-library android:name="org.osmdroid" android:required="false"/>
     </application>
 
