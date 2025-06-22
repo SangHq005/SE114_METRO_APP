@@ -178,19 +178,6 @@ public class ForumActivity extends AppCompatActivity {
 
         builder.setNegativeButton("Hủy", (dialog, which) -> dialog.cancel());
 
-        builder.setNeutralButton("Xóa", (dialog, which) -> {
-            // Xóa bài đăng từ Firestore
-            db.collection("forum").document(post.getPostId())
-                    .delete()
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Xóa bài đăng thành công", Toast.LENGTH_SHORT).show();
-                        loadPosts(); // Reload danh sách
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Xóa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
-        });
-
         builder.show();
     }
 }

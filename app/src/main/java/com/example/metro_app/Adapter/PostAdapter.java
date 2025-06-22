@@ -5,6 +5,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.PopupMenu;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
@@ -108,8 +109,21 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                 popupMenu.getMenu().add("Chỉnh sửa");
                 popupMenu.getMenu().add("Xóa");
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
-                    if (menuItem.getTitle().equals("Chỉnh sửa") || menuItem.getTitle().equals("Xóa")) {
-                        menuClickListener.onMenuClick(post);
+                    if (menuItem.getTitle().equals("Chỉnh sửa")) {
+                        menuClickListener.onMenuClick(post); // Mở dialog chỉnh sửa
+                    } else if (menuItem.getTitle().equals("Xóa")) {
+                        // Xóa bài đăng trực tiếp
+                        db.collection("forum").document(post.getPostId())
+                                .delete()
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(context, "Xóa bài đăng thành công", Toast.LENGTH_SHORT).show();
+                                    postList.remove(position);
+                                    notifyItemRemoved(position);
+                                    notifyItemRangeChanged(position, postList.size());
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(context, "Xóa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
                     }
                     return true;
                 });
