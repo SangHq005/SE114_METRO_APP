@@ -19,6 +19,7 @@ import com.example.metro_app.Adapter.CommentAdapter;
 import com.example.metro_app.Domain.PostModel;
 import com.example.metro_app.Model.CommentModel;
 import com.example.metro_app.R;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -53,6 +54,9 @@ public class PostDetailActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         db = FirebaseFirestore.getInstance();
 
