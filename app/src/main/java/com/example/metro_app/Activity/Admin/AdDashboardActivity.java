@@ -37,6 +37,7 @@ public class AdDashboardActivity extends AppCompatActivity {
     // Management Cards
     private CardView cardManageRoutes;
     private CardView cardManageNews;
+    private CardView cardManageForum; // NEW: Declare cardManageForum
 
     // Logout Button
     private MaterialButton btnLogout;
@@ -90,6 +91,7 @@ public class AdDashboardActivity extends AppCompatActivity {
             // Management cards
             cardManageRoutes = findViewById(R.id.card_manage_routes);
             cardManageNews = findViewById(R.id.card_manage_news);
+            cardManageForum = findViewById(R.id.card_manage_forum);
 
             // Logout button
             // THAY ĐỔI 3: Việc gán giá trị bây giờ đã chính xác vì kiểu dữ liệu đã khớp
@@ -130,12 +132,18 @@ public class AdDashboardActivity extends AppCompatActivity {
             // News Management
             if (cardManageNews != null) {
                 cardManageNews.setOnClickListener(v -> {
-                    safeNavigate(AdNewsListActivity.class); // Assuming you'll create this
+                    safeNavigate(AdNewsListActivity.class);
+                });
+            }
+
+            // Forum Management
+            if (cardManageForum != null) {
+                cardManageForum.setOnClickListener(v -> {
+                    safeNavigate(AdForumActivity.class);
                 });
             }
 
             // Logout
-            // THAY ĐỔI 4: Không cần thay đổi ở đây, setOnClickListener hoạt động tốt trên MaterialButton
             if (btnLogout != null) {
                 btnLogout.setOnClickListener(v -> showLogoutConfirmationDialog());
             }
@@ -463,7 +471,7 @@ public class AdDashboardActivity extends AppCompatActivity {
         try {
             new AlertDialog.Builder(this)
                     .setTitle("Thoát ứng dụng")
-                    .setMessage("Bạn có muốn thoát khỏi ứng dụng quản trị?")
+                    .setMessage("Bạn có muốn thoát khỏi ứng dụng qu���n trị?")
                     .setPositiveButton("Thoát", (dialog, which) -> {
                         finishAffinity(); // Thoát hoàn toàn ứng dụng
                     })
