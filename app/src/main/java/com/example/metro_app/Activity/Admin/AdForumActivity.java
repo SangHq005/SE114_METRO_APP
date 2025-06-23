@@ -30,7 +30,6 @@ import java.util.Map;
 
 public class AdForumActivity extends AppCompatActivity {
 
-    // 1. Sử dụng View Binding để thay thế cho findViewById
     private ActivityAdminForumBinding binding;
     private PostAdapter postAdapter;
     private List<PostModel> postList;
@@ -40,30 +39,26 @@ public class AdForumActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        // Khởi tạo View Binding
         binding = ActivityAdminForumBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         db = FirebaseFirestore.getInstance();
         postList = new ArrayList<>();
 
-        // 2. Kiểm tra người dùng đăng nhập một cách an toàn
         FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
         if (currentUser == null) {
             Toast.makeText(this, "Không có người dùng nào đăng nhập.", Toast.LENGTH_SHORT).show();
-            finish(); // Đóng activity nếu không có ai đăng nhập
+            finish();
             return;
         }
         currentUserId = currentUser.getUid();
 
-        // 3. Gọi các hàm thiết lập (tương tự ForumActivity)
         loadAdminAvatar();
         setupRecyclerView();
         setupListeners();
         loadPosts();
     }
 
-    // 4. Tải avatar của admin (lấy từ SharedPreferences)
     private void loadAdminAvatar() {
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
         String avatarUrl = prefs.getString("photo", null);
@@ -88,7 +83,6 @@ public class AdForumActivity extends AppCompatActivity {
         binding.recyclerViewAdminPosts.setAdapter(postAdapter);
     }
 
-    // 5. Thêm listener cho nút đăng bài
     private void setupListeners() {
         binding.toolbar.setOnClickListener(v -> finish());
 
@@ -122,7 +116,6 @@ public class AdForumActivity extends AppCompatActivity {
                 });
     }
 
-    // 6. Thêm hàm lưu bài đăng (tương tự ForumActivity)
     private void savePostToFirestore(String description) {
         String createAt = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(new Date());
 
@@ -145,7 +138,6 @@ public class AdForumActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> Toast.makeText(this, "Đăng bài thất bại", Toast.LENGTH_SHORT).show());
     }
 
-    // 7. Thêm hàm hiển thị dialog chỉnh sửa (tương tự ForumActivity)
     private void showEditDeleteDialog(PostModel post) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Chỉnh sửa bài đăng");

@@ -33,7 +33,7 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
     private ExtendedFloatingActionButton addStation;
     private FloatingActionButton addLastRoute, addFirstRoute;
 
-    private ImageView btnSwap;
+    private ImageView btnSwap, btnBack;
     private TextView tvStart, tvEnd;
     private Boolean isLuotDi = true;
     private String docId = "LuotDi";
@@ -50,6 +50,7 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
         tvStart = findViewById(R.id.tvStartStation);
         tvEnd = findViewById(R.id.tvEndStation);
         btnSwap = findViewById(R.id.btnSwap);
+        btnBack = findViewById(R.id.btnBack);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         mapFragment = new MapBoxFragment();
@@ -127,6 +128,8 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
                 sheet.show(getSupportFragmentManager(), "AdStationBottomSheet");
             }
         });
+
+        btnBack.setOnClickListener(v -> onBackPressed());
     }
 
     public void fetchAndDrawRoute(String documentId) {
