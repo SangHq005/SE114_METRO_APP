@@ -28,16 +28,18 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
     private Context context;
     private final OnMenuClickListener menuClickListener;
     private final FirebaseFirestore db;
+    private final boolean isAdmin;
 
     public interface OnMenuClickListener {
         void onMenuClick(PostModel post);
     }
 
-    public PostAdapter(List<PostModel> postList, String currentUserId, OnMenuClickListener menuClickListener) {
+    public PostAdapter(List<PostModel> postList, String currentUserId, OnMenuClickListener menuClickListener, boolean isAdmin) {
         this.postList = postList;
         this.currentUserId = currentUserId;
         this.menuClickListener = menuClickListener;
         this.db = FirebaseFirestore.getInstance();
+        this.isAdmin = isAdmin;
     }
 
     @NonNull
@@ -105,6 +107,38 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             holder.binding.tvUserRole.setText("Không rõ");
         }
 
+        if (isAdmin || (post.getUserId() != null && post.getUserId().equals(currentUserId))) {
+            holder.binding.btnPostMenu.setVisibility(View.VISIBLE);
+            holder.binding.btnPostMenu.setOnClickListener(v -> {
+                PopupMenu popupMenu = new PopupMenu(context, holder.binding.btnPostMenu);
+                // Admin cũng có thể chỉnh sửa nếu bạn muốn
+                if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
+                    popupMenu.getMenu().add("Chỉnh sửa");
+                }
+                popupMenu.getMenu().add("Xóa"); // Admin luôn có nút xóa
+                popupMenu.setOnMenuItemClickListener(menuItem -> {
+                    if (menuItem.getTitle().equals("Chỉnh sửa")) {
+                        menuClickListener.onMenuClick(post);
+                    } else if (menuItem.getTitle().equals("Xóa")) {
+                        // Logic xóa giữ nguyên
+                        db.collection("forum").document(post.getPostId())
+                                .delete()
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(context, "Xóa bài đăng thành công", Toast.LENGTH_SHORT).show();
+                                    // Xóa khỏi list và cập nhật adapter
+                                })
+                                .addOnFailureListener(e -> {
+                                    Toast.makeText(context, "Xóa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                                });
+                    }
+                    return true;
+                });
+                popupMenu.show();
+            });
+        } else {
+            holder.binding.btnPostMenu.setVisibility(View.GONE);
+        }
+
         // Hiển thị btnPostMenu nếu userId khớp
         if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
             holder.binding.btnPostMenu.setVisibility(View.VISIBLE);
@@ -142,6 +176,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             // TODO: Thêm logic hiển thị bình luận nếu cần
             Intent intent = new Intent(context, PostDetailActivity.class);
             intent.putExtra("post", post);
+            intent.putExtra("isAdmin", isAdmin);
             context.startActivity(intent);
         });
 

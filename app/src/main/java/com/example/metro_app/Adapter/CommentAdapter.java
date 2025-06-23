@@ -26,6 +26,7 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
     private final List<CommentModel> commentList;
     private final String currentUserId;
     private final Context context;
+    private final boolean isAdmin;
 
     public interface OnCommentActionListener {
         void onEdit(CommentModel comment);
@@ -34,11 +35,12 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
 
     private final OnCommentActionListener actionListener;
 
-    public CommentAdapter(Context context, List<CommentModel> commentList, String currentUserId, OnCommentActionListener listener) {
+    public CommentAdapter(Context context, List<CommentModel> commentList, String currentUserId, OnCommentActionListener listener, boolean isAdmin) {
         this.context = context;
         this.commentList = commentList;
         this.currentUserId = currentUserId;
         this.actionListener = listener;
+        this.isAdmin = isAdmin;
     }
 
     @NonNull
@@ -96,6 +98,28 @@ public class CommentAdapter extends RecyclerView.Adapter<CommentAdapter.ViewHold
                 PopupMenu popupMenu = new PopupMenu(context, holder.btnCommentMenu);
                 popupMenu.getMenu().add("Chỉnh sửa");
                 popupMenu.getMenu().add("Xóa");
+                popupMenu.setOnMenuItemClickListener(menuItem -> {
+                    if (menuItem.getTitle().equals("Chỉnh sửa")) {
+                        actionListener.onEdit(comment);
+                    } else if (menuItem.getTitle().equals("Xóa")) {
+                        actionListener.onDelete(comment);
+                    }
+                    return true;
+                });
+                popupMenu.show();
+            });
+        } else {
+            holder.btnCommentMenu.setVisibility(View.GONE);
+        }
+
+        if (isAdmin || currentUserId.equals(comment.getUserId())) {
+            holder.btnCommentMenu.setVisibility(View.VISIBLE);
+            holder.btnCommentMenu.setOnClickListener(v -> {
+                PopupMenu popupMenu = new PopupMenu(context, holder.btnCommentMenu);
+                if (currentUserId.equals(comment.getUserId())) {
+                    popupMenu.getMenu().add("Chỉnh sửa");
+                }
+                popupMenu.getMenu().add("Xóa"); // Admin luôn có nút xóa
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
                     if (menuItem.getTitle().equals("Chỉnh sửa")) {
                         actionListener.onEdit(comment);

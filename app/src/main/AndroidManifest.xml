@@ -58,6 +58,9 @@
                     android:host="return" />
             </intent-filter>
         </activity>
+        <activity android:name=".Activity.Admin.AdForumActivity"
+            android:exported="true">
+        </activity>
         <activity
             android:name=".Activity.User.ChooseTicketActivity"
             android:exported="false">
