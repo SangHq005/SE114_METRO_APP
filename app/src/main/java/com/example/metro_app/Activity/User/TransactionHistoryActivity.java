@@ -3,6 +3,7 @@ package com.example.metro_app.Activity.User;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -53,6 +54,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         // Lấy userId từ SharedPreferences
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
         userId = prefs.getString("UserID", null);
+        Log.d("TransactionHistory", "userId: " + userId);
 
         // Initialize views
         backBtn = findViewById(R.id.backBtn);
@@ -72,7 +74,8 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                 btnApply == null || startDateTxt == null || endDateTxt == null ||
                 resetBtn == null || noTransactionsTxt == null || recyclerView == null ||
                 progressBar == null || closePopup == null) {
-            // Log error and return to avoid further crashes
+            Log.e("TransactionHistory", "One or more views are null");
+            Toast.makeText(this, "Lỗi giao diện, vui lòng thử lại", Toast.LENGTH_LONG).show();
             return;
         }
 
@@ -111,7 +114,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         backBtn.setOnClickListener(v -> {
             Intent intent = new Intent(TransactionHistoryActivity.this, HomeActivity.class);
             startActivity(intent);
-            finish(); // Close TransactionHistoryActivity
+            finish();
         });
 
         // Handle start date click
@@ -225,9 +228,15 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                                 }
                             }
                             updateEmptyState();
+                        } else {
+                            Log.e("TransactionHistory", "Firestore query failed: ", task.getException());
+                            Toast.makeText(this, "Lỗi tải giao dịch", Toast.LENGTH_LONG).show();
+                            noTransactionsTxt.setVisibility(View.VISIBLE);
+                            recyclerView.setVisibility(View.GONE);
                         }
                     });
         } catch (Exception e) {
+            Log.e("TransactionHistory", "Error parsing dates: ", e);
             progressBar.setVisibility(View.GONE);
             noTransactionsTxt.setVisibility(View.VISIBLE);
             recyclerView.setVisibility(View.GONE);
@@ -295,6 +304,12 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull TransactionViewHolder holder, int position) {
             Transaction transaction = transactions.get(position);
 
+            // Check if views are null to avoid NullPointerException
+            if (holder.tvTitle == null || holder.tvDate == null || holder.tvStatus == null || holder.tvAmount == null) {
+                Log.e("TransactionAdapter", "One or more TextViews are null in ViewHolder");
+                return;
+            }
+
             // Set ticket type name
             holder.tvTitle.setText(transaction.getTicketTypeName() != null ? transaction.getTicketTypeName() : "N/A");
 
@@ -321,10 +336,10 @@ public class TransactionHistoryActivity extends AppCompatActivity {
 
             public TransactionViewHolder(@NonNull View itemView) {
                 super(itemView);
-                tvTitle = findViewById(R.id.tvTitle);
-                tvDate = findViewById(R.id.tvDate);
-                tvStatus = findViewById(R.id.tvStatus);
-                tvAmount = findViewById(R.id.tvAmount);
+                tvTitle = itemView.findViewById(R.id.tvTitle);
+                tvDate = itemView.findViewById(R.id.tvDate);
+                tvStatus = itemView.findViewById(R.id.tvStatus);
+                tvAmount = itemView.findViewById(R.id.tvAmount);
             }
         }
     }
