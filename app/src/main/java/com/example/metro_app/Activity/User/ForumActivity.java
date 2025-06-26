@@ -3,11 +3,9 @@ package com.example.metro_app.Activity.User;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.widget.Toast;
-
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
-
 import com.bumptech.glide.Glide;
 import com.example.metro_app.Adapter.PostAdapter;
 import com.example.metro_app.Domain.PostModel;
@@ -16,13 +14,13 @@ import com.example.metro_app.databinding.ActivityForumBinding;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
-
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Locale;
 
 public class ForumActivity extends AppCompatActivity {
     private ActivityForumBinding binding;
@@ -40,20 +38,12 @@ public class ForumActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         postList = new ArrayList<>();
 
-        // Lấy userId hiện tại từ SharedPreferences
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
         currentUserId = prefs.getString("UserID", null);
 
-        // Load avatar từ SharedPreferences
         loadUserAvatar();
-
-        // Thiết lập RecyclerView
         setupRecyclerView();
-
-        // Load bài đăng từ Firestore
         loadPosts();
-
-        // Thiết lập listener cho nút đăng bài
         setupListeners();
     }
 
@@ -74,28 +64,32 @@ public class ForumActivity extends AppCompatActivity {
     private void setupRecyclerView() {
         LinearLayoutManager layoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
         binding.recyclerViewPosts.setLayoutManager(layoutManager);
-        postAdapter = new PostAdapter(postList, currentUserId, this::showEditDeleteDialog);
+
+        // SỬA LỖI TẠI ĐÂY: Thêm 'false' làm tham số cuối cùng
+        postAdapter = new PostAdapter(postList, currentUserId, this::showEditDeleteDialog, false);
+
         binding.recyclerViewPosts.setAdapter(postAdapter);
     }
 
+    // CẢI TIẾN: SỬ DỤNG SnapshotListener để cập nhật real-time
     private void loadPosts() {
         db.collection("forum")
                 .orderBy("createAt", Query.Direction.DESCENDING)
-                .get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    postList.clear();
-                    for (QueryDocumentSnapshot document : queryDocumentSnapshots) {
-                        PostModel post = new PostModel();
-                        post.setUserId(document.getString("userId"));
-                        post.setDescription(document.getString("description"));
-                        post.setCreateAt(document.getString("createAt"));
-                        post.setPostId(document.getString("postId"));
-                        postList.add(post);
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Toast.makeText(this, "Lỗi khi tải bài đăng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        return;
                     }
-                    postAdapter.notifyDataSetChanged();
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Lỗi khi tải bài đăng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+
+                    if (snapshots != null) {
+                        postList.clear();
+                        for (QueryDocumentSnapshot doc : snapshots) {
+                            PostModel post = doc.toObject(PostModel.class);
+                            post.setPostId(doc.getId()); // Gán ID của document làm postId
+                            postList.add(post);
+                        }
+                        postAdapter.notifyDataSetChanged();
+                    }
                 });
     }
 
@@ -106,24 +100,20 @@ public class ForumActivity extends AppCompatActivity {
                 Toast.makeText(this, "Vui lòng nhập nội dung bài đăng", Toast.LENGTH_SHORT).show();
                 return;
             }
-
             savePostToFirestore(description);
         });
     }
 
     private void savePostToFirestore(String description) {
-        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
-        String userId = prefs.getString("UserID", null);
-
-        if (userId == null) {
+        if (currentUserId == null) {
             Toast.makeText(this, "Không tìm thấy thông tin người dùng, vui lòng đăng nhập lại", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        String createAt = new SimpleDateFormat("dd/MM/yyyy HH:mm", java.util.Locale.getDefault()).format(new Date());
+        String createAt = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault()).format(new Date());
 
         Map<String, Object> post = new HashMap<>();
-        post.put("userId", userId);
+        post.put("userId", currentUserId);
         post.put("description", description);
         post.put("createAt", createAt);
 
@@ -135,26 +125,21 @@ public class ForumActivity extends AppCompatActivity {
                             .addOnSuccessListener(aVoid -> {
                                 Toast.makeText(ForumActivity.this, "Đăng bài thành công", Toast.LENGTH_SHORT).show();
                                 binding.editPost.setText("");
-                                loadPosts(); // Reload danh sách bài đăng
+                                // Không cần gọi loadPosts() nữa vì SnapshotListener sẽ tự cập nhật
                             })
-                            .addOnFailureListener(e -> {
-                                Toast.makeText(ForumActivity.this, "Cập nhật postId thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                            });
+                            .addOnFailureListener(e -> Toast.makeText(ForumActivity.this, "Cập nhật postId thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show());
                 })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(ForumActivity.this, "Đăng bài thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Toast.makeText(ForumActivity.this, "Đăng bài thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 
     private void showEditDeleteDialog(PostModel post) {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Chỉnh sửa bài đăng");
 
-        // Tạo EditText để chỉnh sửa description
         final android.widget.EditText input = new android.widget.EditText(this);
         input.setText(post.getDescription());
         input.setMinLines(3);
-        input.setPadding(16, 16, 16, 16);
+        input.setPadding(32, 32, 32, 32); // Tăng padding
         builder.setView(input);
 
         builder.setPositiveButton("Xác nhận", (dialog, which) -> {
@@ -164,20 +149,13 @@ public class ForumActivity extends AppCompatActivity {
                 return;
             }
 
-            // Cập nhật description trên Firestore
             db.collection("forum").document(post.getPostId())
                     .update("description", newDescription)
-                    .addOnSuccessListener(aVoid -> {
-                        Toast.makeText(this, "Chỉnh sửa bài đăng thành công", Toast.LENGTH_SHORT).show();
-                        loadPosts(); // Reload danh sách
-                    })
-                    .addOnFailureListener(e -> {
-                        Toast.makeText(this, "Chỉnh sửa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    });
+                    .addOnSuccessListener(aVoid -> Toast.makeText(this, "Chỉnh sửa bài đăng thành công", Toast.LENGTH_SHORT).show())
+                    .addOnFailureListener(e -> Toast.makeText(this, "Chỉnh sửa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
 
         builder.setNegativeButton("Hủy", (dialog, which) -> dialog.cancel());
-
         builder.show();
     }
 }

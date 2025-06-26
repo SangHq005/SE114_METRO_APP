@@ -19,6 +19,7 @@ import com.example.metro_app.Adapter.CommentAdapter;
 import com.example.metro_app.Domain.PostModel;
 import com.example.metro_app.Model.CommentModel;
 import com.example.metro_app.R;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
@@ -39,7 +40,7 @@ public class PostDetailActivity extends AppCompatActivity {
     private List<CommentModel> commentList = new ArrayList<>();
 
     private TextInputEditText etComment;
-    private ImageButton btnSendComment,btnPostMenu;
+    private ImageButton btnSendComment, btnPostMenu;
     private CircleImageView imgCommentAvt;
 
     private TextView tvUserName, tvUserRole, tvPostTime, tvPostContent;
@@ -47,11 +48,15 @@ public class PostDetailActivity extends AppCompatActivity {
 
     private String currentUserId;
     private String avatarUrl;
+    private boolean isAdmin = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
+
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         db = FirebaseFirestore.getInstance();
 
@@ -75,6 +80,7 @@ public class PostDetailActivity extends AppCompatActivity {
         }
 
         post = (PostModel) getIntent().getSerializableExtra("post");
+        isAdmin = getIntent().getBooleanExtra("isAdmin", false);
 
         if (post != null) {
             displayPostInfo();
@@ -87,11 +93,9 @@ public class PostDetailActivity extends AppCompatActivity {
                 new CommentAdapter.OnCommentActionListener() {
                     @Override
                     public void onEdit(CommentModel comment) {
-                        // Gán lại văn bản vào ô nhập
                         etComment.setText(comment.getComment());
                         etComment.requestFocus();
 
-                        // Gửi lại là "update" thay vì "add"
                         btnSendComment.setOnClickListener(v -> {
                             String newText = etComment.getText().toString().trim();
                             if (TextUtils.isEmpty(newText)) {
@@ -104,7 +108,7 @@ public class PostDetailActivity extends AppCompatActivity {
                                     .addOnSuccessListener(unused -> {
                                         Toast.makeText(PostDetailActivity.this, "Đã cập nhật bình luận", Toast.LENGTH_SHORT).show();
                                         etComment.setText("");
-                                        btnSendComment.setOnClickListener(view -> addComment()); // reset listener về bình thường
+                                        btnSendComment.setOnClickListener(view -> addComment());
                                         loadComments();
                                     })
                                     .addOnFailureListener(e -> Toast.makeText(PostDetailActivity.this, "Lỗi khi cập nhật", Toast.LENGTH_SHORT).show());
@@ -115,13 +119,14 @@ public class PostDetailActivity extends AppCompatActivity {
                     public void onDelete(CommentModel comment) {
                         db.collection("Comment").document(comment.getCommentId())
                                 .delete()
-                                .addOnSuccessListener(unused -> {Toast.makeText(PostDetailActivity.this, "Đã xoá bình luận", Toast.LENGTH_SHORT).show();
+                                .addOnSuccessListener(unused -> {
+                                    Toast.makeText(PostDetailActivity.this, "Đã xoá bình luận", Toast.LENGTH_SHORT).show();
                                     loadComments();
                                 })
                                 .addOnFailureListener(e -> Toast.makeText(PostDetailActivity.this, "Lỗi khi xoá", Toast.LENGTH_SHORT).show());
                     }
-                }
-
+                },
+                isAdmin
         );
 
         recyclerViewComments.setLayoutManager(new LinearLayoutManager(this));
@@ -153,7 +158,31 @@ public class PostDetailActivity extends AppCompatActivity {
                         }
                     }
                 });
+
+        if (isAdmin || (post.getUserId() != null && post.getUserId().equals(currentUserId))) {
+            btnPostMenu.setVisibility(View.VISIBLE);
+            btnPostMenu.setOnClickListener(v -> {
+                PopupMenu popupMenu = new PopupMenu(this, btnPostMenu);
+                if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
+                    popupMenu.getMenu().add("Chỉnh sửa");
+                }
+                popupMenu.getMenu().add("Xóa");
+                popupMenu.setOnMenuItemClickListener(item -> {
+                    if ("Xóa".equals(item.getTitle())) {
+                        db.collection("forum").document(post.getPostId()).delete()
+                                .addOnSuccessListener(unused -> {
+                                    Toast.makeText(this, "Xóa bài đăng thành công", Toast.LENGTH_SHORT).show();
+                                    finish();
+                                });
+                    }
+                    // Thêm logic cho "Chỉnh sửa" nếu cần
+                    return true;
+                });
+                popupMenu.show();
+            });
+        } else {
             btnPostMenu.setVisibility(View.GONE);
+        }
     }
 
     private void loadComments() {
