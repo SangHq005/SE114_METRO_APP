@@ -95,7 +95,7 @@
                     android:background="@drawable/toggle_button_selector"
                     android:textColor="@drawable/toggle_text_selector"
                     app:cornerRadius="24dp"
-                    app:rippleColor="@color/ripple_light"
+                    app:rippleColor="@color/blue"
                     android:stateListAnimator="@animator/button_elevation" />
 
                 <!-- Button Chưa sử dụng -->
@@ -114,7 +114,7 @@
                     android:background="@drawable/toggle_button_selector"
                     android:textColor="@drawable/toggle_text_selector"
                     app:cornerRadius="24dp"
-                    app:rippleColor="@color/ripple_light"
+                    app:rippleColor="@color/blue"
                     android:stateListAnimator="@animator/button_elevation" />
 
             </LinearLayout>

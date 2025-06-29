@@ -57,11 +57,26 @@ public class InfoAcitivity extends AppCompatActivity {
                startActivity(new Intent(InfoAcitivity.this, HomeActivity.class));
             }
         });
-        btnLogout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(new Intent(InfoAcitivity.this, LoginActivity.class));
-            }
+        btnLogout.setOnClickListener(v -> {
+            new AlertDialog.Builder(InfoAcitivity.this)
+                    .setTitle("Đăng xuất")
+                    .setMessage("Bạn có chắc chắn muốn đăng xuất không?")
+                    .setPositiveButton("Xác nhận", (dialog, which) -> {
+                        FirebaseAuth.getInstance().signOut();
+
+                        // Xóa dữ liệu SharedPreferences nếu muốn
+                        SharedPreferences.Editor editor = getSharedPreferences("UserInfo", MODE_PRIVATE).edit();
+                        editor.clear();
+                        editor.apply();
+
+                        // Chuyển về màn hình đăng nhập
+                        Intent intent = new Intent(InfoAcitivity.this, LoginActivity.class);
+                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // xóa back stack
+                        startActivity(intent);
+                        finish(); // kết thúc activity hiện tại
+                    })
+                    .setNegativeButton("Hủy", null)
+                    .show();
         });
         CCCDButton=findViewById(R.id.CCCDButton);
         CCCDButton.setOnClickListener(v -> showEditCCCDDialog());

@@ -58,20 +58,47 @@
                 android:orientation="horizontal"
                 android:background="@drawable/border_gray"
                 android:padding="8dp">
-
+                <!-- Mặc định hiện: Ví điện tử -->
                 <TextView
-                    android:id="@+id/paymentMethodTxt"
+                    android:id="@+id/defaultMethodTextView"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="Ví điện tử / Thẻ ngân hàng"
-                    android:textSize="16sp" />
+                    android:textSize="16sp"
+                    android:textColor="@color/black"
+                    android:visibility="visible"/>
+                <LinearLayout
+                    android:id="@+id/selectedMethodLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:id="@+id/selectedLogoImageView"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_marginEnd="8dp"
+                        android:src="@drawable/logo_vnpay" />
+
+                    <TextView
+                        android:id="@+id/selectedMethodTextView"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="VN PAY"
+                        android:textSize="16sp"
+                        android:textColor="@color/black"/>
+                </LinearLayout>
 
                 <ImageView
                     android:id="@+id/rightChevronBtn"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:src="@drawable/mdtp_ic_chevron_right_black_24dp" />
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

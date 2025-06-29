@@ -35,6 +35,7 @@ public class NewsAdapter extends RecyclerView.Adapter<NewsAdapter.ViewHolder> {
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         NewsModel item = newsList.get(position);
 
+        holder.binding.dateTxt.setText(item.getDate());
         holder.binding.titleTxt.setText(item.getTitle());
         Glide.with(context).load(item.getPic()).into(holder.binding.pic);
 

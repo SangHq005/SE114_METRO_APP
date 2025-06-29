@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -104,8 +105,12 @@ public class OrderInfoActivity extends AppCompatActivity {
         TextView luuYTxt = findViewById(R.id.luuYTxt);
         thanhToanBtn = findViewById(R.id.thanhToanBtn);
         paymentMethodCard = findViewById(R.id.paymentMethodCard);
-        paymentMethodTxt = findViewById(R.id.paymentMethodTxt);
+
         backBtn = findViewById(R.id.backBtn);
+        LinearLayout selectedMethodLayout = findViewById(R.id.selectedMethodLayout);
+        TextView selectedMethodTextView = findViewById(R.id.selectedMethodTextView);
+        ImageView selectedLogoImageView = findViewById(R.id.selectedLogoImageView);
+        TextView defaultMethodTextView = findViewById(R.id.defaultMethodTextView);
 
         // Cập nhật giao diện
         sanphamTxt.setText(ticketName != null ? ticketName : "Không có thông tin");
@@ -123,14 +128,23 @@ public class OrderInfoActivity extends AppCompatActivity {
 
         // Sự kiện nhấn vào paymentMethodCard để mở PaymentMethodDialog
         paymentMethodCard.setOnClickListener(v -> {
-            PaymentMethodDialog dialog = new PaymentMethodDialog(OrderInfoActivity.this);
-            dialog.setPaymentMethodListener(method -> {
-                selectedPaymentMethod = method;
-                paymentMethodTxt.setText(method);
-                Toast.makeText(OrderInfoActivity.this, "Đã chọn phương thức: " + method, Toast.LENGTH_SHORT).show();
+            PaymentMethodDialog dialog = new PaymentMethodDialog();
+            dialog.setPaymentMethodListener((methodName, logoResId) -> {
+                // Ẩn dòng mặc định
+                defaultMethodTextView.setVisibility(View.GONE);
+
+                // Hiện logo + text mới
+                selectedMethodLayout.setVisibility(View.VISIBLE);
+                selectedMethodTextView.setText(methodName);
+                selectedLogoImageView.setImageResource(logoResId);
+                Toast.makeText(OrderInfoActivity.this, "Đã chọn phương thức: " + methodName, Toast.LENGTH_SHORT).show();
+
+                // Gán lại giá trị selectedPaymentMethod ở đây
+                selectedPaymentMethod = methodName;
             });
             dialog.show(getSupportFragmentManager(), "PaymentMethodDialog");
         });
+
 
         // Sự kiện nhấn nút Thanh toán
         thanhToanBtn.setOnClickListener(v -> {
