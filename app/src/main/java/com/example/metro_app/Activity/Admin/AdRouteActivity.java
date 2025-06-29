@@ -5,22 +5,17 @@ import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
-import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.recyclerview.widget.DiffUtil;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.example.metro_app.Adapter.AdRouteAdapter;
 import com.example.metro_app.Domain.RouteModel;
 import com.example.metro_app.R;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
@@ -29,112 +24,12 @@ import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Objects;
 
-// Adapter for RecyclerView
-class RouteAdapter extends RecyclerView.Adapter<RouteAdapter.RouteViewHolder> {
-    private List<RouteModel> filteredRouteList;
-    private final OnItemClickListener listener;
-
-    public interface OnItemClickListener {
-        void onItemClick(int position);
-    }
-
-    public RouteAdapter(List<RouteModel> filteredRouteList, OnItemClickListener listener) {
-        this.filteredRouteList = filteredRouteList;
-        this.listener = listener;
-    }
-
-    @NonNull
-    @Override
-    public RouteViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_route, parent, false);
-        return new RouteViewHolder(view);
-    }
-
-    @Override
-    public void onBindViewHolder(@NonNull RouteViewHolder holder, int position) {
-        RouteModel route = filteredRouteList.get(position);
-        holder.routeName.setText(holder.itemView.getContext().getString(
-                R.string.route_name_format, route.getFromStation(), route.getToStation()));
-
-        // Định dạng giá vé để hiển thị (tùy chọn)
-        // Nếu bạn có một TextView cho giá vé, hãy thêm nó ở đây. Ví dụ:
-        // TextView routePrice = holder.itemView.findViewById(R.id.tv_route_price);
-        // if (route.getPrice() != null) {
-        //     DecimalFormat formatter = new DecimalFormat("#,###");
-        //     String formattedPrice = formatter.format(route.getPrice()) + " VND";
-        //     routePrice.setText(formattedPrice);
-        // }
-
-        holder.itemView.setOnClickListener(v -> listener.onItemClick(position));
-    }
-
-    @Override
-    public int getItemCount() {
-        Log.d("RouteAdapter", "Item count: " + filteredRouteList.size());
-        return filteredRouteList.size();
-    }
-
-    static class RouteViewHolder extends RecyclerView.ViewHolder {
-        TextView routeName;
-
-        public RouteViewHolder(@NonNull View itemView) {
-            super(itemView);
-            routeName = itemView.findViewById(R.id.tv_route_name);
-        }
-    }
-
-    public void updateList(List<RouteModel> newList) {
-        Log.d("RouteAdapter", "Updating list with " + newList.size() + " items");
-        DiffUtil.DiffResult diffResult = DiffUtil.calculateDiff(new RouteDiffCallback(this.filteredRouteList, newList));
-        this.filteredRouteList.clear();
-        this.filteredRouteList.addAll(newList);
-        diffResult.dispatchUpdatesTo(this);
-    }
-
-    static class RouteDiffCallback extends DiffUtil.Callback {
-        private final List<RouteModel> oldList;
-        private final List<RouteModel> newList;
-
-        RouteDiffCallback(List<RouteModel> oldList, List<RouteModel> newList) {
-            this.oldList = oldList;
-            this.newList = newList;
-        }
-
-        @Override
-        public int getOldListSize() {
-            return oldList.size();
-        }
-
-        @Override
-        public int getNewListSize() {
-            return newList.size();
-        }
-
-        @Override
-        public boolean areItemsTheSame(int oldItemPosition, int newItemPosition) {
-            // So sánh dựa trên ID duy nhất của tuyến đường
-            return oldList.get(oldItemPosition).getId().equals(newList.get(newItemPosition).getId());
-        }
-
-        @Override
-        public boolean areContentsTheSame(int oldItemPosition, int newItemPosition) {
-            RouteModel oldRoute = oldList.get(oldItemPosition);
-            RouteModel newRoute = newList.get(newItemPosition);
-            // So sánh nội dung của các đối tượng
-            return oldRoute.getFromStation().equals(newRoute.getFromStation()) &&
-                    oldRoute.getToStation().equals(newRoute.getToStation()) &&
-                    Objects.equals(oldRoute.getPrice(), newRoute.getPrice());
-        }
-    }
-}
 
 public class AdRouteActivity extends AppCompatActivity {
     private static final String TAG = "AdRouteActivity";
     private RecyclerView recyclerView;
-    private RouteAdapter routeAdapter;
+    private AdRouteAdapter adRouteAdapter;
     private List<RouteModel> routeList;
     private List<RouteModel> filteredRouteList;
     private FirebaseFirestore db;
@@ -177,7 +72,7 @@ public class AdRouteActivity extends AppCompatActivity {
         filteredRouteList = new ArrayList<>();
 
         // Set up adapter
-        routeAdapter = new RouteAdapter(filteredRouteList, position -> {
+        adRouteAdapter = new AdRouteAdapter(filteredRouteList, position -> {
             Intent intent = new Intent(AdRouteActivity.this, AdRouteDetails.class);
             // Lấy đúng đối tượng từ danh sách đã lọc
             RouteModel selectedRoute = filteredRouteList.get(position);
@@ -189,7 +84,7 @@ public class AdRouteActivity extends AppCompatActivity {
 
             editRouteLauncher.launch(intent);
         });
-        recyclerView.setAdapter(routeAdapter);
+        recyclerView.setAdapter(adRouteAdapter);
 
         // Load routes from Firestore
         loadRoutesFromFirestore();
@@ -298,6 +193,6 @@ public class AdRouteActivity extends AppCompatActivity {
             }
         }
         Log.d(TAG, "Filtering routes, new size: " + newFilteredList.size());
-        routeAdapter.updateList(newFilteredList);
+        adRouteAdapter.updateList(newFilteredList);
     }
 }

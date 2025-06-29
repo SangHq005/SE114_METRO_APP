@@ -36,7 +36,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_home_address" />
+                android:src="@drawable/location_home" />
 
             <TextView
                 android:id="@+id/tvSearchFrom"
@@ -61,7 +61,7 @@
             <ImageView
                 android:layout_width="24dp"
                 android:layout_height="24dp"
-                android:src="@drawable/ic_target_address" />
+                android:src="@drawable/placeholder" />
 
             <TextView
                 android:id="@+id/tvSearchTo"
