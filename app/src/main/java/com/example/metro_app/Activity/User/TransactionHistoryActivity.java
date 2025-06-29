@@ -14,7 +14,7 @@ import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import androidx.core.content.ContextCompat;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
@@ -304,27 +304,29 @@ public class TransactionHistoryActivity extends AppCompatActivity {
         public void onBindViewHolder(@NonNull TransactionViewHolder holder, int position) {
             Transaction transaction = transactions.get(position);
 
-            // Check if views are null to avoid NullPointerException
-            if (holder.tvTitle == null || holder.tvDate == null || holder.tvStatus == null || holder.tvAmount == null) {
-                Log.e("TransactionAdapter", "One or more TextViews are null in ViewHolder");
-                return;
-            }
-
-            // Set ticket type name
             holder.tvTitle.setText(transaction.getTicketTypeName() != null ? transaction.getTicketTypeName() : "N/A");
 
-            // Format and set date
             SimpleDateFormat sdf = new SimpleDateFormat("HH:mm dd/MM/yyyy", Locale.getDefault());
             holder.tvDate.setText(transaction.getTimestamp() != null ? sdf.format(transaction.getTimestamp()) : "N/A");
 
-            // Set status
-            String statusText = transaction.getStatus() != null && transaction.getStatus().equals("SUCCESS") ? "Thành công" : "Thất bại";
+            String statusText;
+            if ("SUCCESS".equals(transaction.getStatus())) {
+                statusText = "Thành công";
+                holder.tvStatus.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.success_text));
+                holder.tvStatus.setBackgroundResource(R.drawable.bg_transaction_success);
+            } else {
+                statusText = "Thất bại";
+                holder.tvStatus.setTextColor(ContextCompat.getColor(holder.itemView.getContext(), R.color.failed_text));
+                holder.tvStatus.setBackgroundResource(R.drawable.bg_transaction_failed);
+            }
             holder.tvStatus.setText(statusText);
 
-            // Format and set amount
             String amountText = String.format(Locale.getDefault(), "%,d đ", transaction.getAmount());
             holder.tvAmount.setText(amountText);
         }
+
+
+
 
         @Override
         public int getItemCount() {

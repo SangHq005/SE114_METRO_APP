@@ -91,7 +91,7 @@ public class HomeActivity extends AppCompatActivity {
                     startActivity(new Intent(HomeActivity.this, MyTicketsActivity.class));
                 }
                 if ("Vé của tôi".equals(category.getName())) {
-                    startActivity(new Intent(HomeActivity.this, TransactionHistoryActivity.class));
+                    startActivity(new Intent(HomeActivity.this, YourTicketsActivity.class));
                 }
                 if ("Đổi mã".equals(category.getName())) {
                     startActivity(new Intent(HomeActivity.this, ChangeQRActivity.class));
@@ -102,11 +102,14 @@ public class HomeActivity extends AppCompatActivity {
                 if ("Hành trình".equals(category.getName())) {
                     startActivity(new Intent(HomeActivity.this, JourneyActivity.class));
                 }
-                if ("Tài Khoản".equals(category.getName())) {
+                if ("Tài khoản".equals(category.getName())) {
                     startActivity(new Intent(HomeActivity.this, InfoAcitivity.class));
                 }
-                if ("Diễn Đàn".equals(category.getName())) {
+                if ("Diễn đàn".equals(category.getName())) {
                     startActivity(new Intent(HomeActivity.this, ForumActivity.class));
+                }
+                if ("Lịch sử giao dịch".equals(category.getName())) {
+                    startActivity(new Intent(HomeActivity.this, TransactionHistoryActivity.class));
                 }
             });
             binding.recyclerViewCategory.setAdapter(adapter);

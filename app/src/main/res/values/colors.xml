@@ -106,5 +106,7 @@
 
     <color name="metro_pink">#FF4081</color>
     <color name="metro_pink_dark">#C60055</color>
+    <color name="status_success">#4CAF50</color> <!-- Màu xanh -->
+    <color name="status_failed">#F44336</color>  <!-- Màu đỏ -->
 
 </resources>
