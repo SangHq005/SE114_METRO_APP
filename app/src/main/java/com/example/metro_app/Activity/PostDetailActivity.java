@@ -1,10 +1,12 @@
 package com.example.metro_app.Activity;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.ImageButton;
+import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -15,6 +17,9 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
+import com.example.metro_app.Activity.User.ForumActivity;
+import com.example.metro_app.Activity.User.MyTicketsActivity;
+import com.example.metro_app.Activity.User.OrderInfoActivity;
 import com.example.metro_app.Adapter.CommentAdapter;
 import com.example.metro_app.Domain.PostModel;
 import com.example.metro_app.Model.CommentModel;
@@ -54,9 +59,6 @@ public class PostDetailActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_post_detail);
-
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> onBackPressed());
 
         db = FirebaseFirestore.getInstance();
 
@@ -134,6 +136,12 @@ public class PostDetailActivity extends AppCompatActivity {
 
         loadComments();
         btnSendComment.setOnClickListener(v -> addComment());
+
+        ImageView backBtn = findViewById(R.id.backBtn);
+        backBtn.setOnClickListener(v -> {
+            startActivity(new Intent(PostDetailActivity.this, ForumActivity.class));
+            finish();
+        });
     }
 
     private void displayPostInfo() {

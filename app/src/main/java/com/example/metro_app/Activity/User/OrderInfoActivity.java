@@ -123,7 +123,7 @@ public class OrderInfoActivity extends AppCompatActivity {
         tongTienTxt.setText(totalFormatted);
 
         loaiVeTxt.setText(ticketName != null ? ticketName : "Không có thông tin");
-        hsdTxt.setText("HSD: " + (ticketExpiration != null ? ticketExpiration : "0") + " ngày kể từ ngày kích hoạt");
+        hsdTxt.setText((ticketExpiration != null ? ticketExpiration : "0") + " ngày kể từ ngày kích hoạt");
         luuYTxt.setText("Tự động kích hoạt sau " + (ticketAutoActive != null ? ticketAutoActive : "0") + " ngày kể từ ngày mua");
 
         // Sự kiện nhấn vào paymentMethodCard để mở PaymentMethodDialog
