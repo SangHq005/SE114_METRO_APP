@@ -260,6 +260,7 @@ public class AdTicketActivity extends AppCompatActivity {
 
     private void loadTicketsFromFirestore() {
         db.collection("TicketType")
+                .whereEqualTo("Type", "Vé dài hạn") // Chỉ load vé có Type là "Vé dài hạn"
                 .get()
                 .addOnCompleteListener(task -> {
                     progressBar.setVisibility(View.GONE);
@@ -297,12 +298,12 @@ public class AdTicketActivity extends AppCompatActivity {
                                     Log.e(TAG, "Error parsing document: " + (doc != null ? doc.getId() : "null"), e);
                                 }
                             }
-                            Log.d(TAG, "Loaded " + ticketList.size() + " tickets from Firestore");
+                            Log.d(TAG, "Loaded " + ticketList.size() + " 'Vé dài hạn' tickets from Firestore");
                             // Sau khi tải xong, gọi filterTickets để hiển thị toàn bộ danh sách
                             filterTickets("");
                         } else {
-                            Log.w(TAG, "No documents found in TicketType collection");
-                            Toast.makeText(AdTicketActivity.this, "Không tìm thấy dữ liệu vé.", Toast.LENGTH_SHORT).show();
+                            Log.w(TAG, "No 'Vé dài hạn' documents found in TicketType collection");
+                            Toast.makeText(AdTicketActivity.this, "Không tìm thấy vé 'Vé dài hạn'.", Toast.LENGTH_SHORT).show();
                         }
                     } else {
                         Log.e(TAG, "Error loading tickets: ", task.getException());
