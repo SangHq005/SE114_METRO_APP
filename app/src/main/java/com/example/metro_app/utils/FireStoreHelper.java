@@ -522,9 +522,6 @@ public class FireStoreHelper {
                     listener.onError(e);
                 });
     }
-
-
-
     //USER
     public void getUserById(String uid, Callback<UserModel> callback) {
         if (uid == null || uid.isEmpty()) {
