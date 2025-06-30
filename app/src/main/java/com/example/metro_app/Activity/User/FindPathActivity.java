@@ -125,14 +125,14 @@ public class FindPathActivity extends AppCompatActivity {
 
         btnMyLocation.setOnClickListener(v -> {
 
-//            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//                if (currentLocation != null) {
-//                    mapFragment.zoomToLocation(currentLocation);
-//                }
-//            }
-            pointFrom = Point.fromLngLat(106.70640854537282,10.776064339338353);
-            pointTo =Point.fromLngLat(106.69920319317951,10.775128418094525);
-            findAndDisplayRoute();
+            if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+                if (currentLocation != null) {
+                    mapFragment.zoomToLocation(currentLocation);
+                }
+            }
+//            pointFrom = Point.fromLngLat(106.70640854537282,10.776064339338353);
+//            pointTo =Point.fromLngLat(106.69920319317951,10.775128418094525);
+//            findAndDisplayRoute();
 
         });
 
