@@ -8,21 +8,10 @@ import android.graphics.LinearGradient;
 import android.graphics.Shader;
 import android.os.Bundle;
 import android.text.InputType;
-import android.util.Log;
 import android.view.View;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.activity.EdgeToEdge;
+import android.widget.*;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
 import com.bumptech.glide.Glide;
 import com.example.metro_app.Activity.LoginActivity;
@@ -37,217 +26,166 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class InfoAcitivity extends AppCompatActivity {
-    ActivityInfoAcitivityBinding binding;
 
+    ActivityInfoAcitivityBinding binding;
     ImageView backbtn;
     Button btnLogout;
-    LinearLayout PN,CCCDButton;
+    LinearLayout PN, CCCDButton;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         binding = ActivityInfoAcitivityBinding.inflate(getLayoutInflater());
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(binding.getRoot());
+
         backbtn = findViewById(R.id.backBtn);
-        btnLogout =findViewById(R.id.btnLogout);
+        btnLogout = findViewById(R.id.btnLogout);
         PN = findViewById(R.id.PNButton);
-        backbtn.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-               startActivity(new Intent(InfoAcitivity.this, HomeActivity.class));
-            }
-        });
+        CCCDButton = findViewById(R.id.CCCDButton);
+
+        backbtn.setOnClickListener(v -> startActivity(new Intent(InfoAcitivity.this, HomeActivity.class)));
+
         btnLogout.setOnClickListener(v -> {
-            new AlertDialog.Builder(InfoAcitivity.this)
+            new AlertDialog.Builder(this)
                     .setTitle("Đăng xuất")
                     .setMessage("Bạn có chắc chắn muốn đăng xuất không?")
                     .setPositiveButton("Xác nhận", (dialog, which) -> {
                         FirebaseAuth.getInstance().signOut();
-
-                        // Xóa dữ liệu SharedPreferences nếu muốn
                         SharedPreferences.Editor editor = getSharedPreferences("UserInfo", MODE_PRIVATE).edit();
                         editor.clear();
                         editor.apply();
-
-                        // Chuyển về màn hình đăng nhập
-                        Intent intent = new Intent(InfoAcitivity.this, LoginActivity.class);
-                        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK); // xóa back stack
-                        startActivity(intent);
-                        finish(); // kết thúc activity hiện tại
+                        startActivity(new Intent(this, LoginActivity.class)
+                                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                        finish();
                     })
                     .setNegativeButton("Hủy", null)
                     .show();
         });
-        CCCDButton=findViewById(R.id.CCCDButton);
-        CCCDButton.setOnClickListener(v -> showEditCCCDDialog());
+
+        CCCDButton.setOnClickListener(v -> {
+            SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+            String currentCCCD = prefs.getString("CCCD", "");
+            showCustomInputDialog("Nhập CCCD mới", currentCCCD, this::saveCCCDToFirestoreAndPrefs);
+        });
+
         PN.setOnClickListener(v -> {
-            showEditPhoneNumberDialog();
+            SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
+            String currentPN = prefs.getString("phoneNumber", "");
+            showCustomInputDialog("Nhập số điện thoại mới", currentPN, this::savePhoneNumberToFirestoreAndPrefs);
         });
+
         loadUserInfo();
-
-
-        //hiệu ứng text
-        TextView tvGreeting = findViewById(R.id.tvGreeting);
-
-        Shader shader = new LinearGradient(
-                0, 0, 0, tvGreeting.getTextSize(),
-                new int[]{
-                        Color.RED,
-                        Color.BLUE,
-                        Color.GREEN,
-                        Color.MAGENTA
-                },
-                null,
-                Shader.TileMode.CLAMP);
-
-        tvGreeting.getPaint().setShader(shader);
-
-        // Tạo hiệu ứng chạy màu bằng cách cập nhật shader liên tục
-        ValueAnimator animator = ValueAnimator.ofFloat(0, 1000);
-        animator.setDuration(4000);
-        animator.setRepeatCount(ValueAnimator.INFINITE);
-        animator.addUpdateListener(animation -> {
-            float translate = (float) animation.getAnimatedValue();
-            Shader movingShader = new LinearGradient(
-                    translate, 0, translate + tvGreeting.getWidth(), tvGreeting.getTextSize(),
-                    new int[]{
-                            Color.RED,
-                            Color.BLUE,
-                            Color.GREEN,
-                            Color.MAGENTA
-                    },
-                    null,
-                    Shader.TileMode.MIRROR);
-            tvGreeting.getPaint().setShader(movingShader);
-            tvGreeting.invalidate();
-        });
-        animator.start();
-
+        setupTextAnimation();
     }
+
     private void loadUserInfo() {
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
         String name = prefs.getString("name", "");
         String email = prefs.getString("email", "");
         String CCCD = prefs.getString("CCCD", "Chưa cập nhật");
         String photoUrl = prefs.getString("photo", "");
-        String PhoneNumber = prefs.getString("phoneNumber","Chưa cập nhật");
-        Log.d("SDT", "loadUserInfo: "+ PhoneNumber);
-        TextView tvName = findViewById(R.id.nameTxt);
-        TextView tvName2 = findViewById(R.id.userName);
-        TextView tvEmail = findViewById(R.id.tvEmail);
-        TextView tvCCCD = findViewById(R.id.nationalIdTxt);
-        TextView tvPN =findViewById(R.id.tvPN);
-        ImageView imgPhoto = findViewById(R.id.profileImage);
+        String phone = prefs.getString("phoneNumber", "Chưa cập nhật");
 
-
-        tvName.setText(name);
-        tvName2.setText(name);
-        tvEmail.setText(email);
-        tvCCCD.setText(CCCD);
-        tvPN.setText(PhoneNumber);
+        binding.nameTxt.setText(name);
+        binding.userName.setText(name);
+        binding.tvEmail.setText(email);
+        binding.nationalIdTxt.setText(CCCD);
+        binding.tvPN.setText(phone);
 
         if (!photoUrl.isEmpty()) {
-            Glide.with(this).load(photoUrl).into(imgPhoto);
+            Glide.with(this).load(photoUrl).into(binding.profileImage);
         }
     }
-    private void showEditCCCDDialog() {
-        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
-        String currentCCCD = prefs.getString("CCCD", "");
 
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setText(currentCCCD);
+    private void showCustomInputDialog(String title, String currentValue, OnConfirmListener listener) {
+        View view = getLayoutInflater().inflate(R.layout.dialog_input_field, null);
+        EditText etInput = view.findViewById(R.id.etInput);
+        TextView tvTitle = view.findViewById(R.id.tvTitle);
+        Button btnCancel = view.findViewById(R.id.btnCancel);
+        Button btnConfirm = view.findViewById(R.id.btnConfirm);
 
-        new AlertDialog.Builder(this)
-                .setTitle("Nhập CCCD mới")
-                .setView(input)
-                .setPositiveButton("Xác nhận", (dialog, which) -> {
-                    String newCCCD = input.getText().toString().trim();
-                    if (newCCCD.isEmpty()) {
-                        Toast.makeText(this, "CCCD không được để trống", Toast.LENGTH_SHORT).show();
-                    } else {
-                        saveCCCDToFirestoreAndPrefs(newCCCD);
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
+        tvTitle.setText(title);
+        etInput.setText(currentValue);
+
+        AlertDialog dialog = new AlertDialog.Builder(this)
+                .setView(view)
+                .setCancelable(false)
+                .create();
+
+        btnCancel.setOnClickListener(v -> dialog.dismiss());
+        btnConfirm.setOnClickListener(v -> {
+            String input = etInput.getText().toString().trim();
+            if (input.isEmpty()) {
+                Toast.makeText(this, "Không được để trống", Toast.LENGTH_SHORT).show();
+            } else {
+                listener.onConfirm(input);
+                dialog.dismiss();
+            }
+        });
+
+        dialog.show();
     }
-    private void showEditPhoneNumberDialog() {
-        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
-        String currentPN = prefs.getString("phoneNumber", "");
 
-        final EditText input = new EditText(this);
-        input.setInputType(InputType.TYPE_CLASS_TEXT);
-        input.setText(currentPN);
-
-        new AlertDialog.Builder(this)
-                .setTitle("Nhập Sdt mới")
-                .setView(input)
-                .setPositiveButton("Xác nhận", (dialog, which) -> {
-                    String newPN = input.getText().toString().trim();
-                    if (newPN.isEmpty()) {
-                        Toast.makeText(this, "Sdt không được để trống", Toast.LENGTH_SHORT).show();
-                    } else {
-                        savePhoneNumberToFirestoreAndPrefs(newPN);
-                    }
-                })
-                .setNegativeButton("Hủy", null)
-                .show();
-    }
     private void saveCCCDToFirestoreAndPrefs(String CCCD) {
         FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
         if (user == null) return;
 
-        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("UserID", user.getUid());
-        editor.putString("name", user.getDisplayName());
-        editor.putString("email", user.getEmail());
-        editor.putString("photo", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
+        SharedPreferences.Editor editor = getSharedPreferences("UserInfo", MODE_PRIVATE).edit();
         editor.putString("CCCD", CCCD);
         editor.apply();
 
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> data = new HashMap<>();
-        data.put("CCCD", CCCD);
-
-        db.collection("Account")
+        FirebaseFirestore.getInstance().collection("Account")
                 .document(user.getUid())
-                .set(data, SetOptions.merge())
+                .set(Map.of("CCCD", CCCD), SetOptions.merge())
                 .addOnSuccessListener(aVoid ->
                         Toast.makeText(this, "Lưu CCCD thành công", Toast.LENGTH_SHORT).show())
                 .addOnFailureListener(e ->
                         Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
-    loadUserInfo();
-    }
-    private void savePhoneNumberToFirestoreAndPrefs(String phoneNumber) {
-        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
-        if (user == null) return;
 
-        SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
-        SharedPreferences.Editor editor = prefs.edit();
-        editor.putString("UserID", user.getUid());
-        editor.putString("phoneNumber", phoneNumber);
-        editor.putString("name", user.getDisplayName());
-        editor.putString("email", user.getEmail());
-        editor.putString("photo", user.getPhotoUrl() != null ? user.getPhotoUrl().toString() : "");
-        editor.apply();
-
-        FirebaseFirestore db = FirebaseFirestore.getInstance();
-        Map<String, Object> data = new HashMap<>();
-        data.put("PhoneNumber",phoneNumber );
-
-        db.collection("Account")
-                .document(user.getUid())
-                .set(data, SetOptions.merge())
-                .addOnSuccessListener(aVoid ->
-                        Toast.makeText(this, "Lưu sdt thành công", Toast.LENGTH_SHORT).show())
-                .addOnFailureListener(e ->
-                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         loadUserInfo();
     }
 
+    private void savePhoneNumberToFirestoreAndPrefs(String phone) {
+        FirebaseUser user = FirebaseAuth.getInstance().getCurrentUser();
+        if (user == null) return;
 
+        SharedPreferences.Editor editor = getSharedPreferences("UserInfo", MODE_PRIVATE).edit();
+        editor.putString("phoneNumber", phone);
+        editor.apply();
 
+        FirebaseFirestore.getInstance().collection("Account")
+                .document(user.getUid())
+                .set(Map.of("PhoneNumber", phone), SetOptions.merge())
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(this, "Lưu số điện thoại thành công", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_SHORT).show());
 
+        loadUserInfo();
+    }
+
+    private interface OnConfirmListener {
+        void onConfirm(String input);
+    }
+
+    private void setupTextAnimation() {
+        Shader shader = new LinearGradient(0, 0, 0, binding.tvGreeting.getTextSize(),
+                new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.MAGENTA},
+                null, Shader.TileMode.CLAMP);
+        binding.tvGreeting.getPaint().setShader(shader);
+
+        ValueAnimator animator = ValueAnimator.ofFloat(0, 1000);
+        animator.setDuration(4000);
+        animator.setRepeatCount(ValueAnimator.INFINITE);
+        animator.addUpdateListener(animation -> {
+            float translate = (float) animation.getAnimatedValue();
+            Shader movingShader = new LinearGradient(
+                    translate, 0, translate + binding.tvGreeting.getWidth(), binding.tvGreeting.getTextSize(),
+                    new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.MAGENTA},
+                    null, Shader.TileMode.MIRROR);
+            binding.tvGreeting.getPaint().setShader(movingShader);
+            binding.tvGreeting.invalidate();
+        });
+        animator.start();
+    }
 }
