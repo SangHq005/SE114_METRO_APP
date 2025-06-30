@@ -112,13 +112,6 @@
                 android:textColor="#000" />
 
             <!-- Tên trạm -->
-            <TextView
-                android:id="@+id/tvStationName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Trạm: Bến Thành"
-                android:textSize="14sp"
-                android:layout_marginTop="4dp" />
 
             <!-- Khoảng cách và thời gian -->
             <TextView
