@@ -100,7 +100,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 
 public class MapBoxFragment extends Fragment {
-    private String role; // default
+    private String role ="user"; // default
     private String docId;
     boolean isFirstRoute = true;
     private MapView mapView;

@@ -7,6 +7,15 @@ public class PostModel implements Serializable {
     private String description;
     private String createAt;
     private String postId;
+    private int commentCount;
+
+    public int getCommentCount() {
+        return commentCount;
+    }
+
+    public void setCommentCount(int commentCount) {
+        this.commentCount = commentCount;
+    }
 
     public PostModel() {}
 

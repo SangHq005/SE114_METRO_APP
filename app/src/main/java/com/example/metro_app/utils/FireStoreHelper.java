@@ -2,30 +2,43 @@ package com.example.metro_app.utils;
 
 import static android.content.ContentValues.TAG;
 
+import android.content.Context;
 import android.util.Log;
 
 import androidx.annotation.Nullable;
 
 import com.example.metro_app.Domain.TicketModel;
+import com.example.metro_app.Model.BusStop;
+import com.example.metro_app.Model.RawRoute;
+import com.example.metro_app.Model.RouteVariant;
 import com.example.metro_app.Model.Station;
 import com.example.metro_app.Model.TimeFilterType;
 import com.example.metro_app.Model.UserModel;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.firebase.Timestamp;
+import com.google.firebase.firestore.CollectionReference;
 import com.google.firebase.firestore.DocumentReference;
 import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.GeoPoint;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
+import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 import com.mapbox.geojson.Point;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.lang.reflect.Type;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 public class FireStoreHelper {
@@ -34,6 +47,59 @@ public class FireStoreHelper {
     public FireStoreHelper() {
         db = FirebaseFirestore.getInstance();
     }
+    //CALLBACK
+    public interface InsertCallback {
+        void onSuccess();
+        void onFailure(String message);
+    }
+    public interface StationNameCallback {
+        void onNamesFetched(String startName, String endName);
+        void onFailure(String message);
+    }
+    public interface StationListCallback {
+        void onSuccess(List<Station> stationList);
+        void onFailure(String message);
+    }
+    public interface StationCallback {
+        void onSuccess(Station station);
+        void onFailure(String message);
+    }
+    public interface DeleteCallback {
+        void onSuccess();
+        void onFailure(String message);
+    }
+    public interface MetroWayCallback {
+        void onSuccess(List<GeoPoint> points);
+        void onFailure(String message);
+    }
+
+    public interface Callback<T> {
+        void onSuccess(T result);
+        void onFailure(Exception e);
+    }
+    public interface OnTransactionSumCallback {
+        void onCallback(double sum);
+    }
+    public interface FirestoreCallback {
+        void onSuccess();
+        void onFailure(String message);
+    }
+
+    public interface FirestoreRoutesCallback {
+        void onSuccess(List<RawRoute> routeList);
+        void onFailure(String message);
+    }
+    public interface OnRouteVarsFetchedListener {
+        void onResult(List<RouteVariant> routeVars);
+        void onError(Exception e);
+    }
+
+    public interface UploadCallback {
+        void onSuccess();
+
+        void onFailure(Exception e);
+    }
+    //STATION
     public static void insertPointAt(String docName, Point newPoint, int index, InsertCallback callback) {
         GeoPoint newGeoPoint = new GeoPoint(newPoint.latitude(),newPoint.longitude());
 
@@ -57,10 +123,6 @@ public class FireStoreHelper {
                 callback.onFailure("Không tìm thấy dữ liệu hoặc field 'points'");
             }
         }).addOnFailureListener(e -> callback.onFailure("Lỗi khi truy cập Firestore: " + e.getMessage()));
-    }
-    public interface InsertCallback {
-        void onSuccess();
-        void onFailure(String message);
     }
     public static void addStation(Station station, OnCompleteListener<Void> listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -150,13 +212,6 @@ public class FireStoreHelper {
                     callback.onFailure("Lỗi truy vấn trạm đầu");
                 });
     }
-
-
-    public interface StationNameCallback {
-        void onNamesFetched(String startName, String endName);
-        void onFailure(String message);
-    }
-
     public static void getStationById(int stopId, StationCallback callback) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("stations")
@@ -171,11 +226,6 @@ public class FireStoreHelper {
                     }
                 })
                 .addOnFailureListener(e -> callback.onFailure("Lỗi truy cập Firestore: " + e.getMessage()));
-    }
-
-    public interface StationCallback {
-        void onSuccess(Station station);
-        void onFailure(String message);
     }
     public static void updateStation(Station station, OnCompleteListener<Void> listener) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -208,11 +258,6 @@ public class FireStoreHelper {
                 .delete()
                 .addOnSuccessListener(unused -> callback.onSuccess())
                 .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
-    }
-
-    public interface DeleteCallback {
-        void onSuccess();
-        void onFailure(String message);
     }
     public static void removePointFromRoute(String docName, double lat, double lng, DeleteCallback callback) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
@@ -251,8 +296,6 @@ public class FireStoreHelper {
             callback.onFailure("Lỗi truy cập Firestore: " + e.getMessage());
         });
     }
-
-
     public static void getAllStations(StationListCallback callback) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("stations")
@@ -267,12 +310,6 @@ public class FireStoreHelper {
                 })
                 .addOnFailureListener(e -> callback.onFailure("Lỗi khi truy cập Firestore: " + e.getMessage()));
     }
-
-    public interface StationListCallback {
-        void onSuccess(List<Station> stationList);
-        void onFailure(String message);
-    }
-
     public static void getMetroWay(String docName, MetroWayCallback callback) {
         FirebaseFirestore db = FirebaseFirestore.getInstance();
         db.collection("MetroWay")
@@ -288,13 +325,207 @@ public class FireStoreHelper {
                 })
                 .addOnFailureListener(e -> callback.onFailure("Lỗi khi truy cập Firestore: " + e.getMessage()));
     }
+    public static List<RawRoute> parseRoutesFromAsset(Context context, String filename) {
+        try {
+            InputStream is = context.getAssets().open(filename);
+            int size = is.available();
+            byte[] buffer = new byte[size];
+            is.read(buffer);
+            is.close();
 
-    public interface MetroWayCallback {
-        void onSuccess(List<GeoPoint> points);
-        void onFailure(String message);
+            String json = new String(buffer, StandardCharsets.UTF_8);
+            Gson gson = new Gson();
+            Type listType = new TypeToken<List<RawRoute>>() {}.getType();
+
+            return gson.fromJson(json, listType);
+        } catch (IOException e) {
+            e.printStackTrace();
+            return new ArrayList<>();
+        }
+    }
+    public static void uploadRawRoutes(List<RawRoute> routeList, FirestoreCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        WriteBatch batch = db.batch();
+
+        for (RawRoute route : routeList) {
+            DocumentReference docRef = db.collection("raw_routes").document(String.valueOf(route.getRouteId()));
+            Map<String, Object> data = new HashMap<>();
+            data.put("RouteId", route.getRouteId());
+            data.put("RouteNo", route.getRouteNo());
+            data.put("RouteName", route.getRouteName());
+            batch.set(docRef, data);
+        }
+
+        batch.commit()
+                .addOnSuccessListener(aVoid -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+    public static void uploadAllRouteVariantsSequential(BusDataHelper helper, UploadCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        db.collection("raw_routes").get()
+                .addOnSuccessListener(snapshot -> {
+                    List<Integer> routeIds = new ArrayList<>();
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        Long routeId = doc.getLong("RouteId");
+                        if (routeId != null) {
+                            routeIds.add(routeId.intValue());
+                        }
+                    }
+
+                    Log.d("UploadSeq", "Tổng số RouteId: " + routeIds.size());
+                    processNextRoute(helper, routeIds, 0, callback);
+
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("UploadSeq", "Lỗi khi đọc raw_routes: " + e.getMessage(), e);
+                    callback.onFailure(e);
+                });
+    }
+    private static void processNextRoute(BusDataHelper helper, List<Integer> routeIds, int index, UploadCallback callback) {
+        if (index >= routeIds.size()) {
+            Log.d("UploadSeq", "Hoàn tất upload tất cả tuyến!");
+            callback.onSuccess();
+            return;
+        }
+
+        int routeId = routeIds.get(index);
+        Log.d("UploadSeq", "Xử lý RouteId: " + routeId);
+
+        helper.fetchRouteVars(routeId, new BusDataHelper.OnRouteVarsFetchedListener() {
+            @Override
+            public void onResult(List<RouteVariant> variants) {
+                uploadVariantsOneByOne(helper, variants, 0, () -> {
+                    // Sau khi upload xong tất cả variants của 1 Route → sang route tiếp theo
+                    processNextRoute(helper, routeIds, index + 1, callback);
+                }, callback);
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e("UploadSeq", "Lỗi fetch variant routeId " + routeId, e);
+                callback.onFailure(e);
+            }
+        });
+    }
+    private static void uploadVariantsOneByOne(BusDataHelper helper, List<RouteVariant> variants, int index,
+                                               Runnable onComplete, UploadCallback callback) {
+        if (index >= variants.size()) {
+            onComplete.run();
+            return;
+        }
+
+        RouteVariant variant = variants.get(index);
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        DocumentReference docRef = db.collection("RouteVariants")
+                .document(variant.getRouteId() + "_" + variant.getRouteVarId());
+
+        // Gọi stops
+        helper.fetchStopsByRouteVar(variant.getRouteId(), variant.getRouteVarId(), new BusDataHelper.OnStopsFetchedListener() {
+            @Override
+            public void onResult(List<BusStop> stops) {
+                variant.setStops(stops);
+
+                // Gọi path
+                helper.fetchPathFromStopId(variant.getRouteId(), variant.getRouteVarId(), new BusDataHelper.OnPathFetchedListener() {
+                    @Override
+                    public void onResult(List<Point> path) {
+                        variant.setPathFromPointList(path);
+
+                        // Lưu vào Firestore sau khi đã đủ dữ liệu
+                        docRef.set(variant.toMap())
+                                .addOnSuccessListener(unused -> {
+                                    Log.d("UploadSeq", "Đã upload: " + docRef.getId());
+                                    uploadVariantsOneByOne(helper, variants, index + 1, onComplete, callback);
+                                })
+                                .addOnFailureListener(e -> {
+                                    Log.e("UploadSeq", "Lỗi khi upload variant: " + docRef.getId(), e);
+                                    callback.onFailure(e);
+                                });
+                    }
+
+                    @Override
+                    public void onError(Exception e) {
+                        Log.e("UploadSeq", "Lỗi fetch path cho variant: " + docRef.getId(), e);
+                        callback.onFailure(e);
+                    }
+                });
+            }
+
+            @Override
+            public void onError(Exception e) {
+                Log.e("UploadSeq", "Lỗi fetch stops cho variant: " + docRef.getId(), e);
+                callback.onFailure(e);
+            }
+        });
+    }
+    public static void loadRawRoutes(FirestoreRoutesCallback callback) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("raw_routes")
+                .get()
+                .addOnSuccessListener(querySnapshot -> {
+                    List<RawRoute> list = new ArrayList<>();
+                    for (DocumentSnapshot doc : querySnapshot) {
+                        RawRoute route = doc.toObject(RawRoute.class);
+                        if (route != null) list.add(route);
+                    }
+                    callback.onSuccess(list);
+                })
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+    public static void fetchRouteVars(int routeId, FireStoreHelper.OnRouteVarsFetchedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+
+        Log.d("FireStoreHelper", "Bắt đầu fetch RouteVariants cho RouteId: " + routeId);
+
+        db.collection("RouteVariants")
+                .whereEqualTo("RouteId", routeId)
+                .get()
+                .addOnSuccessListener(snapshot -> {
+                    List<RouteVariant> list = new ArrayList<>();
+
+                    Log.d("FireStoreHelper", "Số lượng document lấy được: " + snapshot.size());
+
+                    for (DocumentSnapshot doc : snapshot.getDocuments()) {
+                        try {
+                            RouteVariant variant = doc.toObject(RouteVariant.class);
+
+                            if (variant != null) {
+                                if (variant.getStops() == null) {
+                                    Log.w("FireStoreHelper", "Variant " + doc.getId() + " không có Stops.");
+                                    variant.setStops(new ArrayList<>());
+                                } else {
+                                    Log.d("FireStoreHelper", "Variant " + doc.getId() + " có " + variant.getStops().size() + " Stops.");
+                                }
+
+                                if (variant.getPath() == null) {
+                                    Log.w("FireStoreHelper", "Variant " + doc.getId() + " không có Path.");
+                                    variant.setPath(new ArrayList<>());
+                                } else {
+                                    Log.d("FireStoreHelper", "Variant " + doc.getId() + " có " + variant.getPath().size() + " điểm trong Path.");
+                                }
+
+                                list.add(variant);
+                            } else {
+                                Log.w("FireStoreHelper", "Variant null từ doc: " + doc.getId());
+                            }
+                        } catch (Exception e) {
+                            Log.e("FireStoreHelper", "Lỗi parse variant từ doc: " + doc.getId(), e);
+                        }
+                    }
+
+                    Log.d("FireStoreHelper", "Tổng số variant parse thành công: " + list.size());
+                    listener.onResult(list);
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("FireStoreHelper", "Lỗi lấy RouteVariants: " + e.getMessage(), e);
+                    listener.onError(e);
+                });
     }
 
 
+
+    //USER
     public void getUserById(String uid, Callback<UserModel> callback) {
         if (uid == null || uid.isEmpty()) {
             callback.onFailure(new IllegalArgumentException("User ID không được để trống"));
@@ -571,17 +802,6 @@ public class FireStoreHelper {
                 return null; // báo hàm gọi biết là không cần whereGreater/Less
         }
         return new Date[]{ start.getTime(), end.getTime() };
-    }
-
-
-
-
-    public interface Callback<T> {
-        void onSuccess(T result);
-        void onFailure(Exception e);
-    }
-    public interface OnTransactionSumCallback {
-        void onCallback(double sum);
     }
 
 }

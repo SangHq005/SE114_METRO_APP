@@ -24,10 +24,13 @@ import com.example.metro_app.Adapter.CommentAdapter;
 import com.example.metro_app.Domain.PostModel;
 import com.example.metro_app.Model.CommentModel;
 import com.example.metro_app.R;
+import com.google.android.gms.tasks.Task;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -48,7 +51,7 @@ public class PostDetailActivity extends AppCompatActivity {
     private ImageButton btnSendComment, btnPostMenu;
     private CircleImageView imgCommentAvt;
 
-    private TextView tvUserName, tvUserRole, tvPostTime, tvPostContent;
+    private TextView tvUserName, tvUserRole, tvPostTime, tvPostContent, commentCountText;
     private CircleImageView imgUserAvatar;
 
     private String currentUserId;
@@ -66,7 +69,7 @@ public class PostDetailActivity extends AppCompatActivity {
         etComment = findViewById(R.id.etComment);
         btnSendComment = findViewById(R.id.btnSendComment);
         imgCommentAvt = findViewById(R.id.postdetailUserAvt);
-
+        commentCountText = findViewById(R.id.commentCountText);
         tvUserName = findViewById(R.id.tvUserName);
         tvUserRole = findViewById(R.id.tvUserRole);
         tvPostTime = findViewById(R.id.tvPostTime);
@@ -110,7 +113,7 @@ public class PostDetailActivity extends AppCompatActivity {
                                     .addOnSuccessListener(unused -> {
                                         Toast.makeText(PostDetailActivity.this, "Đã cập nhật bình luận", Toast.LENGTH_SHORT).show();
                                         etComment.setText("");
-                                        btnSendComment.setOnClickListener(view -> addComment());
+                                        btnSendComment.setOnClickListener(view -> addComment(post.getPostId()));
                                         loadComments();
                                     })
                                     .addOnFailureListener(e -> Toast.makeText(PostDetailActivity.this, "Lỗi khi cập nhật", Toast.LENGTH_SHORT).show());
@@ -135,13 +138,8 @@ public class PostDetailActivity extends AppCompatActivity {
         recyclerViewComments.setAdapter(commentAdapter);
 
         loadComments();
-        btnSendComment.setOnClickListener(v -> addComment());
+        btnSendComment.setOnClickListener(v -> addComment(post.getPostId()));
 
-        ImageView backBtn = findViewById(R.id.backBtn);
-        backBtn.setOnClickListener(v -> {
-            startActivity(new Intent(PostDetailActivity.this, ForumActivity.class));
-            finish();
-        });
     }
 
     private void displayPostInfo() {
@@ -200,18 +198,29 @@ public class PostDetailActivity extends AppCompatActivity {
                 .addSnapshotListener((snapshots, error) -> {
                     if (error != null) return;
                     commentList.clear();
+//                    if (snapshots != null) {
+//                        for (var doc : snapshots) {
+//                            CommentModel comment = doc.toObject(CommentModel.class);
+//                            comment.setCommentId(doc.getId());
+//                            commentList.add(comment);
+//                        }
+//                        commentAdapter.notifyDataSetChanged();
+//                    }
                     if (snapshots != null) {
+                        commentList.clear();
                         for (var doc : snapshots) {
                             CommentModel comment = doc.toObject(CommentModel.class);
                             comment.setCommentId(doc.getId());
                             commentList.add(comment);
                         }
+                        commentCountText.setText(commentList.size() + " bình luận");
                         commentAdapter.notifyDataSetChanged();
                     }
+
                 });
     }
 
-    private void addComment() {
+    private void addComment(String postId) {
         String text = etComment.getText().toString().trim();
         if (TextUtils.isEmpty(text)) {
             Toast.makeText(this, "Vui lòng nhập nội dung bình luận", Toast.LENGTH_SHORT).show();
@@ -230,7 +239,19 @@ public class PostDetailActivity extends AppCompatActivity {
                     etComment.setText("");
                     Toast.makeText(this, "Đã gửi bình luận", Toast.LENGTH_SHORT).show();
                     loadComments();
+                    updateCommentCount(post.getPostId());
+
                 })
                 .addOnFailureListener(e -> Toast.makeText(this, "Lỗi gửi bình luận", Toast.LENGTH_SHORT).show());
     }
+    private void updateCommentCount(String postId) {
+        db.collection("Comment")
+                .whereEqualTo("postId", postId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    int count = queryDocumentSnapshots.size();
+                    commentCountText.setText(count + " bình luận");
+                });
+    }
+
 }

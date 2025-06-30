@@ -98,6 +98,30 @@ public class JourneyActivity extends AppCompatActivity{
 //            BusDataHelper busDataHelper = new BusDataHelper();
 //            busDataHelper.uploadStationsToFirestore(this);
 //            busDataHelper.uploadGeoPointListToFirestore(this);
+//            List<RawRoute> routes = FireStoreHelper.parseRoutesFromAsset(this, "routes.json");
+//            FireStoreHelper.uploadRawRoutes(routes, new FireStoreHelper.FirestoreCallback() {
+//                @Override
+//                public void onSuccess() {
+//                    Log.d("UPLOAD", "Đã upload thành công!");
+//                }
+//
+//                @Override
+//                public void onFailure(String message) {
+//                    Log.e("UPLOAD", "Lỗi: " + message);
+//                }
+//            });
+//            FireStoreHelper.uploadAllRouteVariantsSequential(new BusDataHelper(), new FireStoreHelper.UploadCallback() {
+//                @Override
+//                public void onSuccess() {
+//                    Toast.makeText(getApplicationContext(), "Tải lên tất cả RouteVariants thành công!", Toast.LENGTH_SHORT).show();
+//                }
+//
+//                @Override
+//                public void onFailure(Exception e) {
+//                    Toast.makeText(getApplicationContext(), "Lỗi tải RouteVariants: " + e.getMessage(), Toast.LENGTH_LONG).show();
+//                    Log.e("UploadAll", "Lỗi", e);
+//                }
+//            });
         });
         btnSwap.setOnClickListener(v -> {
             Luotdi = !Luotdi;
@@ -198,22 +222,35 @@ public class JourneyActivity extends AppCompatActivity{
         routeDialog = new BottomSheetDialog(this);
         routeDialog.setContentView(view);
         routeDialog.show();
-
-        BusDataHelper.fetchAllRoutes(new BusDataHelper.OnAllRoutesFetchedListener() {
+        FireStoreHelper.loadRawRoutes(new FireStoreHelper.FirestoreRoutesCallback() {
             @Override
-            public void onResult(List<RawRoute> routes) {
-                routeAdapter = new RawRouteAdapter(routes, selectedRoute -> {
+            public void onSuccess(List<RawRoute> routeList) {
+                routeAdapter = new RawRouteAdapter(routeList, selectedRoute -> {
                     routeDialog.dismiss();
                     showDirectionSelection(selectedRoute);
                 });
                 recyclerViewRoutes.setAdapter(routeAdapter);
             }
-
             @Override
-            public void onError(Exception e) {
+            public void onFailure(String message) {
                 Toast.makeText(JourneyActivity.this, "Lỗi khi tải tuyến", Toast.LENGTH_SHORT).show();
             }
         });
+//        BusDataHelper.fetchAllRoutes(new BusDataHelper.OnAllRoutesFetchedListener() {
+//            @Override
+//            public void onResult(List<RawRoute> routes) {
+//                routeAdapter = new RawRouteAdapter(routes, selectedRoute -> {
+//                    routeDialog.dismiss();
+//                    showDirectionSelection(selectedRoute);
+//                });
+//                recyclerViewRoutes.setAdapter(routeAdapter);
+//            }
+//
+//            @Override
+//            public void onError(Exception e) {
+//                Toast.makeText(JourneyActivity.this, "Lỗi khi tải tuyến", Toast.LENGTH_SHORT).show();
+//            }
+//        });
     }
     private void showDirectionSelection(RawRoute selectedRoute) {
         BottomSheetDialog directionDialog = new BottomSheetDialog(this);
@@ -233,67 +270,76 @@ public class JourneyActivity extends AppCompatActivity{
         directionDialog.show();
     }
     private void fetchStopsByRouteAndDraw(int routeId, int direction) {
-        BusDataHelper.fetchRouteVars(routeId, new BusDataHelper.OnRouteVarsFetchedListener() {
+        FireStoreHelper.fetchRouteVars(routeId, new FireStoreHelper.OnRouteVarsFetchedListener() {
             @Override
             public void onResult(List<RouteVariant> routeVars) {
-                int var = 0;
-                if(direction==1){
-                    var = routeVars.get(0).getRouteVarId();
+                if (routeVars == null || routeVars.isEmpty()) {
+                    Toast.makeText(JourneyActivity.this, "Không có chiều tuyến!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                if(direction==2){
-                    var = routeVars.get(1).getRouteVarId();
+
+                int varId = 0;
+                if (direction == 1 && routeVars.size() >= 1) {
+                    varId = routeVars.get(0).getRouteVarId();
+                } else if (direction == 2 && routeVars.size() >= 2) {
+                    varId = routeVars.get(1).getRouteVarId();
+                } else {
+                    Toast.makeText(JourneyActivity.this, "Không có dữ liệu chiều tuyến phù hợp!", Toast.LENGTH_SHORT).show();
+                    return;
                 }
-                BusDataHelper.fetchStopsByRouteVar(routeId,var, new BusDataHelper.OnStopsFetchedListener() {
-                    @Override
-                    public void onResult(List<BusStop> stops) {
-                        mapFragment.clearAllMarkers();
-                        Gson gson = new Gson();
-                        Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_bus_stop);
-                        Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 80, 80, false);
-                        for (BusStop stop:stops) {
-                            if (stop != null) {
-                                Point p = Point.fromLngLat(stop.Lng, stop.Lat);
-                                PointAnnotationOptions options = new PointAnnotationOptions()
-                                        .withPoint(p)
-                                        .withIconImage(resizedBitmap)
-                                        .withIconSize(1.0f)
-                                        .withData(JsonParser.parseString(gson.toJson(stop))); // Gắn dữ liệu
-                                mapFragment.createStationMarker(options);
-                            }
+
+                RouteVariant selectedVariant = null;
+                for (RouteVariant v : routeVars) {
+                    if (v.getRouteVarId() == varId) {
+                        selectedVariant = v;
+                        break;
+                    }
+                }
+
+                if (selectedVariant == null) {
+                    Toast.makeText(JourneyActivity.this, "Không tìm thấy variant phù hợp!", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                // Vẽ các trạm
+                mapFragment.clearAllMarkers();
+                Gson gson = new Gson();
+                Bitmap rawBitmap = BitmapFactory.decodeResource(getResources(), R.drawable.ic_bus_stop);
+                Bitmap resizedBitmap = Bitmap.createScaledBitmap(rawBitmap, 80, 80, false);
+
+                List<BusStop> stops = selectedVariant.getStops();
+                if (stops != null) {
+                    for (BusStop stop : stops) {
+                        if (stop != null) {
+                            Point p = Point.fromLngLat(stop.Lng, stop.Lat);
+                            PointAnnotationOptions options = new PointAnnotationOptions()
+                                    .withPoint(p)
+                                    .withIconImage(resizedBitmap)
+                                    .withIconSize(1.0f)
+                                    .withData(JsonParser.parseString(gson.toJson(stop))); // Gắn dữ liệu
+                            mapFragment.createStationMarker(options);
                         }
-                        }
-                    @Override
-                    public void onError(Exception e) {
-
                     }
-                });
-                BusDataHelper.fetchPathFromStopId(routeId, var, new BusDataHelper.OnPathFetchedListener() {
-                    @Override
-                    public void onResult(List<Point> points) {
-                        mapFragment.clearPolylines();
-                        mapFragment.drawRouteFromPoints(points);
-                        mapFragment.zoomToFit(points);
-                    }
+                }
 
-                    @Override
-                    public void onError(Exception e) {
-                        Toast.makeText(JourneyActivity.this, "Không thể lấy tuyến", Toast.LENGTH_SHORT).show();
-                    }
-                });
-
+                // Vẽ tuyến đường
+                List<Point> path = selectedVariant.getPointPath();
+                if (path != null && !path.isEmpty()) {
+                    mapFragment.clearPolylines();
+                    mapFragment.drawRouteFromPoints(path);
+                    mapFragment.zoomToFit(path);
+                } else {
+                    Toast.makeText(JourneyActivity.this, "Không có dữ liệu đường đi!", Toast.LENGTH_SHORT).show();
+                }
             }
 
             @Override
             public void onError(Exception e) {
-                Toast.makeText(JourneyActivity.this, "Không lấy được dữ liệu chiều tuyến", Toast.LENGTH_SHORT).show();
+                Toast.makeText(JourneyActivity.this, "Lỗi khi tải dữ liệu từ Firestore", Toast.LENGTH_SHORT).show();
+                Log.e("FirestoreFetch", "Lỗi khi fetch RouteVariant", e);
             }
         });
-
-
-
     }
-
-
 
 
     @Override

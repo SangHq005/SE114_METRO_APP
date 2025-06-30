@@ -126,10 +126,11 @@ public class MyTicketsActivity extends AppCompatActivity {
         if (backBtn != null) {
             backBtn.setClickable(true);
             backBtn.setFocusable(true);
-            backBtn.bringToFront();
             backBtn.setOnClickListener(v -> {
                 Log.d("MyTicketsActivity", "backBtn clicked");
                 finish();
+                // THAY ĐỔI: Sử dụng finish() để quay lại màn hình trước đó trong stack
+                startActivity(new Intent(MyTicketsActivity.this,HomeActivity.class));
             });
         }
 
