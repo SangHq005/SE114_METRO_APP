@@ -7,6 +7,7 @@ import android.content.pm.PackageManager;
 import android.location.Location;
 import android.os.Bundle;
 import android.os.Looper;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.LinearLayout;
@@ -22,9 +23,9 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.FragmentManager;
 
 import com.example.metro_app.Activity.MapBoxFragment;
+import com.example.metro_app.Model.APIcoord;
 import com.example.metro_app.utils.BusDataHelper;
 import com.example.metro_app.Model.Detail;
-import com.example.metro_app.Model.RawCoor;
 import com.example.metro_app.Model.RouteResponse;
 import com.example.metro_app.Model.Stop;
 import com.example.metro_app.R;
@@ -349,19 +350,22 @@ public class FindPathActivity extends AppCompatActivity {
         mapFragment.clearAllMarkers();
 
         // Draw route path
-        for (Map.Entry<String, List<RawCoor>> entry : route.coordRoute.entrySet()) {
-            List<RawCoor> coords = entry.getValue();
+        for (Map.Entry<String, List<APIcoord>> entry : route.coordRoute.entrySet()) {
+            List<APIcoord> coords = entry.getValue();
             List<Point> points = new ArrayList<>();
 
-            for (RawCoor rc : coords) {
-                points.add(Point.fromLngLat(rc.lng, rc.lat));
+            for (APIcoord rc : coords) {
+                Log.d("RouteCoord", "Lat: " + rc.Latitude + ", Lng: " + rc.Longitude);  // <-- log từng tọa độ
+                points.add(Point.fromLngLat(rc.Longitude, rc.Latitude));
             }
 
             if (mapFragment != null) {
+                Log.d("RouteCoord", "Tổng số điểm: " + points.size()); // <-- log số lượng điểm của đoạn route
                 mapFragment.drawRouteFromPoints(points);
                 mapFragment.zoomToFit(points);
             }
         }
+
 
         // Add bus stop markers
         List<Stop> stops = route.stops;
