@@ -9,7 +9,7 @@
 
     <ImageView
         android:layout_width="match_parent"
-        android:layout_height="230dp"
+        android:layout_height="300dp"
         android:scaleType="centerCrop"
         android:src="@drawable/metrostation" />
 
@@ -25,7 +25,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="24dp">
+            android:padding="28dp">
 
             <TextView
                 android:layout_width="match_parent"
@@ -103,8 +103,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:gravity="center_vertical"
-                android:paddingBottom="6dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                android:paddingBottom="6dp">
 
                 <View
                     android:layout_width="0dp"
@@ -131,15 +131,15 @@
             <androidx.appcompat.widget.AppCompatButton
                 android:id="@+id/Google"
                 style="@style/Widget.AppCompat.Button"
-                android:background="@drawable/grey_btn_bg"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:background="@drawable/grey_btn_bg"
                 android:drawableLeft="@drawable/google"
-                android:text="Đăng nhập với Google"
-                android:textColor="@color/white"
+                android:elevation="3dp"
                 android:paddingHorizontal="20dp"
                 android:paddingVertical="8dp"
-                android:elevation="3dp"
+                android:text="Đăng nhập với Google"
+                android:textColor="@color/white"
                 android:textSize="18dp" />
 
 

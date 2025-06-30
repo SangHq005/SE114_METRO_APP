@@ -59,6 +59,13 @@ public class OrderInfoActivity extends AppCompatActivity {
     private static final String KEY_TICKET_TYPE_ID = "ticket_type_id";
     private static final String KEY_TICKET_EXPIRATION = "ticket_expiration";
     private static final String KEY_TICKET_AUTO_ACTIVE = "ticket_auto_active";
+    private static final String KEY_TICKET_PRICE = "ticket_price"; // Thêm key cho ticketPrice
+
+    // Interface callback để xử lý giá từ Firestore
+    private interface OnPriceFetchedListener {
+        void onPriceFetched(long price, String ticketName);
+        void onPriceFetchFailed(String errorMessage);
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -96,33 +103,31 @@ public class OrderInfoActivity extends AppCompatActivity {
             } else {
                 orderPrefs.edit().putString(KEY_TICKET_AUTO_ACTIVE, ticketAutoActive).apply();
             }
+            String ticketPriceStr = intent.getStringExtra("ticket_price");
+            if (ticketPriceStr != null) {
+                try {
+                    ticketPrice = Long.parseLong(ticketPriceStr.replaceAll("[^0-9]", ""));
+                    orderPrefs.edit().putLong(KEY_TICKET_PRICE, ticketPrice).apply();
+                    Log.d("OrderInfo", "Parsed and saved ticketPrice: " + ticketPrice);
+                } catch (NumberFormatException e) {
+                    Log.e("OrderInfo", "Lỗi định dạng giá vé: " + e.getMessage());
+                    ticketPrice = orderPrefs.getLong(KEY_TICKET_PRICE, 0);
+                    Toast.makeText(this, "Giá vé không hợp lệ, sử dụng giá lưu trữ: " + ticketPrice + " VND", Toast.LENGTH_LONG).show();
+                }
+            } else {
+                ticketPrice = orderPrefs.getLong(KEY_TICKET_PRICE, 0);
+                Log.w("OrderInfo", "ticketPriceStr is null, using saved ticketPrice: " + ticketPrice);
+            }
         } else {
             Log.e("OrderInfo", "Intent is null in onCreate");
             lastTicketTypeId = orderPrefs.getString(KEY_TICKET_TYPE_ID, "unknown");
             ticketExpiration = orderPrefs.getString(KEY_TICKET_EXPIRATION, "0");
             ticketAutoActive = orderPrefs.getString(KEY_TICKET_AUTO_ACTIVE, "0");
+            ticketPrice = orderPrefs.getLong(KEY_TICKET_PRICE, 0);
         }
 
         Log.d("OrderInfo", "Received ticket_expiration in onCreate: " + ticketExpiration);
         Log.d("OrderInfo", "Received ticket_auto_active in onCreate: " + ticketAutoActive);
-
-        String ticketName = intent.getStringExtra("ticket_name");
-        String ticketPriceStr = intent.getStringExtra("ticket_price");
-        Log.d("OrderInfo", "Received ticketPriceStr in onCreate: " + ticketPriceStr);
-
-        ticketPrice = 0;
-        if (ticketPriceStr != null) {
-            try {
-                ticketPrice = Long.parseLong(ticketPriceStr.replaceAll("[^0-9]", ""));
-                Log.d("OrderInfo", "Parsed ticketPrice: " + ticketPrice);
-            } catch (NumberFormatException e) {
-                Log.e("OrderInfo", "Lỗi định dạng giá vé: " + e.getMessage());
-                ticketPrice = 0; // Gán mặc định 0 và cảnh báo
-                Toast.makeText(this, "Giá vé không hợp lệ, sử dụng giá mặc định 0 VND", Toast.LENGTH_LONG).show();
-            }
-        } else {
-            Log.w("OrderInfo", "ticketPriceStr is null, using default ticketPrice: 0");
-        }
         Log.d("OrderInfo", "Final ticketPrice in onCreate: " + ticketPrice);
 
         // Ánh xạ view
@@ -144,8 +149,8 @@ public class OrderInfoActivity extends AppCompatActivity {
         TextView defaultMethodTextView = findViewById(R.id.defaultMethodTextView);
 
         // Cập nhật giao diện
-        sanphamTxt.setText(ticketName != null ? ticketName : "Không có thông tin");
-        donGiaTxt.setText(ticketPriceStr != null ? ticketPriceStr : "0 VND");
+        sanphamTxt.setText(intent.getStringExtra("ticket_name") != null ? intent.getStringExtra("ticket_name") : "Không có thông tin");
+        donGiaTxt.setText(ticketPrice > 0 ? decimalFormat.format(ticketPrice) + " VND" : "0 VND");
         int quantity = 1;
         soLuongTxt.setText(String.valueOf(quantity));
         long total = ticketPrice * quantity;
@@ -153,7 +158,7 @@ public class OrderInfoActivity extends AppCompatActivity {
         thanhTienTxt.setText(totalFormatted);
         tongTienTxt.setText(totalFormatted);
 
-        loaiVeTxt.setText(ticketName != null ? ticketName : "Không có thông tin");
+        loaiVeTxt.setText(intent.getStringExtra("ticket_name") != null ? intent.getStringExtra("ticket_name") : "Không có thông tin");
         hsdTxt.setText((ticketExpiration != null ? ticketExpiration : "0") + " ngày kể từ ngày kích hoạt");
         luuYTxt.setText("Tự động kích hoạt sau " + (ticketAutoActive != null ? ticketAutoActive : "0") + " ngày kể từ ngày mua");
 
@@ -178,11 +183,29 @@ public class OrderInfoActivity extends AppCompatActivity {
                 return;
             }
             if (ticketPrice <= 0) {
-                Log.w("OrderInfo", "ticketPrice is invalid: " + ticketPrice + ", cannot proceed with payment");
-                Toast.makeText(this, "Giá vé không hợp lệ, vui lòng quay lại và chọn lại vé", Toast.LENGTH_LONG).show();
+                Log.w("OrderInfo", "ticketPrice is invalid: " + ticketPrice + ", fetching from Firestore");
+                fetchTicketPriceFromFirestore(lastTicketTypeId, new OnPriceFetchedListener() {
+                    @Override
+                    public void onPriceFetched(long price, String ticketName) {
+                        ticketPrice = price;
+                        orderPrefs.edit().putLong(KEY_TICKET_PRICE, ticketPrice).apply(); // Lưu lại giá mới
+                        Log.d("OrderInfo", "Updated ticketPrice after fetch: " + ticketPrice);
+                        if (ticketPrice <= 0) {
+                            Toast.makeText(OrderInfoActivity.this, "Giá vé không hợp lệ sau khi fetch, vui lòng chọn lại", Toast.LENGTH_LONG).show();
+                            return;
+                        }
+                        initiateVNPayPayment(ticketName, ticketPrice);
+                    }
+
+                    @Override
+                    public void onPriceFetchFailed(String errorMessage) {
+                        Log.e("OrderInfo", "Failed to fetch ticketPrice: " + errorMessage);
+                        Toast.makeText(OrderInfoActivity.this, "Lỗi tải giá vé: " + errorMessage, Toast.LENGTH_LONG).show();
+                    }
+                });
                 return;
             }
-            initiateVNPayPayment(ticketName, ticketPrice);
+            initiateVNPayPayment(intent.getStringExtra("ticket_name"), ticketPrice);
         });
 
         // Sự kiện nhấn nút Back
@@ -190,6 +213,40 @@ public class OrderInfoActivity extends AppCompatActivity {
             startActivity(new Intent(OrderInfoActivity.this, MyTicketsActivity.class));
             finish();
         });
+    }
+
+    private void fetchTicketPriceFromFirestore(String ticketTypeId, OnPriceFetchedListener listener) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        db.collection("TicketType").document(ticketTypeId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        Object priceObj = documentSnapshot.get("Price");
+                        String ticketName = documentSnapshot.getString("Name");
+                        if (priceObj != null) {
+                            if (priceObj instanceof Number) {
+                                long price = ((Number) priceObj).longValue();
+                                Log.d("OrderInfo", "Fetched ticketPrice from Firestore: " + price + " for ticketTypeId: " + ticketTypeId);
+                                listener.onPriceFetched(price, ticketName != null ? ticketName : "Không có thông tin");
+                            } else {
+                                String error = "Price in Firestore is not a number for ticketTypeId: " + ticketTypeId;
+                                Log.w("OrderInfo", error);
+                                listener.onPriceFetchFailed(error);
+                            }
+                        } else {
+                            String error = "Price is null in Firestore for ticketTypeId: " + ticketTypeId;
+                            Log.w("OrderInfo", error);
+                            listener.onPriceFetchFailed(error);
+                        }
+                    } else {
+                        String error = "TicketType document not found for ticketTypeId: " + ticketTypeId;
+                        Log.e("OrderInfo", error);
+                        listener.onPriceFetchFailed(error);
+                    }
+                })
+                .addOnFailureListener(e -> {
+                    Log.e("OrderInfo", "Error fetching ticketPrice from Firestore: " + e.getMessage());
+                    listener.onPriceFetchFailed(e.getMessage());
+                });
     }
 
     private void initiateVNPayPayment(String ticketName, long amount) {
@@ -350,7 +407,7 @@ public class OrderInfoActivity extends AppCompatActivity {
             transactionData.put("orderId", orderId);
             transactionData.put("transactionNo", transactionNo);
             transactionData.put("ticketTypeId", ticketTypeId != null ? ticketTypeId : "unknown");
-            transactionData.put("amount", amount > 0 ? amount : 0); // Đảm bảo amount hợp lệ
+            transactionData.put("amount", amount); // Sử dụng amount trực tiếp
             transactionData.put("status", status);
             transactionData.put("timestamp", currentTimestamp);
             transactionData.put("userId", userId != null ? userId : "unknown");
@@ -407,7 +464,7 @@ public class OrderInfoActivity extends AppCompatActivity {
         transactionData.put("orderId", orderId);
         transactionData.put("transactionNo", transactionNo);
         transactionData.put("ticketTypeId", ticketTypeId != null ? ticketTypeId : "unknown");
-        transactionData.put("amount", amount > 0 ? amount : 0); // Đảm bảo amount hợp lệ
+        transactionData.put("amount", amount); // Sử dụng amount trực tiếp
         transactionData.put("status", status);
         transactionData.put("timestamp", currentTimestamp);
         transactionData.put("userId", userId != null ? userId : "unknown");
