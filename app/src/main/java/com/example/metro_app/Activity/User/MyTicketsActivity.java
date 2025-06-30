@@ -39,7 +39,6 @@ public class MyTicketsActivity extends AppCompatActivity {
     private TicketTypeAdapter noiBatAdapter, hssvAdapter;
     private RouteListAdapter routeListAdapter;
     private List<TicketType> noiBatTickets, hssvTickets;
-    // THAY ĐỔI: Danh sách này giờ sẽ chứa các ga đi duy nhất
     private List<TicketType> routeStartStations;
     private FirebaseFirestore db;
     private DecimalFormat decimalFormat;
@@ -83,14 +82,14 @@ public class MyTicketsActivity extends AppCompatActivity {
         nameTxt.setText(userName);
         String avatarUrl = null;
         try {
-            avatarUrl = prefs.getString("photo",null);
+            avatarUrl = prefs.getString("photo", null);
         } catch (Exception e) {
             // Method does not exist or error, ignore
         }
         if (avatarUrl != null && !avatarUrl.isEmpty()) {
             Glide.with(this)
                     .load(avatarUrl)
-                    .placeholder(R.drawable.userbtn) // fallback image
+                    .placeholder(R.drawable.userbtn)
                     .error(R.drawable.userbtn)
                     .circleCrop()
                     .into(imgAvt);
@@ -104,7 +103,6 @@ public class MyTicketsActivity extends AppCompatActivity {
 
         noiBatTickets = new ArrayList<>();
         hssvTickets = new ArrayList<>();
-        // THAY ĐỔI: Khởi tạo danh sách các ga đi
         routeStartStations = new ArrayList<>();
 
         noiBatAdapter = new TicketTypeAdapter(noiBatTickets, ticket -> {
@@ -114,11 +112,8 @@ public class MyTicketsActivity extends AppCompatActivity {
             fetchTicketDetailsAndStartActivity(ticket.getId());
         });
 
-        // THAY ĐỔI: Khởi tạo RouteListAdapter với danh sách ga đi và xử lý sự kiện click
         routeListAdapter = new RouteListAdapter(routeStartStations, ticket -> {
-            // Khi người dùng click vào một ga đi, mở DetailRouteActivity
             Intent intent = new Intent(MyTicketsActivity.this, DetailRouteActivity.class);
-            // Chỉ cần gửi tên ga đi qua Intent
             intent.putExtra("start_station", ticket.getStartStation());
             startActivity(intent);
         });
@@ -134,7 +129,6 @@ public class MyTicketsActivity extends AppCompatActivity {
             backBtn.bringToFront();
             backBtn.setOnClickListener(v -> {
                 Log.d("MyTicketsActivity", "backBtn clicked");
-                // THAY ĐỔI: Sử dụng finish() để quay lại màn hình trước đó trong stack
                 finish();
             });
         }
@@ -143,24 +137,17 @@ public class MyTicketsActivity extends AppCompatActivity {
         TextView tvGreeting = findViewById(R.id.tvGreeting);
         loadAnim(tvGreeting);
         loadAnim(nameTxt);
-
     }
-    private void loadAnim(TextView textView){
-        //hiệu ứng text
+
+    private void loadAnim(TextView textView) {
         Shader shader = new LinearGradient(
                 0, 0, 0, textView.getTextSize(),
-                new int[]{
-                        Color.RED,
-                        Color.BLUE,
-                        Color.GREEN,
-                        Color.MAGENTA
-                },
+                new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.MAGENTA},
                 null,
                 Shader.TileMode.CLAMP);
 
         textView.getPaint().setShader(shader);
 
-        // Tạo hiệu ứng chạy màu bằng cách cập nhật shader liên tục
         ValueAnimator animator = ValueAnimator.ofFloat(0, 1000);
         animator.setDuration(4000);
         animator.setRepeatCount(ValueAnimator.INFINITE);
@@ -168,12 +155,7 @@ public class MyTicketsActivity extends AppCompatActivity {
             float translate = (float) animation.getAnimatedValue();
             Shader movingShader = new LinearGradient(
                     translate, 0, translate + textView.getWidth(), textView.getTextSize(),
-                    new int[]{
-                            Color.RED,
-                            Color.BLUE,
-                            Color.GREEN,
-                            Color.MAGENTA
-                    },
+                    new int[]{Color.RED, Color.BLUE, Color.GREEN, Color.MAGENTA},
                     null,
                     Shader.TileMode.MIRROR);
             textView.getPaint().setShader(movingShader);
@@ -186,7 +168,6 @@ public class MyTicketsActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         Log.d("MyTicketsActivity", "onResume called");
-        // Cập nhật tên từ SharedPreferences
         SharedPreferences prefs = getSharedPreferences("UserInfo", MODE_PRIVATE);
         String userName = prefs.getString("name", "Không có thông tin");
         nameTxt.setText(userName);
@@ -266,20 +247,18 @@ public class MyTicketsActivity extends AppCompatActivity {
                 if (task.isSuccessful()) {
                     noiBatTickets.clear();
                     hssvTickets.clear();
-                    // THAY ĐỔI: Xóa danh sách các ga đi cũ
                     routeStartStations.clear();
 
                     if (task.getResult().isEmpty()) {
                         runOnUiThread(() -> Toast.makeText(MyTicketsActivity.this, "Không có dữ liệu trong TicketType", Toast.LENGTH_LONG).show());
                     } else {
-                        // TẠM THỜI: Danh sách để chứa tất cả các vé lượt
                         List<TicketType> allRouteTickets = new ArrayList<>();
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
                             String type = document.getString("Type");
                             String status = document.getString("Status");
 
-                            // Chỉ xử lý các vé đang "Hoạt động"
+                            // Chỉ xử lý các vé có Status là "Hoạt động"
                             if (status == null || !status.equals("Hoạt động")) {
                                 continue;
                             }
@@ -310,16 +289,13 @@ public class MyTicketsActivity extends AppCompatActivity {
                             } else if ("Vé dài hạn".equals(type)) {
                                 noiBatTickets.add(ticket);
                             } else if ("Vé lượt".equals(type) && startStation != null) {
-                                // THAY ĐỔI: Thêm tất cả vé lượt vào danh sách tạm thời
                                 allRouteTickets.add(ticket);
                             }
                         }
 
-                        // THAY ĐỔI: Xử lý để lấy ra các ga đi duy nhất
                         HashSet<String> uniqueStartStations = new HashSet<>();
                         for (TicketType ticket : allRouteTickets) {
                             if (uniqueStartStations.add(ticket.getStartStation())) {
-                                // Tạo một đối tượng TicketType chỉ để chứa thông tin ga đi
                                 TicketType startStationTicket = new TicketType();
                                 startStationTicket.setStartStation(ticket.getStartStation());
                                 routeStartStations.add(startStationTicket);
@@ -327,18 +303,14 @@ public class MyTicketsActivity extends AppCompatActivity {
                         }
                     }
 
-                    // Cập nhật các adapter
                     if (noiBatAdapter != null) noiBatAdapter.notifyDataSetChanged();
                     if (hssvAdapter != null) hssvAdapter.notifyDataSetChanged();
                     if (routeListAdapter != null) routeListAdapter.notifyDataSetChanged();
 
-                    // Cập nhật hiển thị "Không có vé"
                     if (tvNoTicketsNoiBat != null) tvNoTicketsNoiBat.setVisibility(noiBatTickets.isEmpty() ? View.VISIBLE : View.GONE);
                     if (tvNoTicketsHSSV != null) tvNoTicketsHSSV.setVisibility(hssvTickets.isEmpty() ? View.VISIBLE : View.GONE);
                     if (tvNoTicketsRoute != null) tvNoTicketsRoute.setVisibility(routeStartStations.isEmpty() ? View.VISIBLE : View.GONE);
-
                 } else {
-                    // Xử lý lỗi
                     runOnUiThread(() -> Toast.makeText(MyTicketsActivity.this, "Lỗi tải dữ liệu: " + (task.getException() != null ? task.getException().getMessage() : "Không xác định"), Toast.LENGTH_LONG).show());
                 }
             } catch (Exception e) {

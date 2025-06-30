@@ -118,6 +118,7 @@ public class DetailRouteActivity extends AppCompatActivity {
         db.collection("TicketType")
                 .whereEqualTo("Type", "Vé lượt")
                 .whereEqualTo("StartStation", startStation)
+                .whereEqualTo("Status", "Hoạt động")
                 .get()
                 .addOnCompleteListener(task -> {
                     if (isFinishing() || isDestroyed()) {
@@ -133,13 +134,7 @@ public class DetailRouteActivity extends AppCompatActivity {
                             Log.d(TAG, "Query result size: " + task.getResult().size());
 
                             if (task.getResult().isEmpty()) {
-                                runOnUiThread(() -> {
-                                    if (!isFinishing() && !isDestroyed()) {
-                                        Toast.makeText(DetailRouteActivity.this, "Không có vé lượt cho ga này", Toast.LENGTH_LONG).show();
-                                        progressBar.setVisibility(View.GONE);
-                                        Log.d(TAG, "ProgressBar hidden due to empty result");
-                                    }
-                                });
+
                             } else {
                                 for (QueryDocumentSnapshot document : task.getResult()) {
                                     String id = document.getId();
@@ -147,15 +142,37 @@ public class DetailRouteActivity extends AppCompatActivity {
                                     String startStationDoc = document.getString("StartStation");
                                     String endStation = document.getString("EndStation");
                                     String type = document.getString("Type");
-                                    String active = document.contains("Active") ? String.valueOf(document.get("Active")) : null;
-                                    String autoActive = document.contains("AutoActive") ? String.valueOf(document.get("AutoActive")) : null;
+                                    Object activeObj = document.get("Active"); // Lấy Object để kiểm tra kiểu
+                                    Object autoActiveObj = document.get("AutoActive"); // Lấy Object để kiểm tra kiểu
+
+                                    String active = "0";
+                                    if (activeObj != null) {
+                                        if (activeObj instanceof String) {
+                                            active = (String) activeObj;
+                                        } else if (activeObj instanceof Number) {
+                                            active = String.valueOf(((Number) activeObj).longValue());
+                                        } else {
+                                            Log.w(TAG, "Unsupported Active type for ticket " + id + ": " + activeObj.getClass().getName() + ", using default 0");
+                                        }
+                                    }
+
+                                    String autoActive = "0";
+                                    if (autoActiveObj != null) {
+                                        if (autoActiveObj instanceof String) {
+                                            autoActive = (String) autoActiveObj;
+                                        } else if (autoActiveObj instanceof Number) {
+                                            autoActive = String.valueOf(((Number) autoActiveObj).longValue());
+                                        } else {
+                                            Log.w(TAG, "Unsupported AutoActive type for ticket " + id + ": " + autoActiveObj.getClass().getName() + ", using default 0");
+                                        }
+                                    }
 
                                     String price = "0 VND";
                                     Object priceObj = document.get("Price");
-                                    Log.d(TAG, "Raw priceObj for ticket " + id + ": " + priceObj); // Debug raw price
+                                    Log.d(TAG, "Raw priceObj for ticket " + id + ": " + priceObj);
                                     if (priceObj != null) {
                                         if (priceObj instanceof String) {
-                                            String priceStr = ((String) priceObj).replace(",", ""); // Xóa dấu phân cách nghìn
+                                            String priceStr = ((String) priceObj).replace(",", "");
                                             if (!priceStr.endsWith("VND")) {
                                                 try {
                                                     long priceValue = Long.parseLong(priceStr);
@@ -165,36 +182,35 @@ public class DetailRouteActivity extends AppCompatActivity {
                                                     price = "0 VND";
                                                 }
                                             } else {
-                                                price = priceStr; // Giữ nguyên nếu đã có "VND"
+                                                price = priceStr;
                                             }
                                         } else if (priceObj instanceof Long || priceObj instanceof Integer) {
                                             long priceValue = ((Number) priceObj).longValue();
                                             price = decimalFormat.format(priceValue) + " VND";
                                         } else if (priceObj instanceof Double) {
-                                            long priceValue = ((Double) priceObj).longValue(); // Chuyển Double sang long
+                                            long priceValue = ((Double) priceObj).longValue();
                                             price = decimalFormat.format(priceValue) + " VND";
                                         } else {
                                             Log.w(TAG, "Unsupported price type for ticket " + id + ": " + priceObj.getClass().getName());
                                             price = "0 VND";
                                         }
                                     }
-                                    Log.d(TAG, "Formatted price for ticket " + id + ": " + price); // Debug formatted price
+                                    Log.d(TAG, "Formatted price for ticket " + id + ": " + price);
 
                                     if (name == null) {
                                         Log.w(TAG, "Skipping ticket with null name, id=" + id);
                                         continue;
                                     }
 
-                                    // Chỉ thêm ticket nếu endStation chưa xuất hiện
                                     if (endStation != null && uniqueEndStations.add(endStation)) {
                                         TicketType ticket = new TicketType(id, name, price);
                                         ticket.setType(type);
                                         ticket.setStartStation(startStationDoc);
                                         ticket.setEndStation(endStation);
-                                        ticket.setActive(active != null ? active : "0"); // Đảm bảo không null
-                                        ticket.setAutoActive(autoActive != null ? autoActive : "0"); // Đảm bảo không null
+                                        ticket.setActive(active);
+                                        ticket.setAutoActive(autoActive);
                                         routeTickets.add(ticket);
-                                        Log.d(TAG, "Added ticket: id=" + id + ", name=" + name + ", endStation=" + endStation + ", price=" + price + ", active=" + (active != null ? active : "null") + ", autoActive=" + (autoActive != null ? autoActive : "null"));
+                                        Log.d(TAG, "Added ticket: id=" + id + ", name=" + name + ", endStation=" + endStation + ", price=" + price + ", active=" + active + ", autoActive=" + autoActive);
                                     }
                                 }
                             }
