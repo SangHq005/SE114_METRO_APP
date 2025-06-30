@@ -126,11 +126,10 @@ public class MyTicketsActivity extends AppCompatActivity {
         if (backBtn != null) {
             backBtn.setClickable(true);
             backBtn.setFocusable(true);
+            backBtn.bringToFront();
             backBtn.setOnClickListener(v -> {
                 Log.d("MyTicketsActivity", "backBtn clicked");
                 finish();
-                // THAY ĐỔI: Sử dụng finish() để quay lại màn hình trước đó trong stack
-                startActivity(new Intent(MyTicketsActivity.this,HomeActivity.class));
             });
         }
 
@@ -243,8 +242,10 @@ public class MyTicketsActivity extends AppCompatActivity {
         if (tvNoTicketsHSSV != null) tvNoTicketsHSSV.setVisibility(View.GONE);
         if (tvNoTicketsRoute != null) tvNoTicketsRoute.setVisibility(View.GONE);
 
+        Log.d("MyTicketsActivity", "Starting Firestore query for all TicketType documents");
         db.collection("TicketType").get().addOnCompleteListener(task -> {
             try {
+                Log.d("MyTicketsActivity", "Firestore query completed, success=" + task.isSuccessful());
                 if (task.isSuccessful()) {
                     noiBatTickets.clear();
                     hssvTickets.clear();
@@ -256,27 +257,32 @@ public class MyTicketsActivity extends AppCompatActivity {
                         List<TicketType> allRouteTickets = new ArrayList<>();
 
                         for (QueryDocumentSnapshot document : task.getResult()) {
+                            String id = document.getId();
                             String type = document.getString("Type");
                             String status = document.getString("Status");
-
-                            // Chỉ xử lý các vé có Status là "Hoạt động"
-                            if (status == null || !status.equals("Hoạt động")) {
-                                continue;
-                            }
-
-                            String id = document.getId();
                             String name = document.getString("Name");
                             String startStation = document.getString("StartStation");
                             String endStation = document.getString("EndStation");
+                            Object priceObj = document.get("Price");
+
+                            Log.d("MyTicketsActivity", "Loading document: id=" + id + ", Type=" + type + ", Status=" + status + ", Name=" + name + ", StartStation=" + startStation + ", EndStation=" + endStation + ", Price=" + priceObj);
+
+                            // Chỉ xử lý các vé có Status là "Hoạt động"
+                            if (status == null || !status.equals("Hoạt động")) {
+                                Log.d("MyTicketsActivity", "Skipping document " + id + " due to Status not 'Hoạt động'");
+                                continue;
+                            }
 
                             String price = "0 VND";
-                            Object priceObj = document.get("Price");
-                            if (priceObj instanceof Long || priceObj instanceof Integer) {
-                                long priceValue = ((Number) priceObj).longValue();
-                                price = decimalFormat.format(priceValue) + " VND";
+                            if (priceObj != null) {
+                                if (priceObj instanceof Long || priceObj instanceof Integer) {
+                                    long priceValue = ((Number) priceObj).longValue();
+                                    price = decimalFormat.format(priceValue) + " VND";
+                                }
                             }
 
                             if (name == null) {
+                                Log.w("MyTicketsActivity", "Skipping document " + id + " due to null Name");
                                 continue;
                             }
 
@@ -287,10 +293,13 @@ public class MyTicketsActivity extends AppCompatActivity {
 
                             if (name.toLowerCase().contains("hssv")) {
                                 hssvTickets.add(ticket);
+                                Log.d("MyTicketsActivity", "Added to hssvTickets: id=" + id + ", name=" + name);
                             } else if ("Vé dài hạn".equals(type)) {
                                 noiBatTickets.add(ticket);
+                                Log.d("MyTicketsActivity", "Added to noiBatTickets: id=" + id + ", name=" + name);
                             } else if ("Vé lượt".equals(type) && startStation != null) {
                                 allRouteTickets.add(ticket);
+                                Log.d("MyTicketsActivity", "Added to allRouteTickets: id=" + id + ", name=" + name);
                             }
                         }
 
@@ -300,6 +309,7 @@ public class MyTicketsActivity extends AppCompatActivity {
                                 TicketType startStationTicket = new TicketType();
                                 startStationTicket.setStartStation(ticket.getStartStation());
                                 routeStartStations.add(startStationTicket);
+                                Log.d("MyTicketsActivity", "Added to routeStartStations: startStation=" + ticket.getStartStation());
                             }
                         }
                     }

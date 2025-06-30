@@ -2,6 +2,7 @@ package com.example.metro_app.Activity.Admin;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
@@ -13,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.metro_app.Model.TicketType;
 import com.example.metro_app.R;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.SetOptions;
 
 import java.text.DecimalFormat;
 import java.util.HashMap;
@@ -59,6 +61,9 @@ public class AdTicketDetails extends AppCompatActivity {
             editTextActive.setText(ticket.getActive());
             editTextAutoActive.setText(ticket.getAutoActive());
             spinnerStatus.setSelection(getIndexOfStatus(ticket.getStatus()));
+            Log.d(TAG, "Loaded ticket: id=" + ticket.getId() + ", Type=" + ticket.getType() + ", Name=" + ticket.getName() + ", Price=" + ticket.getPrice() + ", Active=" + ticket.getActive() + ", AutoActive=" + ticket.getAutoActive() + ", Status=" + ticket.getStatus());
+        } else {
+            Log.w(TAG, "No ticket data received from Intent");
         }
 
         // Button actions
@@ -70,6 +75,7 @@ public class AdTicketDetails extends AppCompatActivity {
             String active = editTextActive.getText().toString().trim();
             String autoActive = editTextAutoActive.getText().toString().trim();
             String status = spinnerStatus.getSelectedItem().toString();
+            String type = ticket != null ? ticket.getType() : null; // Lấy Type từ vé ban đầu, không thay đổi
 
             // Check for empty fields
             if (name.isEmpty() || price.isEmpty() || active.isEmpty() || autoActive.isEmpty()) {
@@ -122,19 +128,24 @@ public class AdTicketDetails extends AppCompatActivity {
 
             // Create updated TicketType
             TicketType updatedTicket = new TicketType(ticket.getId(), name, formattedPrice, active, autoActive, status);
+            if (type != null) {
+                updatedTicket.setType(type); // Gán Type vào đối tượng updatedTicket để giữ nguyên
+            }
 
-            // Update Firestore
+            // Update Firestore with merge option to preserve existing fields
             Map<String, Object> ticketData = new HashMap<>();
             ticketData.put("Name", name);
             ticketData.put("Price", priceValue); // Store as number
             ticketData.put("Active", activeDays); // Store as number
             ticketData.put("AutoActive", autoActiveDays); // Store as number
             ticketData.put("Status", status);
+            // Không thêm Type để tránh cập nhật
 
             db.collection("TicketType")
                     .document(ticket.getId())
-                    .set(ticketData)
+                    .set(ticketData, SetOptions.merge()) // Sử dụng merge để giữ nguyên các trường không được cập nhật
                     .addOnSuccessListener(aVoid -> {
+                        Log.d(TAG, "Updated ticket in Firestore: id=" + ticket.getId() + ", Type=(not updated, original=" + (type != null ? type : "null") + "), Name=" + name + ", Price=" + formattedPrice + ", Active=" + active + ", AutoActive=" + autoActive + ", Status=" + status);
                         // Return result to AdTicketActivity
                         Intent resultIntent = new Intent();
                         resultIntent.putExtra("ticket", updatedTicket);
@@ -144,6 +155,7 @@ public class AdTicketDetails extends AppCompatActivity {
                         finish();
                     })
                     .addOnFailureListener(e -> {
+                        Log.e(TAG, "Failed to update ticket in Firestore: " + e.getMessage() + ", id=" + ticket.getId());
                         Toast.makeText(AdTicketDetails.this, "Lỗi khi cập nhật vé: " + e.getMessage(), Toast.LENGTH_LONG).show();
                     });
         });
