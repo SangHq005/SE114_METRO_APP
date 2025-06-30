@@ -114,7 +114,7 @@ Mở bằng Android Studio và đảm bảo:
 | Tên | MSSV | Vai trò |
 |-----|------|---------|
 | Phạm Hà Anh Thư | 23521544 | UI/UX, Admin App |
-| Huỳnh Quốc Sang | 23521340 | Client App |
+| Huỳnh Quốc Sang | 23521340 | UI/UX Figma,Client App |
 | Nguyễn Minh Thiện | 23521484 | Backend, VNPAY |
 | Nguyễn Lê Duy | 23520378 | Backend, Google Map |
 
