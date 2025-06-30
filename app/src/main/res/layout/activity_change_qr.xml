@@ -84,7 +84,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:background="@drawable/white_corner_bg"
-                android:padding="8dp"
+                android:padding="4dp"
                 android:elevation="3dp">
 
                 <EditText
@@ -159,7 +159,6 @@
                 android:text="• Mỗi mã đặt vé chỉ được sử dụng đổi vé 01 lần."
                 android:textColor="@color/black"
                 android:textSize="14sp" />
-
         </LinearLayout>
     </ScrollView>
 </LinearLayout>

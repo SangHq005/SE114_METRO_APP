@@ -58,6 +58,8 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
         // Hiển thị nội dung bài đăng
         holder.binding.tvPostContent.setText(post.getDescription());
         holder.binding.tvPostTime.setText(post.getCreateAt());
+        holder.binding.commentCountText.setText(post.getCommentCount() + " bình luận");
+
 
         // Load thông tin người đăng từ collection "Account"
         if (post.getUserId() != null) {
@@ -107,57 +109,93 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
             holder.binding.tvUserRole.setText("Không rõ");
         }
 
-        if (isAdmin || (post.getUserId() != null && post.getUserId().equals(currentUserId))) {
+//        if (isAdmin || (post.getUserId() != null && post.getUserId().equals(currentUserId))) {
+//            holder.binding.btnPostMenu.setVisibility(View.VISIBLE);
+//            holder.binding.btnPostMenu.setOnClickListener(v -> {
+//                PopupMenu popupMenu = new PopupMenu(context, holder.binding.btnPostMenu);
+//                // Admin cũng có thể chỉnh sửa nếu bạn muốn
+//                if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
+//                    popupMenu.getMenu().add("Chỉnh sửa");
+//                }
+//                popupMenu.getMenu().add("Xóa"); // Admin luôn có nút xóa
+//                popupMenu.setOnMenuItemClickListener(menuItem -> {
+//                    if (menuItem.getTitle().equals("Chỉnh sửa")) {
+//                        menuClickListener.onMenuClick(post);
+//                    } else if (menuItem.getTitle().equals("Xóa")) {
+//                        // Logic xóa giữ nguyên
+//                        db.collection("forum").document(post.getPostId())
+//                                .delete()
+//                                .addOnSuccessListener(aVoid -> {
+//                                    Toast.makeText(context, "Xóa bài đăng thành công", Toast.LENGTH_SHORT).show();
+//                                    // Xóa khỏi list và cập nhật adapter
+//                                })
+//                                .addOnFailureListener(e -> {
+//                                    Toast.makeText(context, "Xóa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                                });
+//                    }
+//                    return true;
+//                });
+//                popupMenu.show();
+//            });
+//        } else {
+//            holder.binding.btnPostMenu.setVisibility(View.GONE);
+//        }
+
+        // Hiển thị btnPostMenu nếu userId khớp
+//        if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
+//            holder.binding.btnPostMenu.setVisibility(View.VISIBLE);
+//            holder.binding.btnPostMenu.setOnClickListener(v -> {
+//                PopupMenu popupMenu = new PopupMenu(context, holder.binding.btnPostMenu);
+//                popupMenu.getMenu().add("Chỉnh sửa");
+//                popupMenu.getMenu().add("Xóa");
+//                popupMenu.setOnMenuItemClickListener(menuItem -> {
+//                    if (menuItem.getTitle().equals("Chỉnh sửa")) {
+//                        menuClickListener.onMenuClick(post); // Mở dialog chỉnh sửa
+//                    } else if (menuItem.getTitle().equals("Xóa")) {
+//                        // Xóa bài đăng trực tiếp
+//                        db.collection("forum").document(post.getPostId())
+//                                .delete()
+//                                .addOnSuccessListener(aVoid -> {
+//                                    Toast.makeText(context, "Xóa bài đăng thành công", Toast.LENGTH_SHORT).show();
+//                                    postList.remove(position);
+//                                    notifyItemRemoved(position);
+//                                    notifyItemRangeChanged(position, postList.size());
+//                                })
+//                                .addOnFailureListener(e -> {
+//                                    Toast.makeText(context, "Xóa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+//                                });
+//                    }
+//                    return true;
+//                });
+//                popupMenu.show();
+//            });
+//        } else {
+//            holder.binding.btnPostMenu.setVisibility(View.GONE);
+//        }
+        if ((post.getUserId() != null && post.getUserId().equals(currentUserId)) || isAdmin) {
             holder.binding.btnPostMenu.setVisibility(View.VISIBLE);
             holder.binding.btnPostMenu.setOnClickListener(v -> {
                 PopupMenu popupMenu = new PopupMenu(context, holder.binding.btnPostMenu);
-                // Admin cũng có thể chỉnh sửa nếu bạn muốn
+
+                // Nếu là người tạo bài viết => có quyền chỉnh sửa
                 if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
                     popupMenu.getMenu().add("Chỉnh sửa");
                 }
-                popupMenu.getMenu().add("Xóa"); // Admin luôn có nút xóa
-                popupMenu.setOnMenuItemClickListener(menuItem -> {
-                    if (menuItem.getTitle().equals("Chỉnh sửa")) {
-                        menuClickListener.onMenuClick(post);
-                    } else if (menuItem.getTitle().equals("Xóa")) {
-                        // Logic xóa giữ nguyên
-                        db.collection("forum").document(post.getPostId())
-                                .delete()
-                                .addOnSuccessListener(aVoid -> {
-                                    Toast.makeText(context, "Xóa bài đăng thành công", Toast.LENGTH_SHORT).show();
-                                    // Xóa khỏi list và cập nhật adapter
-                                })
-                                .addOnFailureListener(e -> {
-                                    Toast.makeText(context, "Xóa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                                });
-                    }
-                    return true;
-                });
-                popupMenu.show();
-            });
-        } else {
-            holder.binding.btnPostMenu.setVisibility(View.GONE);
-        }
 
-        // Hiển thị btnPostMenu nếu userId khớp
-        if (post.getUserId() != null && post.getUserId().equals(currentUserId)) {
-            holder.binding.btnPostMenu.setVisibility(View.VISIBLE);
-            holder.binding.btnPostMenu.setOnClickListener(v -> {
-                PopupMenu popupMenu = new PopupMenu(context, holder.binding.btnPostMenu);
-                popupMenu.getMenu().add("Chỉnh sửa");
+                // Admin và chính chủ đều có thể xoá
                 popupMenu.getMenu().add("Xóa");
+
                 popupMenu.setOnMenuItemClickListener(menuItem -> {
-                    if (menuItem.getTitle().equals("Chỉnh sửa")) {
-                        menuClickListener.onMenuClick(post); // Mở dialog chỉnh sửa
-                    } else if (menuItem.getTitle().equals("Xóa")) {
-                        // Xóa bài đăng trực tiếp
+                    String title = menuItem.getTitle().toString();
+                    if (title.equals("Chỉnh sửa")) {
+                        menuClickListener.onMenuClick(post); // Gọi lại Dialog chỉnh sửa
+                    } else if (title.equals("Xóa")) {
                         db.collection("forum").document(post.getPostId())
                                 .delete()
                                 .addOnSuccessListener(aVoid -> {
                                     Toast.makeText(context, "Xóa bài đăng thành công", Toast.LENGTH_SHORT).show();
-                                    postList.remove(position);
-                                    notifyItemRemoved(position);
-                                    notifyItemRangeChanged(position, postList.size());
+                                    postList.remove(holder.getAdapterPosition());
+                                    notifyItemRemoved(holder.getAdapterPosition());
                                 })
                                 .addOnFailureListener(e -> {
                                     Toast.makeText(context, "Xóa bài đăng thất bại: " + e.getMessage(), Toast.LENGTH_SHORT).show();
@@ -165,6 +203,7 @@ public class PostAdapter extends RecyclerView.Adapter<PostAdapter.ViewHolder> {
                     }
                     return true;
                 });
+
                 popupMenu.show();
             });
         } else {

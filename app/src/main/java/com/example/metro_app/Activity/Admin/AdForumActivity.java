@@ -2,6 +2,8 @@ package com.example.metro_app.Activity.Admin;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
+import android.view.View;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -14,11 +16,14 @@ import com.example.metro_app.Adapter.PostAdapter;
 import com.example.metro_app.Domain.PostModel;
 import com.example.metro_app.R;
 import com.example.metro_app.databinding.ActivityAdminForumBinding; // THAY ĐỔI: Sử dụng ViewBinding
+import com.google.android.gms.tasks.Task;
+import com.google.android.gms.tasks.Tasks;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.Query;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.QuerySnapshot;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -57,6 +62,14 @@ public class AdForumActivity extends AppCompatActivity {
         setupRecyclerView();
         setupListeners();
         loadPosts();
+
+        ImageView backBtn = findViewById(R.id.backBtn);
+        backBtn.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                finish();
+            }
+        });
     }
 
     private void loadAdminAvatar() {
@@ -84,8 +97,6 @@ public class AdForumActivity extends AppCompatActivity {
     }
 
     private void setupListeners() {
-        binding.toolbar.setOnClickListener(v -> finish());
-
         binding.btnPost.setOnClickListener(v -> {
             String description = binding.editPost.getText().toString().trim();
             if (description.isEmpty()) {
@@ -99,19 +110,40 @@ public class AdForumActivity extends AppCompatActivity {
     private void loadPosts() {
         db.collection("forum")
                 .orderBy("createAt", Query.Direction.DESCENDING)
-                .addSnapshotListener((snapshots, error) -> {
-                    if (error != null) {
-                        Toast.makeText(this, "Lỗi tải bài đăng: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                .addSnapshotListener((snapshots, e) -> {
+                    if (e != null) {
+                        Toast.makeText(this, "Lỗi khi tải bài đăng: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                         return;
                     }
-                    if (snapshots != null) {
-                        postList.clear();
+
+                    if (snapshots != null && !snapshots.isEmpty()) {
+                        List<PostModel> tempList = new ArrayList<>();
+                        List<Task<QuerySnapshot>> tasks = new ArrayList<>();
+
                         for (QueryDocumentSnapshot doc : snapshots) {
                             PostModel post = doc.toObject(PostModel.class);
                             post.setPostId(doc.getId());
-                            postList.add(post);
+                            tempList.add(post);
+
+                            // ✅ Đếm comment từ collection riêng "Comment"
+                            Task<QuerySnapshot> task = db.collection("Comment")
+                                    .whereEqualTo("postId", post.getPostId())
+                                    .get();
+
+                            tasks.add(task);
                         }
-                        postAdapter.notifyDataSetChanged();
+
+                        // Khi tất cả các task đếm comment hoàn thành
+                        Tasks.whenAllSuccess(tasks).addOnSuccessListener(results -> {
+                            for (int i = 0; i < results.size(); i++) {
+                                QuerySnapshot commentSnapshot = (QuerySnapshot) results.get(i);
+                                tempList.get(i).setCommentCount(commentSnapshot.size());
+                            }
+
+                            postList.clear();
+                            postList.addAll(tempList);
+                            postAdapter.notifyDataSetChanged();
+                        });
                     }
                 });
     }
