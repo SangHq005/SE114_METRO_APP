@@ -36,7 +36,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
     private ImageView closePopup, backBtn;
     private LinearLayout calendarPopup;
     private CalendarView calendarView;
-    private Button btnApply;
+    private  Button btnApply;
     private TextView startDateTxt, endDateTxt, resetBtn, noTransactionsTxt;
     private RecyclerView recyclerView;
     private ProgressBar progressBar;
@@ -176,10 +176,11 @@ public class TransactionHistoryActivity extends AppCompatActivity {
             return;
         }
 
+        Log.d("TransactionHistory", "Starting to load transactions for userId: " + userId);
         progressBar.setVisibility(View.VISIBLE);
         noTransactionsTxt.setVisibility(View.GONE);
         recyclerView.setVisibility(View.VISIBLE);
-        transactionList.clear();
+        List<Transaction> tempTransactionList = new ArrayList<>(); // Biến trung gian
         transactionAdapter.notifyDataSetChanged();
 
         try {
@@ -202,11 +203,27 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                     .get()
                     .addOnCompleteListener(task -> {
                         progressBar.setVisibility(View.GONE);
+                        Log.d("TransactionHistory", "Transaction query completed, success: " + task.isSuccessful());
                         if (task.isSuccessful()) {
                             for (QueryDocumentSnapshot document : task.getResult()) {
+                                Log.d("TransactionHistory", "Processing transaction: " + document.getId());
                                 String ticketTypeId = document.getString("ticketTypeId");
-                                Long amount = document.getLong("amount");
-                                long amountValue = (amount != null) ? amount : 0;
+                                Object amountObj = document.get("amount");
+                                long amountValue;
+                                if (amountObj != null) {
+                                    if (amountObj instanceof Long) {
+                                        amountValue = ((Long) amountObj).longValue();
+                                    } else if (amountObj instanceof Integer) {
+                                        amountValue = ((Integer) amountObj).longValue();
+                                    } else if (amountObj instanceof Double) {
+                                        amountValue = ((Double) amountObj).longValue();
+                                    } else {
+                                        amountValue = 0;
+                                        Log.w("TransactionHistory", "Unsupported amount type for transaction with ticketTypeId: " + ticketTypeId + ", using default 0");
+                                    }
+                                } else {
+                                    amountValue = 0;
+                                }
                                 String status = document.getString("status");
                                 Date timestamp = document.getDate("timestamp");
 
@@ -215,19 +232,33 @@ public class TransactionHistoryActivity extends AppCompatActivity {
                                             .get()
                                             .addOnSuccessListener(doc -> {
                                                 String ticketTypeName = doc.getString("Name");
+                                                Log.d("TransactionHistory", "Fetched ticketTypeName for ticketTypeId " + ticketTypeId + ": " + ticketTypeName + amountObj);
+                                                if (ticketTypeName == null) {
+                                                    Log.w("TransactionHistory", "Skipping transaction with null ticketTypeName for ticketTypeId: " + ticketTypeId);
+                                                    return;
+                                                }
                                                 Transaction transaction = new Transaction(
-                                                        ticketTypeName != null ? ticketTypeName : "N/A",
+                                                        ticketTypeName,
                                                         amountValue,
                                                         status,
                                                         timestamp
                                                 );
-                                                transactionList.add(transaction);
-                                                transactionAdapter.notifyDataSetChanged();
-                                                updateEmptyState();
+                                                tempTransactionList.add(transaction);
+                                                runOnUiThread(() -> {
+                                                    transactionList.clear();
+                                                    transactionList.addAll(tempTransactionList);
+                                                    transactionAdapter.notifyDataSetChanged();
+                                                    updateEmptyState();
+                                                });
+                                            })
+                                            .addOnFailureListener(e -> {
+                                                Log.e("TransactionHistory", "Failed to fetch ticketType for ticketTypeId: " + ticketTypeId, e);
                                             });
+                                } else {
+                                    Log.w("TransactionHistory", "Skipping transaction with null ticketTypeId: " + document.getId());
                                 }
                             }
-                            updateEmptyState();
+                            runOnUiThread(() -> updateEmptyState());
                         } else {
                             Log.e("TransactionHistory", "Firestore query failed: ", task.getException());
                             Toast.makeText(this, "Lỗi tải giao dịch", Toast.LENGTH_LONG).show();
@@ -286,7 +317,7 @@ public class TransactionHistoryActivity extends AppCompatActivity {
 
     // RecyclerView Adapter
     private class TransactionAdapter extends RecyclerView.Adapter<TransactionAdapter.TransactionViewHolder> {
-        private List<Transaction> transactions;
+        private final List<Transaction> transactions;
 
         public TransactionAdapter(List<Transaction> transactions) {
             this.transactions = transactions;
@@ -324,9 +355,6 @@ public class TransactionHistoryActivity extends AppCompatActivity {
             String amountText = String.format(Locale.getDefault(), "%,d đ", transaction.getAmount());
             holder.tvAmount.setText(amountText);
         }
-
-
-
 
         @Override
         public int getItemCount() {
