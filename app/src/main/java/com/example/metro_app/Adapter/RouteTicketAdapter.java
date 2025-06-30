@@ -2,6 +2,7 @@ package com.example.metro_app.Adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,31 +17,30 @@ import com.example.metro_app.Activity.User.ChooseTicketActivity;
 import com.example.metro_app.Model.TicketType;
 import com.example.metro_app.R;
 
-import java.util.List;
-
 public class RouteTicketAdapter extends ListAdapter<TicketType, RouteTicketAdapter.RouteTicketViewHolder> {
+
+    private static final String TAG = "RouteTicketAdapter";
 
     public RouteTicketAdapter() {
         super(DIFF_CALLBACK);
     }
 
-    public RouteTicketAdapter(List<TicketType> ticketList) {
-        super(DIFF_CALLBACK);
-        submitList(ticketList);
-    }
-
     private static final DiffUtil.ItemCallback<TicketType> DIFF_CALLBACK = new DiffUtil.ItemCallback<TicketType>() {
         @Override
         public boolean areItemsTheSame(@NonNull TicketType oldItem, @NonNull TicketType newItem) {
-            return oldItem.getId().equals(newItem.getId());
+            return oldItem.getId() != null && oldItem.getId().equals(newItem.getId());
         }
 
         @Override
         public boolean areContentsTheSame(@NonNull TicketType oldItem, @NonNull TicketType newItem) {
-            return oldItem.getName().equals(newItem.getName()) &&
+            return oldItem.getId() != null && oldItem.getId().equals(newItem.getId()) &&
+                    oldItem.getName().equals(newItem.getName()) &&
                     oldItem.getPrice().equals(newItem.getPrice()) &&
                     (oldItem.getStartStation() == null ? newItem.getStartStation() == null : oldItem.getStartStation().equals(newItem.getStartStation())) &&
-                    (oldItem.getEndStation() == null ? newItem.getEndStation() == null : oldItem.getEndStation().equals(newItem.getEndStation()));
+                    (oldItem.getEndStation() == null ? newItem.getEndStation() == null : oldItem.getEndStation().equals(newItem.getEndStation())) &&
+                    (oldItem.getActive() == null ? newItem.getActive() == null : oldItem.getActive().equals(newItem.getActive())) &&
+                    (oldItem.getAutoActive() == null ? newItem.getAutoActive() == null : oldItem.getAutoActive().equals(newItem.getAutoActive())) &&
+                    (oldItem.getType() == null ? newItem.getType() == null : oldItem.getType().equals(newItem.getType()));
         }
     };
 
@@ -55,6 +55,7 @@ public class RouteTicketAdapter extends ListAdapter<TicketType, RouteTicketAdapt
     @Override
     public void onBindViewHolder(@NonNull RouteTicketViewHolder holder, int position) {
         TicketType ticket = getItem(position);
+        Log.d(TAG, "Binding ticket at position " + position + ": id=" + (ticket.getId() != null ? ticket.getId() : "null") + ", name=" + ticket.getName() + ", endStation=" + ticket.getEndStation());
         holder.routeTicketTxt.setText("Đến " + (ticket.getEndStation() != null ? ticket.getEndStation() : "N/A"));
         holder.priceTxt.setText(ticket.getPrice() != null ? ticket.getPrice() : "0 VND");
 
@@ -62,14 +63,15 @@ public class RouteTicketAdapter extends ListAdapter<TicketType, RouteTicketAdapt
         holder.itemView.setOnClickListener(v -> {
             Context context = holder.itemView.getContext();
             Intent intent = new Intent(context, ChooseTicketActivity.class);
-            intent.putExtra("ticket_type_id", ticket.getId());
+            intent.putExtra("ticket_type_id", ticket.getId() != null ? ticket.getId() : "unknown"); // Đảm bảo không null
             intent.putExtra("ticket_name", ticket.getName());
             intent.putExtra("start_station", ticket.getStartStation());
             intent.putExtra("end_station", ticket.getEndStation());
             intent.putExtra("ticket_price", ticket.getPrice());
-            intent.putExtra("ticket_active", ticket.getActive());
-            intent.putExtra("ticket_auto_active", ticket.getAutoActive());
+            intent.putExtra("ticket_active", ticket.getActive() != null ? ticket.getActive() : "0");
+            intent.putExtra("ticket_auto_active", ticket.getAutoActive() != null ? ticket.getAutoActive() : "0");
             intent.putExtra("type", ticket.getType());
+            Log.d(TAG, "Starting ChooseTicketActivity with ticket_type_id: " + (ticket.getId() != null ? ticket.getId() : "unknown"));
             context.startActivity(intent);
         });
     }

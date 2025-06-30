@@ -29,6 +29,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class MyTicketsActivity extends AppCompatActivity {
@@ -37,7 +38,9 @@ public class MyTicketsActivity extends AppCompatActivity {
     private TextView tvNoTicketsNoiBat, tvNoTicketsHSSV, tvNoTicketsRoute, nameTxt;
     private TicketTypeAdapter noiBatAdapter, hssvAdapter;
     private RouteListAdapter routeListAdapter;
-    private List<TicketType> noiBatTickets, hssvTickets, routeTickets;
+    private List<TicketType> noiBatTickets, hssvTickets;
+    // THAY ĐỔI: Danh sách này giờ sẽ chứa các ga đi duy nhất
+    private List<TicketType> routeStartStations;
     private FirebaseFirestore db;
     private DecimalFormat decimalFormat;
     private ImageView imgAvt;
@@ -67,6 +70,7 @@ public class MyTicketsActivity extends AppCompatActivity {
             recyclerViewRouteList = findViewById(R.id.recyclerViewRouteList);
             tvNoTicketsNoiBat = findViewById(R.id.tv_no_tickets_noi_bat);
             tvNoTicketsHSSV = findViewById(R.id.tv_no_tickets_hssv);
+            tvNoTicketsRoute = findViewById(R.id.tv_route_name);
             imgAvt = findViewById(R.id.img);
             nameTxt = findViewById(R.id.nameTxt);
         } catch (Exception e) {
@@ -100,7 +104,8 @@ public class MyTicketsActivity extends AppCompatActivity {
 
         noiBatTickets = new ArrayList<>();
         hssvTickets = new ArrayList<>();
-        routeTickets = new ArrayList<>();
+        // THAY ĐỔI: Khởi tạo danh sách các ga đi
+        routeStartStations = new ArrayList<>();
 
         noiBatAdapter = new TicketTypeAdapter(noiBatTickets, ticket -> {
             fetchTicketDetailsAndStartActivity(ticket.getId());
@@ -108,13 +113,13 @@ public class MyTicketsActivity extends AppCompatActivity {
         hssvAdapter = new TicketTypeAdapter(hssvTickets, ticket -> {
             fetchTicketDetailsAndStartActivity(ticket.getId());
         });
-        routeListAdapter = new RouteListAdapter(routeTickets, ticket -> {
+
+        // THAY ĐỔI: Khởi tạo RouteListAdapter với danh sách ga đi và xử lý sự kiện click
+        routeListAdapter = new RouteListAdapter(routeStartStations, ticket -> {
+            // Khi người dùng click vào một ga đi, mở DetailRouteActivity
             Intent intent = new Intent(MyTicketsActivity.this, DetailRouteActivity.class);
-            intent.putExtra("ticket_id", ticket.getId());
-            intent.putExtra("ticket_name", ticket.getName());
+            // Chỉ cần gửi tên ga đi qua Intent
             intent.putExtra("start_station", ticket.getStartStation());
-            intent.putExtra("end_station", ticket.getEndStation());
-            intent.putExtra("ticket_price", ticket.getPrice());
             startActivity(intent);
         });
 
@@ -129,18 +134,9 @@ public class MyTicketsActivity extends AppCompatActivity {
             backBtn.bringToFront();
             backBtn.setOnClickListener(v -> {
                 Log.d("MyTicketsActivity", "backBtn clicked");
-                startActivity(new Intent(MyTicketsActivity.this, HomeActivity.class));
+                // THAY ĐỔI: Sử dụng finish() để quay lại màn hình trước đó trong stack
                 finish();
             });
-        } else {
-            Log.e("MyTicketsActivity", "backBtn is null");
-            Toast.makeText(this, "Không tìm thấy nút quay lại", Toast.LENGTH_LONG).show();
-        }
-
-        // Kiểm tra ToolbarconstraintLayout để debug
-        View toolbar = findViewById(R.id.ToolbarconstraintLayout);
-        if (toolbar != null) {
-            toolbar.setOnClickListener(v -> Log.d("MyTicketsActivity", "ToolbarconstraintLayout clicked"));
         }
 
         loadTickets();
@@ -261,60 +257,43 @@ public class MyTicketsActivity extends AppCompatActivity {
     }
 
     private void loadTickets() {
-        if (tvNoTicketsNoiBat != null) {
-            tvNoTicketsNoiBat.setVisibility(View.GONE);
-        }
-        if (tvNoTicketsHSSV != null) {
-            tvNoTicketsHSSV.setVisibility(View.GONE);
-        }
-        if (tvNoTicketsRoute != null) {
-            tvNoTicketsRoute.setVisibility(View.GONE);
-        }
+        if (tvNoTicketsNoiBat != null) tvNoTicketsNoiBat.setVisibility(View.GONE);
+        if (tvNoTicketsHSSV != null) tvNoTicketsHSSV.setVisibility(View.GONE);
+        if (tvNoTicketsRoute != null) tvNoTicketsRoute.setVisibility(View.GONE);
 
         db.collection("TicketType").get().addOnCompleteListener(task -> {
             try {
                 if (task.isSuccessful()) {
                     noiBatTickets.clear();
                     hssvTickets.clear();
-                    routeTickets.clear();
+                    // THAY ĐỔI: Xóa danh sách các ga đi cũ
+                    routeStartStations.clear();
 
                     if (task.getResult().isEmpty()) {
                         runOnUiThread(() -> Toast.makeText(MyTicketsActivity.this, "Không có dữ liệu trong TicketType", Toast.LENGTH_LONG).show());
                     } else {
+                        // TẠM THỜI: Danh sách để chứa tất cả các vé lượt
+                        List<TicketType> allRouteTickets = new ArrayList<>();
+
                         for (QueryDocumentSnapshot document : task.getResult()) {
+                            String type = document.getString("Type");
+                            String status = document.getString("Status");
+
+                            // Chỉ xử lý các vé đang "Hoạt động"
+                            if (status == null || !status.equals("Hoạt động")) {
+                                continue;
+                            }
+
                             String id = document.getId();
                             String name = document.getString("Name");
-                            String type = document.getString("Type");
                             String startStation = document.getString("StartStation");
                             String endStation = document.getString("EndStation");
-                            String status = document.getString("Status");
-                            if (name == null) {
-                                Object nameObj = document.get("Name");
-                                if (nameObj != null) {
-                                    name = String.valueOf(nameObj);
-                                }
-                            }
-                            // Kiểm tra Status
-                            if (status == null || !status.equals("Hoạt động")) {
-                                Log.d("MyTicketsActivity", "Skipped ticket " + name + " due to Status: " + (status != null ? status : "null"));
-                                continue; // Bỏ qua nếu Status không phải "Hoạt động"
-                            }
+
                             String price = "0 VND";
                             Object priceObj = document.get("Price");
-                            if (priceObj != null) {
-                                if (priceObj instanceof String) {
-                                    price = (String) priceObj;
-                                    if (!price.endsWith("VND")) {
-                                        try {
-                                            long priceValue = Long.parseLong(price);
-                                            price = decimalFormat.format(priceValue) + " VND";
-                                        } catch (NumberFormatException e) {
-                                        }
-                                    }
-                                } else if (priceObj instanceof Long || priceObj instanceof Integer) {
-                                    long priceValue = ((Number) priceObj).longValue();
-                                    price = decimalFormat.format(priceValue) + " VND";
-                                }
+                            if (priceObj instanceof Long || priceObj instanceof Integer) {
+                                long priceValue = ((Number) priceObj).longValue();
+                                price = decimalFormat.format(priceValue) + " VND";
                             }
 
                             if (name == null) {
@@ -330,45 +309,40 @@ public class MyTicketsActivity extends AppCompatActivity {
                                 hssvTickets.add(ticket);
                             } else if ("Vé dài hạn".equals(type)) {
                                 noiBatTickets.add(ticket);
-                            } else if ("Vé lượt".equals(type)) {
-                                routeTickets.add(ticket);
+                            } else if ("Vé lượt".equals(type) && startStation != null) {
+                                // THAY ĐỔI: Thêm tất cả vé lượt vào danh sách tạm thời
+                                allRouteTickets.add(ticket);
+                            }
+                        }
+
+                        // THAY ĐỔI: Xử lý để lấy ra các ga đi duy nhất
+                        HashSet<String> uniqueStartStations = new HashSet<>();
+                        for (TicketType ticket : allRouteTickets) {
+                            if (uniqueStartStations.add(ticket.getStartStation())) {
+                                // Tạo một đối tượng TicketType chỉ để chứa thông tin ga đi
+                                TicketType startStationTicket = new TicketType();
+                                startStationTicket.setStartStation(ticket.getStartStation());
+                                routeStartStations.add(startStationTicket);
                             }
                         }
                     }
 
-                    if (noiBatAdapter != null) {
-                        noiBatAdapter.notifyDataSetChanged();
-                    }
-                    if (hssvAdapter != null) {
-                        hssvAdapter.notifyDataSetChanged();
-                    }
-                    if (routeListAdapter != null) {
-                        routeListAdapter.notifyDataSetChanged();
-                    }
+                    // Cập nhật các adapter
+                    if (noiBatAdapter != null) noiBatAdapter.notifyDataSetChanged();
+                    if (hssvAdapter != null) hssvAdapter.notifyDataSetChanged();
+                    if (routeListAdapter != null) routeListAdapter.notifyDataSetChanged();
 
-                    if (tvNoTicketsNoiBat != null) {
-                        tvNoTicketsNoiBat.setVisibility(noiBatTickets.isEmpty() ? View.VISIBLE : View.GONE);
-                    }
-                    if (tvNoTicketsHSSV != null) {
-                        tvNoTicketsHSSV.setVisibility(hssvTickets.isEmpty() ? View.VISIBLE : View.GONE);
-                    }
-                    if (tvNoTicketsRoute != null) {
-                        tvNoTicketsRoute.setVisibility(routeTickets.isEmpty() ? View.VISIBLE : View.GONE);
-                    }
+                    // Cập nhật hiển thị "Không có vé"
+                    if (tvNoTicketsNoiBat != null) tvNoTicketsNoiBat.setVisibility(noiBatTickets.isEmpty() ? View.VISIBLE : View.GONE);
+                    if (tvNoTicketsHSSV != null) tvNoTicketsHSSV.setVisibility(hssvTickets.isEmpty() ? View.VISIBLE : View.GONE);
+                    if (tvNoTicketsRoute != null) tvNoTicketsRoute.setVisibility(routeStartStations.isEmpty() ? View.VISIBLE : View.GONE);
+
                 } else {
+                    // Xử lý lỗi
                     runOnUiThread(() -> Toast.makeText(MyTicketsActivity.this, "Lỗi tải dữ liệu: " + (task.getException() != null ? task.getException().getMessage() : "Không xác định"), Toast.LENGTH_LONG).show());
-                    if (tvNoTicketsNoiBat != null) {
-                        tvNoTicketsNoiBat.setVisibility(View.VISIBLE);
-                    }
-                    if (tvNoTicketsHSSV != null) {
-                        tvNoTicketsHSSV.setVisibility(View.VISIBLE);
-                    }
-                    if (tvNoTicketsRoute != null) {
-                        tvNoTicketsRoute.setVisibility(View.VISIBLE);
-                    }
                 }
             } catch (Exception e) {
-                runOnUiThread(() -> Toast.makeText(MyTicketsActivity.this, "Lỗi tải dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show());
+                runOnUiThread(() -> Toast.makeText(MyTicketsActivity.this, "Lỗi xử lý dữ liệu: " + e.getMessage(), Toast.LENGTH_LONG).show());
             }
         });
     }

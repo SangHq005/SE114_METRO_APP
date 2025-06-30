@@ -55,6 +55,10 @@ public class OrderInfoActivity extends AppCompatActivity {
     private static final String VNPAY_HASH_SECRET = "0JJIFBP7MHJSFP2FM7GFSHHANH8Q7FUN";
     private static final String VNPAY_SCHEME = "metroapp";
     private static final String VNPAY_URL = "https://sandbox.vnpayment.vn/paymentv2/vpcpay.html";
+    private static final String PREFS_NAME = "OrderInfoPrefs";
+    private static final String KEY_TICKET_TYPE_ID = "ticket_type_id";
+    private static final String KEY_TICKET_EXPIRATION = "ticket_expiration";
+    private static final String KEY_TICKET_AUTO_ACTIVE = "ticket_auto_active";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,21 +73,44 @@ public class OrderInfoActivity extends AppCompatActivity {
         userId = prefs.getString("UserID", null);
         Log.d("OrderInfo", "Retrieved userId from SharedPreferences: " + userId);
 
+        // Lấy dữ liệu từ SharedPreferences hoặc Intent
+        SharedPreferences orderPrefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
         Intent intent = getIntent();
         if (intent != null) {
             if (intent.hasExtra("ticket_type_id")) {
                 lastTicketTypeId = intent.getStringExtra("ticket_type_id");
                 Log.d("OrderInfo", "Received ticket_type_id in OrderInfoActivity: " + lastTicketTypeId);
+                orderPrefs.edit().putString(KEY_TICKET_TYPE_ID, lastTicketTypeId).apply();
+            } else {
+                lastTicketTypeId = orderPrefs.getString(KEY_TICKET_TYPE_ID, "unknown");
+                Log.w("OrderInfo", "ticket_type_id not found in Intent, using saved value: " + lastTicketTypeId);
             }
+            ticketExpiration = intent.getStringExtra("ticket_expiration");
+            if (ticketExpiration == null) {
+                ticketExpiration = orderPrefs.getString(KEY_TICKET_EXPIRATION, "0");
+                Log.w("OrderInfo", "ticket_expiration is null, using saved value: " + ticketExpiration);
+            } else {
+                orderPrefs.edit().putString(KEY_TICKET_EXPIRATION, ticketExpiration).apply();
+            }
+            ticketAutoActive = intent.getStringExtra("ticket_auto_active");
+            if (ticketAutoActive == null) {
+                ticketAutoActive = orderPrefs.getString(KEY_TICKET_AUTO_ACTIVE, "0");
+                Log.w("OrderInfo", "ticket_auto_active is null, using saved value: " + ticketAutoActive);
+            } else {
+                orderPrefs.edit().putString(KEY_TICKET_AUTO_ACTIVE, ticketAutoActive).apply();
+            }
+        } else {
+            Log.e("OrderInfo", "Intent is null in onCreate");
+            lastTicketTypeId = orderPrefs.getString(KEY_TICKET_TYPE_ID, "unknown");
+            ticketExpiration = orderPrefs.getString(KEY_TICKET_EXPIRATION, "0");
+            ticketAutoActive = orderPrefs.getString(KEY_TICKET_AUTO_ACTIVE, "0");
         }
-
-        String ticketName = getIntent().getStringExtra("ticket_name");
-        String ticketPriceStr = getIntent().getStringExtra("ticket_price");
-        ticketExpiration = getIntent().getStringExtra("ticket_expiration");
-        ticketAutoActive = getIntent().getStringExtra("ticket_auto_active");
 
         Log.d("OrderInfo", "Received ticket_expiration in onCreate: " + ticketExpiration);
         Log.d("OrderInfo", "Received ticket_auto_active in onCreate: " + ticketAutoActive);
+
+        String ticketName = getIntent().getStringExtra("ticket_name");
+        String ticketPriceStr = getIntent().getStringExtra("ticket_price");
 
         ticketPrice = 0;
         if (ticketPriceStr != null) {
@@ -144,7 +171,6 @@ public class OrderInfoActivity extends AppCompatActivity {
             });
             dialog.show(getSupportFragmentManager(), "PaymentMethodDialog");
         });
-
 
         // Sự kiện nhấn nút Thanh toán
         thanhToanBtn.setOnClickListener(v -> {
@@ -247,9 +273,9 @@ public class OrderInfoActivity extends AppCompatActivity {
             saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice, "SUCCESS");
             Intent successIntent = new Intent(this, YourTicketsActivity.class);
             successIntent.putExtra("UUID", userId);
-            successIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+            successIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
             startActivity(successIntent);
-            finish();
+            finishAffinity(); // Đảm bảo đóng toàn bộ activity liên quan
             Log.d("OrderInfo", "Navigated to YourTicketsActivity after payment success");
         } else if (action.equals("FaildBackAction")) {
             Toast.makeText(this, "Thanh toán thất bại", Toast.LENGTH_LONG).show();
@@ -274,18 +300,21 @@ public class OrderInfoActivity extends AppCompatActivity {
         int autoActiveDays = 0;
         try {
             if (ticketExpiration == null || ticketExpiration.equals("null")) {
-                throw new IllegalArgumentException("Expiration không được null (ticket_type_id: " + ticketTypeId + ")");
+                Log.w("Firestore", "ticket_expiration is null or 'null', using default value 0");
+                ticketExpiration = "0";
             }
             if (ticketAutoActive == null || ticketAutoActive.equals("null")) {
-                throw new IllegalArgumentException("AutoActive không được null (ticket_type_id: " + ticketTypeId + ")");
+                Log.w("Firestore", "ticket_auto_active is null or 'null', using default value 0");
+                ticketAutoActive = "0";
             }
             expirationDays = Integer.parseInt(ticketExpiration);
             autoActiveDays = Integer.parseInt(ticketAutoActive);
             Log.d("Firestore", "expirationDays: " + expirationDays + ", autoActiveDays: " + autoActiveDays);
 
-            if (expirationDays <= 0 || autoActiveDays < 0) {
-                throw new IllegalArgumentException("ExpirationDays phải lớn hơn 0 và AutoActiveDays không được âm (ticket_type_id: " + ticketTypeId + ")");
+            if (autoActiveDays < 0) {
+                throw new IllegalArgumentException("AutoActiveDays không được âm (ticket_type_id: " + (ticketTypeId != null ? ticketTypeId : "unknown") + ")");
             }
+            // Cho phép expirationDays = 0 nếu là ý định hợp lệ (ví dụ, vé không có thời hạn)
         } catch (NumberFormatException e) {
             Log.e("Firestore", "Lỗi định dạng expiration hoặc autoActive: ticket_expiration=" + ticketExpiration + ", ticket_auto_active=" + ticketAutoActive, e);
             Toast.makeText(this, "Lỗi: Dữ liệu Expiration hoặc AutoActive không hợp lệ", Toast.LENGTH_LONG).show();
@@ -293,6 +322,8 @@ public class OrderInfoActivity extends AppCompatActivity {
         } catch (IllegalArgumentException e) {
             Log.e("Firestore", "Lỗi giá trị: " + e.getMessage());
             Toast.makeText(this, "Lỗi: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            // Tiếp tục lưu giao dịch cơ bản ngay cả khi có lỗi
+            saveBasicTransaction(orderId, transactionNo, ticketTypeId, amount, status);
             return;
         }
 
@@ -315,7 +346,7 @@ public class OrderInfoActivity extends AppCompatActivity {
             Map<String, Object> transactionData = new HashMap<>();
             transactionData.put("orderId", orderId);
             transactionData.put("transactionNo", transactionNo);
-            transactionData.put("ticketTypeId", ticketTypeId);
+            transactionData.put("ticketTypeId", ticketTypeId != null ? ticketTypeId : "unknown");
             transactionData.put("amount", amount);
             transactionData.put("status", status);
             transactionData.put("timestamp", currentTimestamp);
@@ -365,6 +396,25 @@ public class OrderInfoActivity extends AppCompatActivity {
         });
     }
 
+    // Phương thức lưu giao dịch cơ bản khi có lỗi
+    private void saveBasicTransaction(String orderId, String transactionNo, String ticketTypeId, long amount, String status) {
+        FirebaseFirestore db = FirebaseFirestore.getInstance();
+        Date currentTimestamp = new Date();
+
+        Map<String, Object> transactionData = new HashMap<>();
+        transactionData.put("orderId", orderId);
+        transactionData.put("transactionNo", transactionNo);
+        transactionData.put("ticketTypeId", ticketTypeId != null ? ticketTypeId : "unknown");
+        transactionData.put("amount", amount);
+        transactionData.put("status", status);
+        transactionData.put("timestamp", currentTimestamp);
+        transactionData.put("userId", userId != null ? userId : "unknown");
+
+        db.collection("Transactions").document(orderId).set(transactionData)
+                .addOnSuccessListener(aVoid -> Log.d("Firestore", "Lưu giao dịch cơ bản thành công: " + orderId))
+                .addOnFailureListener(e -> Log.e("Firestore", "Lỗi lưu giao dịch cơ bản: ", e));
+    }
+
     private String HmacSHA512(String data, String key) throws Exception {
         Mac mac = Mac.getInstance("HmacSHA512");
         mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA512"));
@@ -384,7 +434,7 @@ public class OrderInfoActivity extends AppCompatActivity {
         setIntent(intent);
         Log.d("VNPay", "onNewIntent called with intent: " + (intent != null ? intent.toString() : "null"));
         if (isPaymentProcessed) {
-            Log.d("VNPay", "Payment already processed, ignoring new intent");
+            Log.d("VNPay", "Payment already processed, finishing activity");
             finish();
             return;
         }
@@ -404,9 +454,9 @@ public class OrderInfoActivity extends AppCompatActivity {
                     saveTransactionToFirestore(orderId, transactionNo, lastTicketTypeId, ticketPrice, "SUCCESS");
                     Intent successIntent = new Intent(this, YourTicketsActivity.class);
                     successIntent.putExtra("UUID", userId);
-                    successIntent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    successIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_CLEAR_TASK | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(successIntent);
-                    finish();
+                    finishAffinity(); // Đảm bảo đóng toàn bộ activity liên quan
                     Log.d("OrderInfo", "Navigated to YourTicketsActivity after payment success from onNewIntent");
                 } else {
                     Toast.makeText(this, "Thanh toán thất bại, mã lỗi: " + responseCode, Toast.LENGTH_LONG).show();

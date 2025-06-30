@@ -26,6 +26,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.text.DecimalFormat;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 public class DetailRouteActivity extends AppCompatActivity {
@@ -128,6 +129,7 @@ public class DetailRouteActivity extends AppCompatActivity {
                     try {
                         if (task.isSuccessful()) {
                             routeTickets.clear();
+                            HashSet<String> uniqueEndStations = new HashSet<>();
                             Log.d(TAG, "Query result size: " + task.getResult().size());
 
                             if (task.getResult().isEmpty()) {
@@ -145,41 +147,55 @@ public class DetailRouteActivity extends AppCompatActivity {
                                     String startStationDoc = document.getString("StartStation");
                                     String endStation = document.getString("EndStation");
                                     String type = document.getString("Type");
-                                    String active = document.contains("Active") ? String.valueOf(document.get("Active")) : "0";
-                                    String autoActive = document.contains("AutoActive") ? String.valueOf(document.get("AutoActive")) : "0";
+                                    String active = document.contains("Active") ? String.valueOf(document.get("Active")) : null;
+                                    String autoActive = document.contains("AutoActive") ? String.valueOf(document.get("AutoActive")) : null;
 
                                     String price = "0 VND";
                                     Object priceObj = document.get("Price");
+                                    Log.d(TAG, "Raw priceObj for ticket " + id + ": " + priceObj); // Debug raw price
                                     if (priceObj != null) {
                                         if (priceObj instanceof String) {
-                                            price = (String) priceObj;
-                                            if (!price.endsWith("VND")) {
+                                            String priceStr = ((String) priceObj).replace(",", ""); // Xóa dấu phân cách nghìn
+                                            if (!priceStr.endsWith("VND")) {
                                                 try {
-                                                    long priceValue = Long.parseLong(price);
+                                                    long priceValue = Long.parseLong(priceStr);
                                                     price = decimalFormat.format(priceValue) + " VND";
                                                 } catch (NumberFormatException e) {
-                                                    Log.e(TAG, "Error parsing price: " + e.getMessage());
+                                                    Log.e(TAG, "Error parsing price for ticket " + id + ": " + e.getMessage() + ", using default 0 VND");
+                                                    price = "0 VND";
                                                 }
+                                            } else {
+                                                price = priceStr; // Giữ nguyên nếu đã có "VND"
                                             }
                                         } else if (priceObj instanceof Long || priceObj instanceof Integer) {
                                             long priceValue = ((Number) priceObj).longValue();
                                             price = decimalFormat.format(priceValue) + " VND";
+                                        } else if (priceObj instanceof Double) {
+                                            long priceValue = ((Double) priceObj).longValue(); // Chuyển Double sang long
+                                            price = decimalFormat.format(priceValue) + " VND";
+                                        } else {
+                                            Log.w(TAG, "Unsupported price type for ticket " + id + ": " + priceObj.getClass().getName());
+                                            price = "0 VND";
                                         }
                                     }
+                                    Log.d(TAG, "Formatted price for ticket " + id + ": " + price); // Debug formatted price
 
                                     if (name == null) {
                                         Log.w(TAG, "Skipping ticket with null name, id=" + id);
                                         continue;
                                     }
 
-                                    TicketType ticket = new TicketType(id, name, price);
-                                    ticket.setType(type);
-                                    ticket.setStartStation(startStationDoc);
-                                    ticket.setEndStation(endStation);
-                                    ticket.setActive(active);
-                                    ticket.setAutoActive(autoActive);
-                                    routeTickets.add(ticket);
-                                    Log.d(TAG, "Added ticket: id=" + id + ", name=" + name + ", endStation=" + endStation + ", active=" + active + ", autoActive=" + autoActive);
+                                    // Chỉ thêm ticket nếu endStation chưa xuất hiện
+                                    if (endStation != null && uniqueEndStations.add(endStation)) {
+                                        TicketType ticket = new TicketType(id, name, price);
+                                        ticket.setType(type);
+                                        ticket.setStartStation(startStationDoc);
+                                        ticket.setEndStation(endStation);
+                                        ticket.setActive(active != null ? active : "0"); // Đảm bảo không null
+                                        ticket.setAutoActive(autoActive != null ? autoActive : "0"); // Đảm bảo không null
+                                        routeTickets.add(ticket);
+                                        Log.d(TAG, "Added ticket: id=" + id + ", name=" + name + ", endStation=" + endStation + ", price=" + price + ", active=" + (active != null ? active : "null") + ", autoActive=" + (autoActive != null ? autoActive : "null"));
+                                    }
                                 }
                             }
 

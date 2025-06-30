@@ -244,8 +244,6 @@ public class YourTicketsActivity extends AppCompatActivity {
                                                             Log.e("YourTicketsActivity", "Failed to fetch user name: " +
                                                                     (userTask.getException() != null ? userTask.getException().getMessage() : "Unknown error"));
                                                         }
-                                                        Log.d("YourTicketsActivity", "Fetched userName: " + userName);
-
                                                         // Tạo đối tượng TicketModel
                                                         TicketModel ticket = new TicketModel(
                                                                 ticketId,

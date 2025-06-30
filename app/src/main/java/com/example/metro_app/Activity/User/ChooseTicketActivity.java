@@ -65,8 +65,8 @@ public class ChooseTicketActivity extends AppCompatActivity {
             orderIntent.putExtra("ticket_type_id", ticketTypeId);
             orderIntent.putExtra("ticket_name", ticketName != null ? ticketName : "Không có thông tin");
             orderIntent.putExtra("ticket_price", ticketPrice != null ? ticketPrice : "0 VND");
-            orderIntent.putExtra("ticket_expiration", ticketActive != null ? ticketActive : "0");
-            orderIntent.putExtra("ticket_auto_active", ticketAutoActive != null ? ticketAutoActive : "0");
+            orderIntent.putExtra("ticket_expiration", ticketActive != null ? ticketActive : "0"); // Đảm bảo truyền giá trị
+            orderIntent.putExtra("ticket_auto_active", ticketAutoActive != null ? ticketAutoActive : "0"); // Đảm bảo truyền giá trị
             startActivity(orderIntent);
         });
     }
