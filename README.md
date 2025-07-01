@@ -154,6 +154,15 @@ Firebase không có hệ thống phân quyền người dùng mặc định, b�
 role: "admin"  // hoặc "user"
 ```
 ---
+## ✅ Tài khoản test VN Pay
+
+| Thành phần            | Phiên bản           |
+|-----------------------|---------------------|
+| Ngân hàng             | 	NCB                |
+| Số thẻ                | 9704198526191432198 |
+| Tên chủ thẻ           | NGUYEN VAN A        |
+| Ngày phát hành	       | 07/15               |
+| Mật khẩu OTP          | 123456	             |
 
 ## ✨ Các chức năng chính
 
