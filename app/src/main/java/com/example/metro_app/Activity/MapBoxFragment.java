@@ -310,6 +310,26 @@ private final LocationObserver locationObserver= new LocationObserver() {
         PolylineAnnotation polyline = polylineAnnotationManager.create(polylineOptions);
         drawnPolylines.add(polyline);
     }
+    public void drawPartialRouteFromLastPoints(List<Point> pointList) {
+        if (pointList == null || pointList.size() < 2 || polylineAnnotationManager == null) return;
+
+        // Lấy 2 điểm cuối cùng
+        Point secondLast = pointList.get(pointList.size() - 2);
+        Point last = pointList.get(pointList.size() - 1);
+
+        List<Point> partialSegment = Arrays.asList(secondLast, last);
+
+        String color = "#00FF00"; // Màu cho đoạn mới vẽ, có thể thay đổi
+
+        PolylineAnnotationOptions polylineOptions = new PolylineAnnotationOptions()
+                .withPoints(partialSegment)
+                .withLineColor(color)
+                .withLineWidth(5.0);
+
+        PolylineAnnotation polyline = polylineAnnotationManager.create(polylineOptions);
+        drawnPolylines.add(polyline);
+    }
+
     public MapboxMap getMapboxMap() {
         return mapView.getMapboxMap();
     }
@@ -368,6 +388,7 @@ private final LocationObserver locationObserver= new LocationObserver() {
             currentUserMarker = pointAnnotationManager.create(options);
         }
     }
+
     @Nullable
     public Point getCenterPoint() {
         if (mapboxMap == null) return null;

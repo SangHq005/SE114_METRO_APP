@@ -162,6 +162,7 @@
         app:icon="@drawable/ic_add_location"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.323"
         app:layout_constraintStart_toStartOf="parent" />
 
     <com.google.android.material.floatingactionbutton.FloatingActionButton
@@ -180,10 +181,24 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="16dp"
-        app:srcCompat="@drawable/ic_add_to_end"
         android:contentDescription="Thêm điểm vào cuối tuyến"
+        app:layout_constraintBottom_toBottomOf="@+id/fabAddStation"
         app:layout_constraintStart_toEndOf="@+id/fabAddStation"
         app:layout_constraintTop_toTopOf="@+id/fabAddStation"
-        app:layout_constraintBottom_toBottomOf="@+id/fabAddStation"/>
+        app:srcCompat="@drawable/ic_add_to_end" />
+
+    <Button
+        android:id="@+id/btnFinish"
+        android:layout_width="75dp"
+        android:layout_height="40dp"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="16dp"
+        android:layout_marginStart="18dp"
+        android:backgroundTint="@color/lavender"
+        android:text="Lưu"
+        app:layout_constraintBottom_toBottomOf="@+id/fabAddStation"
+        app:layout_constraintStart_toEndOf="@+id/fabAddLastRoute"
+        app:layout_constraintTop_toTopOf="@+id/fabAddStation" />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>
