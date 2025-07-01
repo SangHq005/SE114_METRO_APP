@@ -1,128 +1,222 @@
-
 # 🚇 Metro Ticket App - Android
 
-Ứng dụng di động Android hỗ trợ **mua vé**, **quét vé**, **theo dõi thông tin tuyến metro** và **diễn đàn cộng đồng** dành cho người dùng tàu điện Metro tại TP. Hồ Chí Minh.
+**Metro Ticket App** là ứng dụng đặt vé tàu Metro hiện đại dành cho người dùng Android. Ứng dụng tích hợp đầy đủ tính năng như đăng ký/đăng nhập, mua và quản lý vé, tìm đường, cập nhật tin tức và tham gia diễn đàn cộng đồng.
 
-## 📱 Giới thiệu
-Metro Ticket App giúp hành khách:
-- Đăng ký / đăng nhập tài khoản.
-- Tìm tuyến đường & mua vé (lượt, tháng).
-- Quét QR Code để qua cổng.
-- Cập nhật tin tức và tương tác với cộng đồng người đi metro.
+---
 
-> Đồ án môn: *Nhập môn Ứng dụng Di động* – UIT  
-> GVHD: *ThS. Nguyễn Tấn Toàn*  
-> Nhóm sinh viên: Phạm Hà Anh Thư, Huỳnh Quốc Sang, Nguyễn Minh Thiện, Nguyễn Lê Duy
+## 📱 Giới thiệu ứng dụng
+
+Metro Ticket App hỗ trợ hành khách:
+
+- ✅ Đăng ký / đăng nhập tài khoản
+- 🚉 Tìm tuyến đường & mua vé (lượt/tháng)
+- 📲 Quét QR Code để qua cổng
+- 📰 Cập nhật tin tức Metro
+- 💬 Tham gia diễn đàn cộng đồng
+
+---
+
+## 📚 Thông tin đồ án
+
+- **Môn học**: Nhập môn Ứng dụng Di động - UIT  
+- **Giáo viên hướng dẫn**: ThS. Nguyễn Tấn Toàn
+
+### 👥 Nhóm sinh viên
+
+| Họ tên               | MSSV       |
+|----------------------|------------|
+| Phạm Hà Anh Thư      | 23521544   |
+| Huỳnh Quốc Sang      | 23521340   |
+| Nguyễn Minh Thiện    | 23521484   |
+| Nguyễn Lê Duy        | 23520378   |
+
+---
+
+## 📋 Mục lục
+ 
+1. [Môi trường phát triển](#-moi-truong-phat-trien)
+2. [Cài đặt môi trường](#-cài-đặt-môi-trường)
+3. [Cách chạy ứng dụng](#-cách-chạy-ứng-dụng)
+4. [Tài khoản test](#-tài-khoản-test)
+5. [Các chức năng chính](#-các-chức-năng-chính)
+6. [Bảo mật & hiệu suất](#-bảo-mật--hiệu-suất)
+7. [Thành viên thực hiện](#-thành-viên-thực-hiện)
+8. [Liên hệ](#-liên-hệ)
+9. [Giấy phép](#-giấy-phép)
+
+---
 
 ## ⚙️ Môi trường phát triển
 
-- **Ngôn ngữ:** Java, XML
-- **IDE:** Android Studio (Arctic Fox trở lên)
-- **Kiến trúc:** MVVM
-- **Backend:** Firebase (Authentication, Firestore, Storage)
-- **Công cụ UI/UX:** Figma
-- **API tích hợp:** Google Maps, VNPAY
+| Thành phần            | Phiên bản                           |
+|-----------------------|-------------------------------------|
+| Ngôn ngữ              | Java, XML                          |
+| IDE                   | Android Studio Flamingo 2022.2.1+  |
+| Kiến trúc             | MVVM                               |
+| Backend               | Firebase (Auth, Firestore, Storage, Cloudinary)|
+| Thiết kế giao diện    | Figma                              |
+| API tích hợp          | MapBox, VNPAY                 |
+| Android SDK           | minSdk: 24 → targetSdk: 33         |
+| Gradle                | 7.4.2                              |
+| Firebase BOM          | 32.2.2                             |
+
+---
 
 ## 🚀 Cài đặt môi trường
 
-### 1. Clone source code
-
+### 1. Clone mã nguồn
 ```bash
-git clone https://github.com/<your_team>/metro-ticket-app.git
-cd metro-ticket-app
+git clone (https://github.com/SangHq005/SE114_METRO_APP.git)
+cd SE114_METRO_APP
 ```
 
 ### 2. Cấu hình Firebase
+- Tạo Firebase project tại [Firebase Console](https://console.firebase.google.com/)
+- Thêm ứng dụng Android:
+  - Package name: `com.uit.metroticket`
+  - App nickname: Metro Ticket App
+- Tải file `google-services.json` và đặt vào thư mục `app/`
+---
+### 🔐 Lấy SHA-1 để cấu hình Firebase
 
-> Tạo project Firebase tại [https://console.firebase.google.com](https://console.firebase.google.com)
+Để sử dụng xác thực Google Sign-In hoặc Dynamic Links, bạn cần cấu hình SHA-1 (và SHA-256) cho ứng dụng Android trên Firebase.
 
-- Tải tệp `google-services.json` về.
-- Đặt file vào `app/google-services.json`.
+✅ Cách 1: Qua Android Studio
 
-Cấu hình các dịch vụ:
+1. Mở Android Studio
 
-- **Authentication**: bật Email/Password và Google
-- **Firestore Database**: bật chế độ test
-- **Storage**: bật quyền đọc/ghi
+2. Mở tab Gradle → :app > Tasks > android
 
-### 3. Cấu hình API Keys
+3. Nhấn đúp vào signingReport
 
-Trong `local.properties`, thêm dòng:
-
+📋 Kết quả sẽ hiển thị trong tab "Run":
 ```
-MAPS_API_KEY=YOUR_GOOGLE_MAPS_API_KEY
+Variant: debug
+SHA1: A1:B2:C3:...
+SHA-256: ...
 ```
+Copy SHA-1 và thêm vào Firebase: Project Settings > Android app > Add Fingerprint
+### 3. Cấu hình Gradle 🛠️ 
+Trong thư mục gốc của dự án, tạo file gradle.properties với nội dung sau:
+```properties
+org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
+android.enableJetifier=true
+android.useAndroidX=true
+android.nonTransitiveRClass=true
+#Cấu hình Java JDK trong máy bạn (Ví dụ: jdk-24) hoặc có thể ẩn dòng này đi
+org.gradle.java.home=C\:\\Program Files\\Java\\jdk-24
+# Cấu hình API Key
+MAPBOX_DOWNLOADS_TOKEN=sk.eyJ1IjoidGhpZW5uZ3V5ZW4yNTA0IiwiYSI6ImNtYWRsZ2RzdTA1OGcybnM4bnZkOXo2emsifQ.XJU0gRz1_tU_lc6ZsTAY7g
+# Cấu hình cloudinary
+cloudinaryCloudName=dwa3wh9yb
+cloudinaryApiKey=219257552732366
+cloudinaryApiSecret=C1pLGgyPhmcu9wVn8mR61ToD2ow
+```
+### 4. Cài đặt phụ thuộc
 
-Đồng thời, cập nhật `AndroidManifest.xml` với key này.
-
-### 4. Cài đặt SDK & thư viện
-
-Mở bằng Android Studio và đảm bảo:
-
-- SDK ≥ 30 (API Level 30+)
-- Gradle sync không lỗi
-- Internet/WiFi ổn định (để sync Firebase dependencies)
-
+- Mở dự án bằng Android Studio → chờ Gradle sync hoàn tất
+---
 ## 🛠️ Cách chạy ứng dụng
+### 👉 Chạy trên máy ảo (Emulator)
+1. Vào Android Studio → Tools → Device Manager
+2. Tạo thiết bị ảo (gợi ý: Pixel 7 Pro, API 30+)
+3. Nhấn **Run ▶️** hoặc dùng tổ hợp `Shift + F10`
 
-1. **Mở Android Studio** → File → Open → Chọn thư mục project
-2. **Kết nối thiết bị Android hoặc Emulator**
-3. Bấm **Run** ▶️ để khởi chạy ứng dụng
+### 👉 Chạy trên thiết bị thật
+1. Kết nối điện thoại qua USB
+2. Bật Developer mode:
+   - Vào Settings → About phone → Nhấn 7 lần vào “Build number”
+   - Vào Developer Options → Bật “USB debugging”
+3. Chọn thiết bị trong Android Studio → Bấm Run
 
-Ứng dụng bao gồm:
+---
 
-- `app-client`: chức năng cho người dùng
-- `app-admin`: giao diện quản trị viên (đăng bài, kiểm duyệt, soát vé)
+## ✅ Hướng dẫn phân quyền admin/User
 
-## ✅ Tài khoản test
+Firebase không có hệ thống phân quyền người dùng mặc định, bạn cần tự phân loại bằng cách lưu thông tin quyền vào Firestore.
 
-| Vai trò | Email | Mật khẩu |
-|--------|-------|----------|
-| Admin | admin@metro.com | 123456 |
-| Người dùng | user@metro.com | 123456 |
+✅ Bước 1: Tạo người dùng trên Firebase Authentication
+
+- Vào Firebase Console → Authentication → Users → Add user
+
+- Nhập email + mật khẩu cho người dùng
+
+✅ Bước 2: Tạo field phân quyền trong Firestore
+
+1. Vào Firestore Database
+
+2. Vào collection: Account
+
+3. Tìm document trùng ID với UID của người dùng
+
+4. Sửa field:
+```
+role: "admin"  // hoặc "user"
+```
+---
 
 ## ✨ Các chức năng chính
 
-### 📱 Khách hàng (User)
-- Đăng nhập / Đăng ký
-- Tìm kiếm lộ trình
-- Mua vé online (VNPAY)
-- Nhận vé QR Code
-- Xem tin tức metro
-- Đăng bài, bình luận trên diễn đàn
+### 👤 Đăng nhập / Đăng ký
+- Email/password
+- Google Sign-In
 
-### 🛡️ Quản trị viên (Admin)
-- Quản lý trạm, tuyến, giá vé
-- Kiểm duyệt bài viết
-- Quản lý người dùng
-- Quản lý giao dịch
-- Soát vé bằng QR
+### 🎟️ Mua vé
+- Vé lượt (1 chiều), vé tháng (30 ngày)
+- Thanh toán qua VNPAY
+- Nhận QR Code ngay sau thanh toán
+
+### 📂 Quản lý vé
+- Danh sách vé đang sử dụng
+- Lịch sử vé hết hạn
+- Chi tiết vé (QR, thời hạn)
+
+### 🗺️ Tìm đường
+- Tìm trạm gần nhất
+- Chỉ đường qua Google Maps
+
+### 📰 Tin tức & Diễn đàn
+- Xem bài viết mới nhất
+- Đăng bài chia sẻ và bình luận
+
+---
 
 ## 🔒 Bảo mật & hiệu suất
 
-- Firebase Rules bảo vệ truy cập database
-- Quản lý phân quyền giữa Admin / User
-- Giao diện chuẩn Material Design, dễ dùng
+| Tính năng              | Mô tả                                      |
+|------------------------|---------------------------------------------|
+| Firebase Security Rules| Phân quyền truy cập dữ liệu                |
+| Mã hoá dữ liệu         | AES-256 với thông tin nhạy cảm             |
+| Xác thực 2 lớp         | Firebase Auth + Google Sign-In             |
+| Tối ưu hình ảnh        | Glide + Resize trên Firebase Storage       |
+| Caching                | Dữ liệu tĩnh lưu bằng Room Database        |
+| Tách module            | Phân tách Client / Admin rõ ràng           |
 
-## 📸 Demo & Tài liệu
-
-- 🎥 Demo video: [Link Google Drive / YouTube]
-- 📄 File báo cáo: `SE114_BaoCao.docx` (đính kèm trong repository)
+---
 
 ## 🧑‍💻 Thành viên thực hiện
 
-| Tên | MSSV | Vai trò |
-|-----|------|---------|
-| Phạm Hà Anh Thư | 23521544 | UI/UX, Admin App |
-| Huỳnh Quốc Sang | 23521340 | UI/UX Figma,Client App |
-| Nguyễn Minh Thiện | 23521484 | Backend, VNPAY |
-| Nguyễn Lê Duy | 23520378 | Backend, Google Map |
+| Họ tên               | MSSV       | Vai trò            | Công việc chính                          |
+|----------------------|------------|---------------------|-------------------------------------------|
+| Phạm Hà Anh Thư      | 23521544   | Team Lead, UI/UX    | Thiết kế hệ thống, phát triển Admin      |
+| Huỳnh Quốc Sang      | 23521340   | UI/UX Designer       | Thiết kế Figma, giao diện người dùng     |
+| Nguyễn Minh Thiện    | 23521484   | Backend Developer    | Firebase, Tích hợp VNPAY                  |
+| Nguyễn Lê Duy        | 23520378   | Backend Developer    | Google Maps API, Thiết kế database        |
+
+---
 
 ## 📬 Liên hệ
 
-Mọi góp ý hoặc liên hệ vui lòng gửi qua email: **metroapp.groupUIT@gmail.com**
+📧 Email: 23521340@gm.uit.edu.vn  
+
+---
 
 ## 📄 Giấy phép
 
-Dự án thuộc đồ án học phần tại UIT. Không sử dụng vào mục đích thương mại khi chưa được cấp phép.
+```
+Copyright 2025 Metro Ticket App - UIT
 
+Licensed under the Apache License, Version 2.0 (http://www.apache.org/licenses/LICENSE-2.0)
+
+Dự án thuộc học phần tại UIT. Không sử dụng cho mục đích thương mại khi chưa được cấp phép.
+```
