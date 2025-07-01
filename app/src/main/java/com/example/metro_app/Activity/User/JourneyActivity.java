@@ -127,14 +127,16 @@ public class JourneyActivity extends AppCompatActivity{
             Luotdi = !Luotdi;
             if(Luotdi){
                 fetchAndDrawRoute("MetroWay","LuotDi");
-                tvStartStation.setText("Bến Thành");
-                tvEndStation.setText("Suối Tiên");
+                String Temp = tvStartStation.getText().toString();
+                tvStartStation.setText(tvEndStation.getText());
+                tvEndStation.setText(Temp);
 
             }
             else{
                 fetchAndDrawRoute("MetroWay","LuotVe");
-                tvEndStation.setText("Bến Thành");
-                tvStartStation.setText("Suối Tiên");
+                String Temp = tvStartStation.getText().toString();
+                tvStartStation.setText(tvEndStation.getText());
+                tvEndStation.setText(Temp);
             }
         });
         myLocation.setOnClickListener(v -> {
@@ -198,6 +200,13 @@ public class JourneyActivity extends AppCompatActivity{
                             .withIconSize(1.0f)
                             .withData(JsonParser.parseString(gson.toJson(station)));
                     mapFragment.createStationMarker(options);
+                }
+                if (!stationList.isEmpty()) {
+                    Station firstStation = stationList.get(0);
+                    Station lastStation = stationList.get(stationList.size() - 1);
+
+                    tvStartStation.setText(firstStation.Name);
+                    tvEndStation.setText(lastStation.Name);
                 }
             }
 

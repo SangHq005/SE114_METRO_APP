@@ -84,6 +84,7 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
                 FireStoreHelper.insertPointAt(docId, center, 99999, new FireStoreHelper.InsertCallback() {
                     @Override
                     public void onSuccess() {
+                        fetchAndDrawRoute(docId);
                         Toast.makeText(AdAddWayActivity.this, "Đã thêm điểm cuối tại " + center.longitude() + "," + center.latitude(), Toast.LENGTH_SHORT).show();
                     }
 
@@ -101,6 +102,7 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
                 FireStoreHelper.insertPointAt(docId, center, -1, new FireStoreHelper.InsertCallback() {
                     @Override
                     public void onSuccess() {
+                        fetchAndDrawRoute(docId);
                         Toast.makeText(AdAddWayActivity.this, "Đã thêm điểm đầu tại " + center.longitude() + "," + center.latitude(), Toast.LENGTH_SHORT).show();
                     }
 
@@ -120,9 +122,9 @@ public class AdAddWayActivity extends AppCompatActivity implements AdStationBott
                 newStation.StopId = 0;
                 newStation.Lat = center.latitude();
                 newStation.Lng = center.longitude();
-                newStation.Name = "";
-                newStation.Ward = "";
-                newStation.Zone = "";
+                newStation.Name = "Trạm mới";
+                newStation.Ward = "Phường";
+                newStation.Zone = "Quận";
 
                 AdStationBottomSheet sheet = new AdStationBottomSheet(newStation);
                 sheet.show(getSupportFragmentManager(), "AdStationBottomSheet");
