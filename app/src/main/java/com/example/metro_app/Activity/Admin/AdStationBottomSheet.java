@@ -23,45 +23,42 @@ import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
 public class AdStationBottomSheet extends BottomSheetDialogFragment {
     private Station station;
     private String docId;
+    private boolean hasChanged = false;
 
     public static AdStationBottomSheet newInstance(Station station, String docId) {
         AdStationBottomSheet fragment = new AdStationBottomSheet();
         Bundle args = new Bundle();
-
         args.putSerializable("station", station);
         args.putString("docId", docId);
         fragment.setArguments(args);
-
         return fragment;
     }
 
-    @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        if (getArguments() != null) {
-            station = (Station) getArguments().getSerializable("station");
-            docId = getArguments().getString("docId");
-        }
-    }
     private OnStationUpdatedListener updateListener;
 
     public interface OnStationUpdatedListener {
         void onStationUpdated();
     }
 
+    public AdStationBottomSheet() {}
+
     public AdStationBottomSheet(Station station) {
         this.station = station;
     }
-
 
     public AdStationBottomSheet(Station station, String docId) {
         this.station = station;
         this.docId = docId;
     }
 
-
-    public AdStationBottomSheet() {}
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        if (getArguments() != null) {
+            station = (Station) getArguments().getSerializable("station");
+            docId = getArguments().getString("docId");
+        }
+    }
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -76,12 +73,10 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.admin_bottom_sheet_station, container, false);
 
-        // Khai báo label TextView (đảm bảo ID đúng với XML)
         TextView tvLabelName = view.findViewById(R.id.tvStationName);
         TextView tvLabelWard = view.findViewById(R.id.tvStationWard);
         TextView tvLabelZone = view.findViewById(R.id.tvStationZone);
 
-        // Khai báo EditText
         EditText etName = view.findViewById(R.id.etAdminStationName);
         EditText etLat = view.findViewById(R.id.etAdminStationLat);
         EditText etLng = view.findViewById(R.id.etAdminStationLng);
@@ -91,7 +86,6 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
         Button btnDelete = view.findViewById(R.id.btnDelete);
 
         if (station != null) {
-            // Tên trạm
             if (station.Name != null && !station.Name.isEmpty()) {
                 etName.setText(station.Name);
             } else {
@@ -99,12 +93,9 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
                 etName.setVisibility(View.GONE);
             }
 
-            // Vĩ độ
-                etLat.setText(String.valueOf(station.Lat));
-            // Kinh độ
-                etLng.setText(String.valueOf(station.Lng));
+            etLat.setText(String.valueOf(station.Lat));
+            etLng.setText(String.valueOf(station.Lng));
 
-            // Phường
             if (station.Ward != null && !station.Ward.isEmpty()) {
                 etWard.setText(station.Ward);
             } else {
@@ -112,7 +103,6 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
                 etWard.setVisibility(View.GONE);
             }
 
-            // Khu vực
             if (station.Zone != null && !station.Zone.isEmpty()) {
                 etZone.setText(station.Zone);
             } else {
@@ -124,11 +114,13 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
             Toast.makeText(getContext(), "Không có dữ liệu trạm!", Toast.LENGTH_SHORT).show();
             dismiss();
         }
+
         btnDelete.setOnClickListener(v -> {
             if (station.StopId != 0) {
                 FireStoreHelper.deleteStation(station.StopId, new FireStoreHelper.DeleteCallback() {
                     @Override
                     public void onSuccess() {
+                        hasChanged = true;
                         Toast.makeText(getContext(), "Xoá trạm thành công", Toast.LENGTH_SHORT).show();
                         dismiss();
                     }
@@ -142,6 +134,7 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
                 FireStoreHelper.removePointFromRoute(docId, station.Lat, station.Lng, new FireStoreHelper.DeleteCallback() {
                     @Override
                     public void onSuccess() {
+                        hasChanged = true;
                         Toast.makeText(getContext(), "Xoá điểm thành công", Toast.LENGTH_SHORT).show();
                         dismiss();
                     }
@@ -152,14 +145,13 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
                     }
                 });
             }
-
         });
-
 
         applyFieldUpdater(etName, "Name");
         applyFieldUpdater(etWard, "Ward");
         applyFieldUpdater(etZone, "Zone");
         applyLatLngUpdater(etLat, etLng);
+
         return view;
     }
 
@@ -190,18 +182,21 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
                 if (!value.equals(station.Name)) {
                     station.Name = value;
                     changed = true;
+                    hasChanged = true;
                 }
                 break;
             case "Ward":
                 if (!value.equals(station.Ward)) {
                     station.Ward = value;
                     changed = true;
+                    hasChanged = true;
                 }
                 break;
             case "Zone":
                 if (!value.equals(station.Zone)) {
                     station.Zone = value;
                     changed = true;
+                    hasChanged = true;
                 }
                 break;
         }
@@ -256,6 +251,7 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
             if (newLat != station.Lat || newLng != station.Lng) {
                 station.Lat = newLat;
                 station.Lng = newLng;
+                hasChanged = true;
 
                 if (station.StopId == 0) {
                     station.StopId = (int) (System.currentTimeMillis() % Integer.MAX_VALUE);
@@ -294,7 +290,7 @@ public class AdStationBottomSheet extends BottomSheetDialogFragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        if (updateListener != null) {
+        if (updateListener != null && hasChanged) {
             updateListener.onStationUpdated();
         }
     }

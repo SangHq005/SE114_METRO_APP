@@ -12,6 +12,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -125,18 +126,34 @@ public class JourneyActivity extends AppCompatActivity{
         });
         btnSwap.setOnClickListener(v -> {
             Luotdi = !Luotdi;
-            if(Luotdi){
-                fetchAndDrawRoute("MetroWay","LuotDi");
-                tvStartStation.setText("Bến Thành");
-                tvEndStation.setText("Suối Tiên");
 
+            if (Luotdi) {
+                fetchAndDrawRoute("MetroWay", "LuotDi");
+            } else {
+                fetchAndDrawRoute("MetroWay", "LuotVe");
             }
-            else{
-                fetchAndDrawRoute("MetroWay","LuotVe");
-                tvEndStation.setText("Bến Thành");
-                tvStartStation.setText("Suối Tiên");
+
+
+            LinearLayout parentLayout = (LinearLayout) tvStartStation.getParent().getParent();
+
+            View startView = (View) tvStartStation.getParent();
+            View endView = (View) tvEndStation.getParent();
+
+            int indexStart = parentLayout.indexOfChild(startView);
+            int indexEnd = parentLayout.indexOfChild(endView);
+
+            parentLayout.removeView(startView);
+            parentLayout.removeView(endView);
+
+            if (indexStart < indexEnd) {
+                parentLayout.addView(endView, indexStart);
+                parentLayout.addView(startView, indexEnd);
+            } else {
+                parentLayout.addView(startView, indexEnd);
+                parentLayout.addView(endView, indexStart);
             }
         });
+
         myLocation.setOnClickListener(v -> {
             if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
                 if (currentLocation != null) {
@@ -198,6 +215,13 @@ public class JourneyActivity extends AppCompatActivity{
                             .withIconSize(1.0f)
                             .withData(JsonParser.parseString(gson.toJson(station)));
                     mapFragment.createStationMarker(options);
+                }
+                if (!stationList.isEmpty()) {
+                    Station firstStation = stationList.get(0);
+                    Station lastStation = stationList.get(stationList.size() - 1);
+
+                    tvStartStation.setText(firstStation.Name);
+                    tvEndStation.setText(lastStation.Name);
                 }
             }
 

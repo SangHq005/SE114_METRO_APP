@@ -34,6 +34,7 @@ import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -522,6 +523,24 @@ public class FireStoreHelper {
                     listener.onError(e);
                 });
     }
+    public static void overwriteMetroWay(String documentId, List<Point> pointList, FirestoreCallback callback) {
+        List<GeoPoint> geoPoints = new ArrayList<>();
+        for (Point p : pointList) {
+            geoPoints.add(new GeoPoint(p.latitude(), p.longitude()));
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("points", geoPoints);
+
+        FirebaseFirestore.getInstance()
+                .collection("MetroWay")
+                .document(documentId)
+                .set(data)
+                .addOnSuccessListener(unused -> callback.onSuccess())
+                .addOnFailureListener(e -> callback.onFailure(e.getMessage()));
+    }
+
+
     //USER
     public void getUserById(String uid, Callback<UserModel> callback) {
         if (uid == null || uid.isEmpty()) {

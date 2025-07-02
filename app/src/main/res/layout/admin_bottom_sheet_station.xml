@@ -15,7 +15,7 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Thông tin trạm"
+            android:text="Thông tin"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black"
@@ -145,10 +145,10 @@
             android:id="@+id/btnDelete"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Xoá trạm"
-            android:textStyle="bold"
-            android:textColor="@android:color/white"
+            android:layout_marginTop="24dp"
             android:backgroundTint="@color/red"
-            android:layout_marginTop="24dp" />
+            android:text="Xoá"
+            android:textColor="@android:color/white"
+            android:textStyle="bold" />
     </LinearLayout>
 </ScrollView>
