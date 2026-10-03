@@ -106,11 +106,11 @@ android.nonTransitiveRClass=true
 #Cấu hình Java JDK trong máy bạn (Ví dụ: jdk-24) hoặc có thể ẩn dòng này đi
 org.gradle.java.home=C\:\\Program Files\\Java\\jdk-24
 # Cấu hình API Key
-MAPBOX_DOWNLOADS_TOKEN=sk.eyJ1IjoidGhpZW5uZ3V5ZW4yNTA0IiwiYSI6ImNtYWRsZ2RzdTA1OGcybnM4bnZkOXo2emsifQ.XJU0gRz1_tU_lc6ZsTAY7g
+MAPBOX_DOWNLOADS_TOKEN=sk...
 # Cấu hình cloudinary
-cloudinaryCloudName=dwa3wh9yb
-cloudinaryApiKey=219257552732366
-cloudinaryApiSecret=C1pLGgyPhmcu9wVn8mR61ToD2ow
+cloudinaryCloudName=name
+cloudinaryApiKey=apikey
+cloudinaryApiSecret=secretkey
 ```
 ### 4. Cài đặt phụ thuộc
 
@@ -133,7 +133,7 @@ cloudinaryApiSecret=C1pLGgyPhmcu9wVn8mR61ToD2ow
 
 ## ✅ Hướng dẫn phân quyền admin/User
 
-Firebase không có hệ thống phân quyền người dùng mặc định, bạn cần tự phân loại bằng cách lưu thông tin quyền vào Firestore.
+Firebase không có hệ thống phân quyền người dùng mặc định, Bạn cần tự phân loại bằng cách lưu thông tin quyền vào Firestore.
 
 ✅ Bước 1: Tạo người dùng trên Firebase Authentication
 
@@ -210,7 +210,7 @@ role: "admin"  // hoặc "user"
 | Phạm Hà Anh Thư      | 23521544   | Team Lead, UI/UX    | Thiết kế hệ thống, phát triển Admin      |
 | Huỳnh Quốc Sang      | 23521340   | UI/UX Designer       | Thiết kế Figma, giao diện người dùng     |
 | Nguyễn Minh Thiện    | 23521484   | Backend Developer    | Firebase, Tích hợp VNPAY                  |
-| Nguyễn Lê Duy        | 23520378   | Backend Developer    | Google Maps API, Thiết kế database        |
+| Nguyễn Lê Duy        | 23520378   | Backend Developer    | Mapbox API, Thiết kế database        |
 
 ---
 
